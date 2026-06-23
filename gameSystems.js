@@ -58,20 +58,21 @@ const BUILDING_TEMPLATES = [
   ];
 
   const SHIP_TEMPLATES = [
-    { type: 'scout', name: '정찰기', icon: '🛰️', power: 4, cost: { metal: 500 }, time: 60, strongAgainst: 'raider', awarenessNeeded: 0, img: 'img/ship-scout.jpg', maxLevel: 10, upgradeTime: 30 },
-    { type: 'interceptor', name: '요격기', icon: '🛡️', power: 10, cost: { metal: 1200, crystal: 600 }, time: 200, strongAgainst: 'pirate_fleet', awarenessNeeded: 30, img: 'img/ship-interceptor.jpg', maxLevel: 8, upgradeTime: 60 },
-    { type: 'fighter', name: '전투기', icon: '🚀', power: 18, cost: { metal: 2400, crystal: 1200 }, time: 400, strongAgainst: 'marauder', awarenessNeeded: 80, img: 'img/ship-fighter.jpg', maxLevel: 8, upgradeTime: 90 },
-    { type: 'bomber', name: '폭격기', icon: '💥', power: 30, cost: { metal: 4400, crystal: 2200 }, time: 700, strongAgainst: 'juggernaut', awarenessNeeded: 150, img: 'img/ship-bomber.jpg', maxLevel: 6, upgradeTime: 150 },
-    { type: 'battleship', name: '전함', icon: '🚢', power: 60, cost: { metal: 12000, crystal: 6000, hydrogen: 2000 }, time: 1500, strongAgainst: 'raider', awarenessNeeded: 300, img: 'img/ship-battleship.jpg', maxLevel: 6, upgradeTime: 300 },
-    { type: 'carrier', name: '항공모함', icon: '✈️', power: 110, cost: { metal: 30000, crystal: 15000, hydrogen: 5000 }, time: 2500, strongAgainst: 'pirate_fleet', awarenessNeeded: 500, img: 'img/ship-carrier.jpg', maxLevel: 5, upgradeTime: 500 },
-    { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 220, cost: { metal: 80000, crystal: 40000, hydrogen: 15000, plasma: 5000 }, time: 4500, strongAgainst: 'juggernaut', awarenessNeeded: 800, img: 'img/ship-dreadnought.jpg', maxLevel: 4, upgradeTime: 900 }
+    { type: 'scout', name: '정찰기', icon: '🛰️', power: 2, cost: { metal: 150 }, time: 5, strongAgainst: 'raider', awarenessNeeded: 0, img: 'img/ship-scout.jpg', maxLevel: 15, upgradeTime: 15, special: '정찰' },
+    { type: 'corvette', name: '초계함', icon: '🚀', power: 6, cost: { metal: 600 }, time: 25, strongAgainst: 'pirate_fleet', awarenessNeeded: 15, img: 'img/ship-corvette.jpg', maxLevel: 12, upgradeTime: 30 },
+    { type: 'frigate', name: '호위함', icon: '🛡️', power: 14, cost: { metal: 1500, crystal: 400 }, time: 70, strongAgainst: 'marauder', awarenessNeeded: 50, img: 'img/ship-frigate.jpg', maxLevel: 10, upgradeTime: 50 },
+    { type: 'destroyer', name: '구축함', icon: '⚔️', power: 28, cost: { metal: 3200, crystal: 1200 }, time: 150, strongAgainst: 'juggernaut', awarenessNeeded: 120, img: 'img/ship-destroyer.jpg', maxLevel: 8, upgradeTime: 90 },
+    { type: 'cruiser', name: '순양함', icon: '🔱', power: 50, cost: { metal: 7000, crystal: 3500, hydrogen: 1000 }, time: 350, strongAgainst: 'raider', awarenessNeeded: 250, img: 'img/ship-cruiser.jpg', maxLevel: 7, upgradeTime: 180 },
+    { type: 'battleship', name: '전함', icon: '🚢', power: 90, cost: { metal: 18000, crystal: 9000, hydrogen: 3000 }, time: 700, strongAgainst: 'pirate_fleet', awarenessNeeded: 450, img: 'img/ship-battleship.jpg', maxLevel: 6, upgradeTime: 350 },
+    { type: 'carrier', name: '항공모함', icon: '✈️', power: 170, cost: { metal: 45000, crystal: 22000, hydrogen: 8000, plasma: 2000 }, time: 1600, strongAgainst: 'marauder', awarenessNeeded: 700, img: 'img/ship-carrier.jpg', maxLevel: 5, upgradeTime: 600 },
+    { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 320, cost: { metal: 110000, crystal: 55000, hydrogen: 20000, plasma: 8000 }, time: 3000, strongAgainst: 'juggernaut', awarenessNeeded: 1100, img: 'img/ship-dreadnought.jpg', maxLevel: 4, upgradeTime: 1000 }
   ];
 
   const PIRATE_TYPES = [
     { type: 'raider', name: '약탈자', icon: '🦹', weakTo: 'scout', powerBase: 10 },
-    { type: 'pirate_fleet', name: '해적단', icon: '🏴‍☠️', weakTo: 'interceptor', powerBase: 18 },
-    { type: 'marauder', name: '정찰병', icon: '🪓', weakTo: 'fighter', powerBase: 14 },
-    { type: 'juggernaut', name: '거함', icon: '👹', weakTo: 'bomber', powerBase: 32 }
+    { type: 'pirate_fleet', name: '해적단', icon: '🏴‍☠️', weakTo: 'corvette', powerBase: 18 },
+    { type: 'marauder', name: '침투선', icon: '🪓', weakTo: 'frigate', powerBase: 14 },
+    { type: 'juggernaut', name: '거함', icon: '👹', weakTo: 'destroyer', powerBase: 32 }
   ];
 
   const COLONY_TEMPLATES = [
@@ -131,8 +132,8 @@ const COLONY_FACTORY_TYPES = [
         clickPower: 200,
 
         resources: {
-          metal: new Decimal(20), metalMax: new Decimal(500),
-          crystal: new Decimal(0), crystalMax: new Decimal(300),
+          metal: new Decimal(100), metalMax: new Decimal(500),
+          crystal: new Decimal(10), crystalMax: new Decimal(300),
           hydrogen: new Decimal(0), hydrogenMax: new Decimal(200),
           plasma: new Decimal(0), plasmaMax: new Decimal(200),
           solar: new Decimal(0), solarMax: new Decimal(200),
@@ -161,10 +162,12 @@ const COLONY_FACTORY_TYPES = [
 
         planets: PLANETS.map(p => ({ ...p, explorationLevel: 0 })),
         exploring: false, explorePlanet: null, exploreChance: 0, exploreTimer: 0,
+        exploreFlavor: '', exploreFlavorTimer: 0,
 
         pirateTypes: PIRATE_TYPES,
         pirateAttackTimer: 300,
         pirateWave: 1, pirateLog: [], combatCooldown: 0,
+        raidAlert: '', raidAlertTimer: 0,
 
         achievements: [
           { id: 'first_buy', name: '첫 구매', desc: '건물 첫 구매', bonus: 0.05, cond: g => g.totalBuys >= 1 },
@@ -451,12 +454,12 @@ const COLONY_FACTORY_TYPES = [
       },
 
       maxAffordable(st) {
-        const maxByMetal = Math.floor(this.money.toNumber() / (st.cost.metal || 1));
-        const maxByCrystal = Math.floor(this.money.toNumber() / (st.cost.crystal || 1));
-        let max = Math.max(0, Math.min(maxByMetal, maxByCrystal, 999));
-        if (st.cost.hydrogen) max = Math.min(max, Math.floor((this.resources.hydrogen || new Decimal(0)).toNumber() / (st.cost.hydrogen || 1)));
-        if (st.cost.plasma) max = Math.min(max, Math.floor((this.resources.plasma || new Decimal(0)).toNumber() / (st.cost.plasma || 1)));
-        return max;
+        let max = 999;
+        if (st.cost.metal) max = Math.min(max, Math.floor((this.resources.metal || new Decimal(0)).toNumber() / st.cost.metal));
+        if (st.cost.crystal) max = Math.min(max, Math.floor((this.resources.crystal || new Decimal(0)).toNumber() / st.cost.crystal));
+        if (st.cost.hydrogen) max = Math.min(max, Math.floor((this.resources.hydrogen || new Decimal(0)).toNumber() / st.cost.hydrogen));
+        if (st.cost.plasma) max = Math.min(max, Math.floor((this.resources.plasma || new Decimal(0)).toNumber() / st.cost.plasma));
+        return Math.max(0, max);
       },
       getShipQty(type) { return this.shipBuildQty[type] || 1; },
       setShipQty(type, val) { this.$set(this.shipBuildQty, type, Math.max(1, parseInt(val) || 1)); },
@@ -477,8 +480,22 @@ const COLONY_FACTORY_TYPES = [
         if (st.cost.plasma) this.resources.plasma = this.resources.plasma.sub((st.cost.plasma || 0) * count);
         const s = this.ships[st.type];
         s.building = true; s.buildCount = count; s.totalTime = st.time * count * this.shipBuildSpeedMult; s.elapsed = 0;
+        s.buildCost = { metal: (st.cost.metal || 0) * count, crystal: (st.cost.crystal || 0) * count, hydrogen: (st.cost.hydrogen || 0) * count, plasma: (st.cost.plasma || 0) * count };
         this.awareness += Math.max(1, Math.floor(st.power / 10)) * this.awarenessMult;
-        this.toast(`🚀 ${st.name} ${count}척 건조 시작`);
+        this.toast(`🚀 ${st.name} ${count}척 건조 시작 (${this.fmtTime(s.totalTime)})`);
+      },
+      cancelBuild(type) {
+        const s = this.ships[type];
+        if (!s || !s.building) return;
+        const st = this.shipTypes.find(x => x.type === type);
+        if (!st) return;
+        const cost = s.buildCost || {};
+        if (cost.metal) this.resources.metal = this.resources.metal.add(cost.metal);
+        if (cost.crystal) this.resources.crystal = this.resources.crystal.add(cost.crystal);
+        if (cost.hydrogen) this.resources.hydrogen = this.resources.hydrogen.add(cost.hydrogen);
+        if (cost.plasma) this.resources.plasma = this.resources.plasma.add(cost.plasma);
+        s.building = false; s.buildCount = 0; s.totalTime = 0; s.elapsed = 0; s.buildCost = null;
+        this.toast(`↩️ ${st.name} 건조 취소 (자원 반환)`);
       },
       tickShips(dt) {
         for (const t in this.ships) {
@@ -545,18 +562,18 @@ const COLONY_FACTORY_TYPES = [
 
       buildColonizer() {
         if (this.colonizer.building) return;
-        const costMetal = 20000;
-        const costCrystal = 10000;
+        const costMetal = 5000;
+        const costCrystal = 2500;
         if (this.resources.metal.lt(costMetal) || this.resources.crystal.lt(costCrystal)) return;
         this.resources.metal = this.resources.metal.sub(costMetal);
         this.resources.crystal = this.resources.crystal.sub(costCrystal);
         this.colonizer.building = true; this.colonizer.buildCount = 1;
-        this.colonizer.totalTime = 120 * this.shipBuildSpeedMult; this.colonizer.elapsed = 0;
+        this.colonizer.totalTime = 30 * this.shipBuildSpeedMult; this.colonizer.elapsed = 0;
         this.toast('🚀 식민 함선 건조 시작');
       },
       colonizerUpgradeCost() {
         const lv = this.colonizer.level || 1;
-        return { metal: Math.floor(15000 * Math.pow(lv + 1, 1.6)), crystal: Math.floor(8000 * Math.pow(lv + 1, 1.6)) };
+        return { metal: Math.floor(4000 * Math.pow(lv + 1, 1.5)), crystal: Math.floor(2000 * Math.pow(lv + 1, 1.5)) };
       },
       canUpgradeColonizer() {
         const lv = this.colonizer.level || 1;
@@ -593,8 +610,10 @@ const COLONY_FACTORY_TYPES = [
         if (!this.canExplore(p)) return;
         this.exploring = true; this.explorePlanet = p;
         this.exploreChance = this.exploreChanceFor(p);
-        this.exploreTimer = 30;
-        this.toast(`🚀 ${p.name} 탐험 시작 (${Math.round(this.exploreChance*100)}%)`);
+        this.exploreTimer = Math.max(5, 30 - (this.colonizer.level || 1) * 2);
+        this.exploreFlavor = '🚀 항성계로 진입 중...';
+        this.exploreFlavorTimer = 3;
+        this.toast(`🚀 ${p.name} 탐험 시작 (${Math.round(this.exploreChance*100)}%, ${this.fmtTime(this.exploreTimer)})`);
       },
       completeExplore() {
         const p = this.explorePlanet;
@@ -617,6 +636,25 @@ const COLONY_FACTORY_TYPES = [
       tickExploration(dt) {
         if (this.exploring) {
           this.exploreTimer -= dt;
+          this.exploreFlavorTimer -= dt;
+          if (this.exploreFlavorTimer <= 0) {
+            this.exploreFlavorTimer = 2 + Math.random() * 3;
+            const FLAVORS = [
+              '🌌 미지의 항성계를 통과 중...',
+              '📡 이상한 중력장을 탐지했습니다.',
+              '💫 우주 잔해 사이를 항해 중...',
+              '🔭 미약한 외계 신호를 수신 중...',
+              '🌠 항성풍을 뚫고 전진 중입니다.',
+              '🪐 미개척 행성계에 진입합니다.',
+              '⚡ 이상한 에너지 파동이 감지됩니다.',
+              '☄️ 소행성대를 조심스럽게 통과 중...',
+              '🗺️ 은하계 지도를 업데이트 중...',
+              '📻 고대 문명의 흔적을 찾고 있습니다.',
+              '🌀 시공간 왜곡 현상이 관측됩니다.',
+              '✨ 항성 플레어를 우회 중...'
+            ];
+            this.exploreFlavor = FLAVORS[Math.floor(Math.random() * FLAVORS.length)];
+          }
           if (this.exploreTimer <= 0) this.completeExplore();
         }
       },
@@ -773,6 +811,10 @@ const COLONY_FACTORY_TYPES = [
           const rate = (this.resourceIncome[k] || 0) * (this.resMultipliers[k] || 1) * boost;
           if (rate > 0) this.resources[k] = Decimal.min(this.resources[k + 'Max'] || new Decimal(999999), this.resources[k].add(rate * dt));
         }
+        // Scout passive: 정찰기가 자동으로 인지도 획득
+        if (this.ships.scout?.count > 0) {
+          this.awareness += this.ships.scout.count * 0.3 * dt * this.speedMult;
+        }
         this.totalWealth = this.totalWealthCalc;
       },
 
@@ -783,6 +825,7 @@ const COLONY_FACTORY_TYPES = [
         if (this.freeDispenserCD > 0) this.freeDispenserCD = Math.max(0, this.freeDispenserCD - dt);
         if (this.pirateAttackTimer > 0) this.pirateAttackTimer = Math.max(0, this.pirateAttackTimer - dt);
         if (this.pirateAttackTimer <= 0) { this.triggerPirateRaid(); this.pirateAttackTimer = 300 + Math.random() * 100; }
+        if (this.raidAlertTimer > 0) { this.raidAlertTimer = Math.max(0, this.raidAlertTimer - dt); if (this.raidAlertTimer <= 0) this.raidAlert = ''; }
       },
       triggerPirateRaid() {
         const enemy = this.currentPirate;
@@ -790,13 +833,14 @@ const COLONY_FACTORY_TYPES = [
         const autoRoll = eff * 0.9;
         if (autoRoll >= enemy.power) {
           this.pushLog(`🛡️ 자동 방어 성공 (${enemy.icon} ${enemy.name})`, 'log-win');
-          this.toast(`🛡️ 방어 성공 ${enemy.name}`);
         } else {
           const stolen = new Decimal(300 * this.pirateWave);
           this.money = this.money.sub(stolen);
-          for (const k of RES) { if (this.resources[k] && this.resources[k].gt(0)) this.resources[k] = this.resources[k].sub(this.resources[k].mul(0.1)); }
+          let resLoss = 0;
+          for (const k of RES) { if (this.resources[k] && this.resources[k].gt(0)) { const loss = this.resources[k].mul(0.1); this.resources[k] = this.resources[k].sub(loss); resLoss += loss.toNumber(); } }
           this.pushLog(`⚠️ 해적 약탈! ${this.fmt(stolen)} + 자원 10% 손실 (${enemy.icon})`, 'log-lose');
-          this.toast(`⚠️ 해적 약탈 ${this.fmt(stolen)}`);
+          this.raidAlert = `🚨 ${enemy.icon} ${enemy.name} 침공!\n💰 -${this.fmt(stolen)} 📦 자원 -10%`;
+          this.raidAlertTimer = 5;
           this.pirateWave++;
         }
       },
@@ -938,7 +982,7 @@ const COLONY_FACTORY_TYPES = [
         const pb = this.prestigeBonus;
         const defaults = {
           money: new Decimal(2000), clickPower: 200,
-          resources: { metal: new Decimal(20), metalMax: new Decimal(500), crystal: new Decimal(0), crystalMax: new Decimal(300), hydrogen: new Decimal(0), hydrogenMax: new Decimal(200), plasma: new Decimal(0), plasmaMax: new Decimal(200), solar: new Decimal(0), solarMax: new Decimal(200), fission: new Decimal(0), fissionMax: new Decimal(200), fusion: new Decimal(0), fusionMax: new Decimal(200) },
+          resources: { metal: new Decimal(100), metalMax: new Decimal(500), crystal: new Decimal(10), crystalMax: new Decimal(300), hydrogen: new Decimal(0), hydrogenMax: new Decimal(200), plasma: new Decimal(0), plasmaMax: new Decimal(200), solar: new Decimal(0), solarMax: new Decimal(200), fission: new Decimal(0), fissionMax: new Decimal(200), fusion: new Decimal(0), fusionMax: new Decimal(200) },
           resUnlocked: { metal: true, crystal: false, hydrogen: false, plasma: false, solar: false, fission: false, fusion: false },
           resMultipliers: { metal: 1, crystal: 1, hydrogen: 1, plasma: 1, solar: 1, fission: 1, fusion: 1 },
           storageMult: 1, incomeMult: 1, fameIncomeBonus: 0, awarenessMult: 1, shipBuildSpeedMult: 1, fleetPowerMult: 1,
@@ -953,8 +997,9 @@ const COLONY_FACTORY_TYPES = [
           missions: this.missions.map(m => ({ ...m, progress: 0, completed: false })),
           totalBuys: 0, totalTrades: 0, totalWealth: new Decimal(0), bestProfit: 0,
           items: { timewarp: 1, surge: 1 }, boostTimer: 0, boostMultItem: 1, freeDispenserCD: 0,
-          colonies: [], colonyDetailPlanet: null, exploring: false, explorePlanet: null, exploreChance: 0, exploreTimer: 0,
-          eventMessage: '', eventTimer: 0, auctionActive: false, auctionBuilding: null, auctionPrice: 0, auctionDiscount: 0, auctionTimer: 0, auctionChance: 0
+          colonies: [], colonyDetailPlanet: null, exploring: false, explorePlanet: null, exploreChance: 0, exploreTimer: 0, exploreFlavor: '', exploreFlavorTimer: 0,
+          eventMessage: '', eventTimer: 0, auctionActive: false, auctionBuilding: null, auctionPrice: 0, auctionDiscount: 0, auctionTimer: 0, auctionChance: 0,
+          raidAlert: '', raidAlertTimer: 0
         };
         for (const k in defaults) this[k] = defaults[k];
         this.prestigePoints = pp;
@@ -966,10 +1011,15 @@ const COLONY_FACTORY_TYPES = [
       prestige() {
         const wealth = this.totalWealthCalc.toNumber();
         if (wealth < 100000) { this.toast('🚫 환생 조건: 총 자산 100k 이상'); return; }
-        const gain = Math.max(1, Math.floor(Math.pow(wealth / 100000, 0.5)));
+        let resourceValue = 0;
+        for (const k of RES) {
+          if (this.resources[k]) resourceValue += this.resources[k].toNumber();
+        }
+        const totalValue = wealth + resourceValue;
+        const gain = Math.max(2, Math.floor(Math.pow(totalValue / 50000, 0.55)));
         this.prestigePoints += gain;
         this.prestigeBonus = this.prestigePoints * 0.1;
-        this.toast(`✨ 환생! +${gain} 포인트 (총 ${this.prestigePoints}P) 수입 +${Math.round(this.prestigeBonus*100)}%`);
+        this.toast(`✨ 환생! +${gain} 포인트 (총 ${this.prestigePoints}P) 수입 +${Math.round(this.prestigeBonus*100)}% (자원가치 ${this.fmt(resourceValue)} 포함)`);
         this.cheatReset();
       },
 
@@ -1013,6 +1063,7 @@ const COLONY_FACTORY_TYPES = [
             fameMilestones: this.fameMilestones.map(m => ({ id: m.id, reached: m.reached })),
             prestigePoints: this.prestigePoints,
             prestigeBonus: this.prestigeBonus,
+            exploreFlavor: '', exploreFlavorTimer: 0,
             colonies: this.colonies.map(c => ({
               planetId: c.planetId, name: c.name, prodSpeed: c.prodSpeed,
               resources: { ...c.resources },
@@ -1056,6 +1107,18 @@ const COLONY_FACTORY_TYPES = [
           if (o.research) { for (const saved of o.research) { const r = this.research.find(x => x.id === saved.id); if (r) { r.completed = saved.completed || false; r.inProgress = saved.inProgress || false; r.remaining = saved.remaining || 0; } } }
           if (o.missions) { for (const saved of o.missions) { const m = this.missions.find(x => x.id === saved.id); if (m) { m.progress = saved.progress || 0; m.completed = saved.completed || false; } } }
           if (o.ships) {
+            const SHIP_MIGRATION = { interceptor: 'corvette', fighter: 'frigate', bomber: 'destroyer', battleship: 'cruiser', carrier: 'battleship', dreadnought: 'carrier' };
+            let needsMigrate = false;
+            for (const oldKey in SHIP_MIGRATION) { if (o.ships[oldKey]) { needsMigrate = true; break; } }
+            if (needsMigrate) {
+              const newShips = {};
+              for (const st of SHIP_TEMPLATES) newShips[st.type] = { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, level: 1, upgrading: false, upgradeElapsed: 0, upgradeTotalTime: 0 };
+              if (o.ships.scout) Object.assign(newShips.scout, o.ships.scout);
+              for (const oldKey in SHIP_MIGRATION) {
+                if (o.ships[oldKey]) { const nk = SHIP_MIGRATION[oldKey]; Object.assign(newShips[nk], o.ships[oldKey]); }
+              }
+              o.ships = newShips;
+            }
             for (const k in o.ships) {
               if (this.ships[k]) {
                 this.ships[k].count = o.ships[k].count || 0;
