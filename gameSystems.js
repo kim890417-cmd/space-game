@@ -957,12 +957,18 @@ const COLONY_FACTORY_TYPES = [
           this.fleetActiveTab = 'fleet_build';
           return;
         }
+        console.log('[행성개척] colonizer:', this.colonizer.count, 'awareness:', this.awareness, 'planets:', this.planets?.length, 'visiblePlanets:', this.visiblePlanets?.length);
+        console.log('[행성개척] fleetActiveTab:', this.fleetActiveTab, 'exploring:', this.exploring);
         this.exploreTravelOverlay = true;
         this.exploreTravelTimer = 2;
         this.exploreFlavor = '🪐 행성 개척 임무를 시작합니다...';
         setTimeout(() => {
           this.exploreTravelOverlay = false;
           this.toast('🌍 탐험 가능한 행성을 확인하세요');
+          this.$nextTick(() => {
+            const el = document.querySelector('.planet-list-header');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
         }, 2000);
       },
 
@@ -980,9 +986,15 @@ const COLONY_FACTORY_TYPES = [
       applyOffline() {
         if (!this.lastSeen) return;
         const now = Date.now(); let elapsed = Math.floor((now - this.lastSeen) / 1000);
-        if (elapsed < 30) return; elapsed = Math.min(elapsed, 86400);
-        const inc = this.passiveIncome * elapsed;
-        if (inc > 0) { this.money = this.money.add(inc); this.offlineReport = { seconds: elapsed, gained: inc }; }
+        if (elapsed < 30) return; elapsed = Math.min(elapsed, 28800);
+        const mult = 0.5;
+        const inc = this.passiveIncome * elapsed * mult;
+        if (inc > 0) this.money = this.money.add(inc);
+        for (const k of RES) {
+          const rate = (this.resourceIncome[k] || 0) * (this.resMultipliers[k] || 1);
+          if (rate > 0) this.resources[k] = Decimal.min(this.resources[k + 'Max'] || new Decimal(999999), this.resources[k].add(rate * elapsed * mult));
+        }
+        if (inc > 0) this.offlineReport = { seconds: elapsed, gained: inc };
       },
       dismissOffline() { this.offlineReport = null; },
 
@@ -1044,11 +1056,21 @@ const COLONY_FACTORY_TYPES = [
       recalcMaxes() {
         let buildingBonus = 0;
         for (const b of this.buildings) {
-          if (b.level > 0) buildingBonus += b.level * 50;
+          if (b.level > 0) buildingBonus += b.level * 500;
         }
-        const sm = this.storageMult * (1 + buildingBonus / 1000);
-        const bases = { metal: 2000, crystal: 1500, hydrogen: 1000, plasma: 800, solar: 800, fission: 800, fusion: 800 };
-        for (const k of RES) this.resources[k + 'Max'] = new Decimal(Math.floor((bases[k] || 800) * sm));
+        let exploreBonus = 0;
+        for (const p of this.planets) {
+          if (p.explorationLevel > 0) exploreBonus += p.explorationLevel * 0.1;
+        }
+        let colonyBonus = 0;
+        for (const c of this.colonies) {
+          for (const f of c.factories) {
+            if (f.level > 0) colonyBonus += f.level * 0.5;
+          }
+        }
+        const sm = this.storageMult * (1 + buildingBonus / 1000) * (1 + exploreBonus) * (1 + colonyBonus / 100);
+        const bases = { metal: 50000, crystal: 30000, hydrogen: 15000, plasma: 10000, solar: 10000, fission: 8000, fusion: 8000 };
+        for (const k of RES) this.resources[k + 'Max'] = new Decimal(Math.floor((bases[k] || 10000) * sm));
       },
 
       cheatMoney() { this.money = this.money.mul(100); this.toast('💰 ×100 돈!'); },

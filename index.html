@@ -338,7 +338,12 @@
             <div class="text-[9px] text-slate-500 mt-1">{{ fmtTime(exploreTimer) }}</div>
           </div>
 
-          <div class="text-[10px] font-bold text-slate-400 mt-1 mb-1">🪐 탐험 가능 행성</div>
+          <div class="text-[10px] font-bold text-slate-400 mt-1 mb-1 planet-list-header">🪐 탐험 가능 행성</div>
+
+          <div v-if="visiblePlanets.length === 0" class="card py-2 px-3 text-center" style="border-color:rgba(100,116,139,0.3)">
+            <div class="text-[11px] text-slate-500 py-2">🚫 표시할 행성이 없습니다</div>
+            <div class="text-[9px] text-slate-600">인지도(명성)가 부족하거나 모든 행성을 개척 완료했습니다</div>
+          </div>
 
           <div v-for="p in visiblePlanets" :key="p.id" class="card py-2 px-3" :class="{'opacity-70': p.explorationLevel >= p.maxLevel}" :style="p.explorationLevel > 0 ? 'border-color:rgba(52,211,153,0.3)' : ''">
             <div class="flex gap-2 items-center">
