@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="스페이스 컴퍼니">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="img/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="img/icon.svg">
+  <title>스페이스 컴퍼니: 우주 건물주</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css?family=Orbitron:400,700,900&display=swap" rel="stylesheet">
+  <script src="vue.min.js"></script>
+  <script src="decimal.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="gameSystems.js"></script>
+  <style>
+    :root { --bg-dark: #0c101b; --bg-card: #151f32; --bg-nav: #0f172a; --border: #1e293b; --accent: #38bdf8; --text: #e2e8f0; --text-dim: #64748b; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    input, textarea { user-select: text; -webkit-user-select: text; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg-dark); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; overscroll-behavior: none; -webkit-overflow-scrolling: auto; touch-action: manipulation; }
+    #app { height: 100%; display: flex; flex-direction: column; position: fixed; inset: 0; }
+    .header { flex-shrink: 0; background: var(--bg-nav); border-bottom: 1px solid var(--border); padding: 6px 10px; z-index: 10; }
+    .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 10px; -webkit-overflow-scrolling: touch; }
+    .nav-bar { flex-shrink: 0; display: flex; background: var(--bg-nav); border-top: 1px solid var(--border); z-index: 20; }
+    .nav-item { flex: 1; text-align: center; padding: 5px 0 4px; font-size: 9px; cursor: pointer; color: var(--text-dim); transition: all 0.1s; border-top: 2px solid transparent; user-select: none; }
+    .nav-item.active { color: var(--accent); border-top-color: var(--accent); background: rgba(56,189,248,0.05); }
+    .nav-item .nav-icon { font-size: 18px; display: block; line-height: 1.2; }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+    .card-accent { border-color: rgba(56,189,248,0.2); }
+    .res-val { font-family: 'Orbitron', sans-serif; font-size: 13px; min-width: 65px; display: inline-block; text-align: right; }
+    .res-val-lg { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; }
+    .btn { border: none; border-radius: 8px; cursor: pointer; transition: all 0.1s; font-weight: 700; }
+    .btn:disabled { opacity: 0.3; cursor: default; }
+    .btn-sm { padding: 4px 10px; font-size: 10px; } .btn-md { padding: 6px 12px; font-size: 11px; }
+    .btn-primary { background: #2563eb; color: #fff; } .btn-primary:hover:not(:disabled) { background: #3b82f6; }
+    .btn-success { background: #059669; color: #fff; } .btn-success:hover:not(:disabled) { background: #10b981; }
+    .btn-danger { background: #dc2626; color: #fff; } .btn-danger:hover:not(:disabled) { background: #ef4444; }
+    .btn-warning { background: #d97706; color: #fff; } .btn-warning:hover:not(:disabled) { background: #f59e0b; }
+    .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+    .btn-cheat { background: #7c3aed; color: #fff; } .btn-cheat:hover:not(:disabled) { background: #8b5cf6; }
+    .price-tier-0 { color: #34d399; } .price-tier-1 { color: #6ee7b7; } .price-tier-2 { color: #94a3b8; }
+    .price-tier-3 { color: #fb923c; } .price-tier-4 { color: #fb7185; }
+    .progress-bar { height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+    .toast { position: fixed; bottom: 64px; left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.95); border: 1px solid var(--accent); color: #e2e8f0; padding: 8px 18px; border-radius: 10px; font-size: 12px; font-weight: 700; z-index: 999; text-align: center; max-width: 90%; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+    .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; max-width: 340px; width: 100%; }
+    .res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .res-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; background: rgba(15,23,42,0.5); border-radius: 6px; font-size: 11px; }
+    ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .click-btn { width: 68px; height: 68px; border-radius: 50%; background: radial-gradient(circle, #2563eb, #1d4ed8); border: 3px solid var(--accent); color: #fff; font-size: 26px; cursor: pointer; transition: all 0.1s; box-shadow: 0 0 18px rgba(56,189,248,0.25); flex-shrink: 0; }
+    .click-btn:active { transform: scale(0.92); }
+    .build-img { width: 100%; height: 72px; object-fit: cover; border-radius: 6px; background: #0f172a; }
+    .ship-qty { width: 48px; text-align: center; background: #0f172a; border: 1px solid var(--border); border-radius: 6px; color: #e2e8f0; padding: 4px; font-size: 12px; font-family: 'Orbitron', sans-serif; }
+    .build-card { padding: 8px; }
+    .build-card .img-wrap { flex-shrink: 0; width: 80px; }
+    .locked-overlay { position: absolute; inset: 0; background: rgba(12,16,27,0.92); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; }
+    .relative { position: relative; }
+    .nav-badge { position: absolute; top: -2px; right: -4px; background: #ef4444; color: #fff; font-size: 7px; padding: 1px 4px; border-radius: 8px; }
+    .fleet-subnav { display: flex; gap: 4px; margin-bottom: 6px; }
+    .fleet-subnav-item { flex: 1; text-align: center; padding: 4px 0; font-size: 9px; cursor: pointer; border-radius: 6px; color: var(--text-dim); background: rgba(15,23,42,0.5); }
+    .fleet-subnav-item.active { color: var(--accent); background: rgba(56,189,248,0.1); }
+    .ship-img { width: 100%; height: 80px; object-fit: cover; border-radius: 6px; background: #0f172a; }
+    .planet-img { width: 100%; height: 64px; object-fit: cover; border-radius: 6px; background: #0f172a; }
+    .explore-bar { height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; }
+    .explore-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+    .cheat-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  </style>
+</head>
+<body>
+  <div id="fxLayer"></div>
+  <div id="app">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="flex items-center justify-between mb-1">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-bold text-amber-400 logo-co" style="font-family:'Orbitron'"><span class="planet"></span> SPACE CO.</span>
+          <span class="text-[8px] text-slate-600">v4.0</span>
+        </div>
+        <div class="flex items-center gap-2 text-[10px]" v-if="awareness>0">
+          <span class="text-purple-400">📡 {{ fmt(awareness) }}</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1">
+          <span>💰</span>
+          <span class="res-val-lg text-yellow-300">{{ fmt(money) }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-purple-400 text-[10px]" v-if="awareness>0">📡{{ fmt(awareness) }}</span>
+          <div class="text-[9px] text-slate-500 text-right">
+            <div>월수익 <span class="text-emerald-300">+{{ fmt(passiveIncome * (boostTimer>0?boostMultItem:1)) }}/s</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-x-2 gap-y-0.5 mt-1 text-[10px]">
+        <div v-for="k in ['metal','crystal','hydrogen','plasma','solar','fission','fusion']" :key="k" :data-key="k" v-if="visibleResources[k]" class="flex items-center gap-0.5">
+          <span>{{ {'metal':'⛏️','crystal':'💎','hydrogen':'⚡','plasma':'🔵','solar':'☀️','fission':'⚛️','fusion':'🔥'}[k] }}</span>
+          <span class="res-val" :style="{color:$RES_COLOR[k]}">{{ fmt(resources[k]) }}</span>
+          <span class="text-[7px]" :style="{color:$RES_COLOR[k], opacity:0.6}">+{{ fmt((resourceIncome[k]||0)*(resMultipliers[k]||1)) }}/s</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- TAB: BASE -->
+      <div v-if="activeTab==='buildings'" class="space-y-3">
+        <div class="flex items-center gap-3 justify-center py-1">
+          <button class="click-btn" ref="clickBtn" @click="doClick($event)" :class="{glow: boostTimer>0}" :style="boostTimer>0?{boxShadow:'0 0 30px rgba(251,191,36,0.5)'}:{}">💸</button>
+          <div class="text-[10px] text-slate-500">
+            <div>클릭당</div>
+            <div class="text-sm font-bold text-slate-200">+{{ fmt(clickPower * (boostTimer>0?boostMultItem:1)) }}</div>
+          </div>
+          <div class="text-[9px] text-amber-400 ml-1" v-if="boostTimer>0">⚡ ×{{ boostMultItem }} {{ fmtTime(boostTimer) }}</div>
+        </div>
+
+        <div class="card card-accent py-2 px-3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-bold text-purple-400">📡 명성 <span class="text-[9px] text-slate-500 font-normal">(인지도)</span></span>
+            <span class="text-[11px] text-purple-300">{{ fmt(awareness) }}</span>
+          </div>
+          <div class="progress-bar mb-1">
+            <div class="progress-fill" :style="{width: fameMilestoneProgress+'%', background: '#a78bfa'}"></div>
+          </div>
+          <div class="text-[9px] text-slate-500" v-if="nextFameMilestone">🏆 다음 목표: <span class="text-amber-300">{{ nextFameMilestone.name }}</span> ({{ fmt(nextFameMilestone.need) }})<br>{{ nextFameMilestone.desc }}</div>
+          <div class="text-[9px] text-emerald-400" v-else>✨ 모든 명성 업적 달성!</div>
+          <div class="text-[8px] text-amber-400/70 mt-1" v-if="fameBonusDisplay">🏅 명성 보너스: 수입 {{ fameBonusDisplay }}</div>
+        </div>
+
+        <div class="card py-2 px-3" v-if="eventMessage">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] text-yellow-300">{{ eventMessage }}</span>
+            <button class="btn btn-sm btn-warning" @click="resolveEvent">해결</button>
+          </div>
+        </div>
+
+        <div class="card py-2 px-3" v-if="auctionActive && auctionBuilding">
+          <div class="flex items-center justify-between">
+            <div class="text-[11px]">
+              <span class="text-rose-300">🔔</span>
+              <span class="text-slate-200">{{ auctionBuilding.name }}</span>
+              <span class="text-emerald-300 ml-1">{{ fmt(auctionPrice) }}</span>
+              <span class="text-slate-500 ml-1">({{ Math.round((1-auctionDiscount)*100) }}%↓)</span>
+            </div>
+            <button class="btn btn-sm btn-warning" @click="tryAuction">{{ Math.round(auctionChance*100) }}%</button>
+          </div>
+          <div class="text-[8px] text-slate-600 mt-1">{{ fmtTime(auctionTimer) }}</div>
+        </div>
+
+        <div class="space-y-2">
+          <div v-for="b in visibleBuildings" :key="b.id" class="card relative build-card" :class="{'shake': b.cooldown>0 && b.level>0}">
+            <div class="flex gap-2">
+              <div class="img-wrap">
+                <img :src="b.img" :alt="b.name" class="build-img" onerror="this.src='https://placehold.co/80x72/0f172a/38bdf8?text='+encodeURIComponent(this.alt)">
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-200">{{ b.icon }} {{ b.name }}</span>
+                  <span class="text-[9px] font-bold" :class="b.level>0?'text-purple-300':'text-slate-600'">{{ b.level>0 ? 'LV '+b.level : '미건설' }}</span>
+                </div>
+                <div class="text-[9px] text-slate-500 leading-tight mt-px">{{ b.desc }}</div>
+
+                <div v-if="b.level>0 && b.res" class="flex items-center gap-1.5 mt-1 text-[10px]">
+                  <span :style="{color: $RES_COLOR[b.res]}">{{ $RES_ICO[b.res] }} {{ fmt(resources[b.res]) }}</span>
+                  <span class="text-emerald-400/80 text-[9px]">+{{ fmt((resourceIncome[b.res]||0)*(resMultipliers[b.res]||1)) }}/s</span>
+                </div>
+
+                <div v-if="b.level===0" class="flex items-center justify-between mt-1">
+                  <span class="text-[11px] font-bold" :class="'price-tier-'+b.priceTier">{{ fmt(b.currentPrice) }} <span class="text-[8px] font-normal ml-1">{{ tierLabel(b.priceTier) }}</span></span>
+                  <span class="text-[8px] text-slate-500">월수익 {{ fmt(b.income) }}</span>
+                </div>
+                <div v-else class="flex items-center justify-between mt-1">
+                  <span class="text-[8px] text-slate-500">월수익 <span class="text-emerald-300">{{ fmt(b.income * b.level * effectiveIncomeMult * (1 + 0.12*(b.level-1))) }}/s</span></span>
+                  <span class="text-[8px] text-purple-300/80" v-if="b.level < b.maxLevel">⬆️ {{ fmt(upgradeCost(b)) }} → +{{ fmt(upgradePreview(b).dIncome) }}/s</span>
+                  <span class="text-[8px] text-amber-400/80" v-else>MAX</span>
+                </div>
+
+                <div class="flex gap-1 mt-1">
+                  <button v-if="b.level===0" class="btn btn-sm btn-success flex-1" @click="buyBuilding(b, $event)" :disabled="!canBuyBuilding(b)">건설</button>
+                  <button v-else class="btn btn-sm flex-1" style="background:#7c3aed;color:#fff" @click="upgradeBuilding(b, $event)" :disabled="!canUpgradeBuilding(b)">{{ b.level>=b.maxLevel ? 'MAX' : '⬆️ 업글' }}</button>
+                </div>
+                <div class="text-[7px] text-slate-600 mt-px" v-if="b.cooldown>0">⏳ {{ fmtTime(b.cooldown) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: FLEET -->
+      <div v-if="activeTab==='fleet'" class="space-y-3">
+        <div class="fleet-subnav">
+          <div class="fleet-subnav-item" :class="{active: fleetActiveTab==='fleet_build'}" @click="fleetActiveTab='fleet_build'">🚀 함선</div>
+          <div class="fleet-subnav-item" :class="{active: fleetActiveTab==='fleet_explore'}" @click="fleetActiveTab='fleet_explore'">🌍 탐험</div>
+          <div class="fleet-subnav-item" :class="{active: fleetActiveTab==='fleet_combat'}" @click="fleetActiveTab='fleet_combat'">⚔️ 전투</div>
+        </div>
+
+        <!-- 함선 건조 -->
+        <div v-if="fleetActiveTab==='fleet_build'" class="space-y-2">
+          <div class="card card-accent py-2 px-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[11px] font-bold text-purple-400">📡 명성으로 함선 잠금해제</span>
+              <span class="text-[11px] text-purple-300">{{ fmt(awareness) }}</span>
+            </div>
+            <div class="progress-bar mb-1">
+              <div class="progress-fill" :style="{width: nextFameMilestone ? fameMilestoneProgress+'%' : '100%', background: '#a78bfa'}"></div>
+            </div>
+            <div class="text-[9px] text-slate-500" v-if="nextFameMilestone">다음 명성: {{ nextFameMilestone.name }} ({{ fmt(nextFameMilestone.need) }})</div>
+            <div class="text-[9px] text-slate-500" v-else>모든 명성 달성!</div>
+          </div>
+
+          <div v-for="s in visibleShips" :key="s.type" class="card py-2 px-3">
+            <div class="flex gap-2">
+              <div class="flex-shrink-0" style="width:100px">
+                <img :src="s.img" :alt="s.name" class="ship-img" onerror="this.src='https://placehold.co/100x80/0f172a/38bdf8?text='+encodeURIComponent(s.name)">
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="text-xs font-bold text-slate-200">{{ s.icon }} {{ s.name }}</span>
+                    <span class="text-[9px] text-sky-300 ml-1">{{ ships[s.type].count }}척</span>
+                  </div>
+                  <span class="text-[9px] text-purple-300">LV {{ ships[s.type].level }}/{{ s.maxLevel }}</span>
+                </div>
+                <div class="text-[9px] text-slate-500">기본 전투력 {{ s.power }} <span class="text-rose-400/70" v-if="s.strongAgainst">· 상성 {{ pirateTypeName(s.strongAgainst) }}에 강함</span></div>
+                <div class="text-[9px] text-slate-400 mb-1">
+                  <span>⛏️{{ fmt(s.cost.metal) }} 💎{{ fmt(s.cost.crystal) }}</span><span v-if="s.cost.hydrogen"> ⚡{{ fmt(s.cost.hydrogen) }}</span><span v-if="s.cost.plasma"> 🔵{{ fmt(s.cost.plasma) }}</span>
+                  <span class="text-amber-400/70 ml-1">· 건조 {{ fmtTime(s.time) }}/척</span>
+                </div>
+
+                <!-- 전투력 바 -->
+                <div class="flex items-center gap-1 mb-1">
+                  <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full" :style="{width: Math.min(100, (s.power * (ships[s.type].level || 1) / 440)*100)+'%', background: 'linear-gradient(90deg, #34d399, #3b82f6)'}"></div>
+                  </div>
+                  <span class="text-[8px] font-bold text-slate-400">{{ s.power * (ships[s.type].level || 1) }}pt</span>
+                </div>
+
+                <div v-if="ships[s.type].building" class="mb-1">
+                  <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-amber-300">건조중 {{ ships[s.type].buildCount }}척</span>
+                    <span class="text-slate-400">{{ fmtTime(ships[s.type].totalTime - ships[s.type].elapsed) }}</span>
+                  </div>
+                  <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" :style="{width: (ships[s.type].elapsed/ships[s.type].totalTime*100)+'%'}"></div></div>
+                </div>
+                <div v-else-if="ships[s.type].upgrading" class="mb-1">
+                  <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-purple-300">⬆️ 업그레이드중</span>
+                    <span class="text-slate-400">{{ fmtTime(ships[s.type].upgradeTotalTime - ships[s.type].upgradeElapsed) }}</span>
+                  </div>
+                  <div class="progress-bar mt-1"><div class="progress-fill bg-purple-400" :style="{width: (ships[s.type].upgradeElapsed/ships[s.type].upgradeTotalTime*100)+'%'}"></div></div>
+                </div>
+
+                <div v-else class="flex flex-wrap items-center gap-1">
+                  <input type="number" class="ship-qty" :value="getShipQty(s.type)||1" @input="setShipQty(s.type, $event.target.value)" min="1" max="999">
+                  <button class="btn btn-sm btn-ghost" @click="setShipQty(s.type, maxAffordable(s))">MAX</button>
+                  <span class="text-[9px] text-slate-500">× {{ fmtTime(s.time * (getShipQty(s.type)||1)) }}</span>
+                  <button class="btn btn-sm btn-primary" @click="buildShips(s)" :disabled="!canBuildShips(s)">건조</button>
+                  <button class="btn btn-sm btn-ghost" @click="upgradeShip(s)" :disabled="!canUpgradeShip(s)" style="font-size:7px" v-if="ships[s.type].level < s.maxLevel">{{ ships[s.type].upgrading ? '⏳' : '⬆️' }} {{ shipUpgradeCostText(s) }}</button>
+                  <span v-else class="text-[9px] text-amber-400">MAX</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 식민 함선 -->
+          <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.3)">
+            <div class="flex gap-2">
+              <div class="flex-shrink-0" style="width:100px">
+                <img src="img/ship-colonizer.jpg" alt="식민 함선" class="ship-img" onerror="this.src='https://placehold.co/100x80/0f172a/eab308?text=Colonizer'">
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-amber-300">🛸 식민 함선</span>
+                  <span class="text-[9px] text-amber-300">{{ colonizer.count }}척 · LV {{ colonizer.level }}</span>
+                </div>
+                <div class="text-[9px] text-slate-500">행성 탐험 및 점령에 사용 · 전투력 {{ colonizer.count * colonizer.level }}</div>
+                <div class="text-[9px] text-slate-400 mb-1">⛏️20000 💎10000 · 건조 {{ fmtTime(120) }}</div>
+                <div v-if="colonizer.building" class="mb-1">
+                  <div class="flex items-center justify-between text-[10px]">
+                    <span class="text-amber-300">건조중</span>
+                    <span class="text-slate-400">{{ fmtTime(colonizer.totalTime - colonizer.elapsed) }}</span>
+                  </div>
+                  <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" :style="{width: (colonizer.elapsed/colonizer.totalTime*100)+'%'}"></div></div>
+                </div>
+                <div v-else class="flex gap-1">
+                  <button class="btn btn-sm btn-warning" @click="buildColonizer()" :disabled="colonizer.building || resources.metal.lt(20000) || resources.crystal.lt(10000)">건조</button>
+                  <button class="btn btn-sm btn-ghost" @click="upgradeColonizer()" :disabled="!canUpgradeColonizer()">{{ colonizer.level < 15 ? '⬆️ '+fmt(colonizerUpgradeCost().metal||0)+' '+fmt(colonizerUpgradeCost().crystal||0) : 'MAX' }}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 행성 탐험 -->
+        <div v-if="fleetActiveTab==='fleet_explore'" class="space-y-2">
+          <div class="card py-2 px-3">
+            <div class="text-xs font-bold text-amber-300 mb-2">🌍 행성 개척</div>
+            <div class="text-[9px] text-slate-500 mb-2">식민 함선을 보내 행성을 개척하세요. 반복 개척 시 보너스가 누적됩니다.<br>각 행성은 고유 특성이 있습니다.</div>
+            <div class="text-[9px] text-emerald-300 mb-2">보유 식민 함선: {{ colonizer.count }}척 · 탐험력: {{ colonizerPower }}</div>
+            <div class="text-[8px] text-slate-600" v-if="fameMilestones.filter(m=>m.reached).length < 4">🔒 새 행성은 명성 업적 달성 시 개방됩니다</div>
+          </div>
+
+          <div v-if="exploring" class="card py-2 px-3" style="border-color:rgba(250,204,21,0.5)">
+            <div class="text-xs font-bold text-yellow-300 mb-1">🚀 {{ explorePlanet.name }} 탐험중...</div>
+            <div class="text-[9px] text-slate-400 mb-1">성공 확률 {{ Math.round(exploreChance*100) }}%</div>
+            <div class="explore-bar"><div class="explore-fill bg-yellow-400" :style="{width: ((30-exploreTimer)/30*100)+'%'}"></div></div>
+            <div class="text-[9px] text-slate-500 mt-1">{{ fmtTime(exploreTimer) }}</div>
+          </div>
+
+          <div v-for="p in visiblePlanets" :key="p.id" class="card py-2 px-3" :class="{'opacity-70': p.explorationLevel >= p.maxLevel}" :style="p.explorationLevel > 0 ? 'border-color:rgba(52,211,153,0.3)' : ''">
+            <div class="flex gap-2 items-center">
+              <div class="flex-shrink-0" style="width:80px">
+                <img :src="p.img" :alt="p.name" class="planet-img" onerror="this.src='https://placehold.co/80x64/0f172a/38bdf8?text='+encodeURIComponent(p.name)">
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold" :class="p.explorationLevel > 0 ? 'text-emerald-400' : 'text-slate-200'">{{ p.icon }} {{ p.name }}</span>
+                  <span class="text-[9px]" :class="p.explorationLevel > 0 ? 'text-emerald-400' : 'text-slate-500'">{{ p.explorationLevel > 0 ? '개척 LV '+p.explorationLevel+'/'+p.maxLevel : '🌋 초급' }}</span>
+                </div>
+                <div class="text-[9px] text-slate-500">{{ p.bonusDesc }}</div>
+                <div class="text-[8px] text-amber-300/80 mt-px">특성: {{ p.specialty }}</div>
+                <div v-if="p.explorationLevel < p.maxLevel && !exploring" class="mt-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[9px] text-amber-400">성공 {{ Math.round(exploreChanceFor(p)*100) }}%</span>
+                    <button class="btn btn-sm btn-warning" @click="startExplore(p)" :disabled="!canExplore(p)">🚀 탐험</button>
+                  </div>
+                </div>
+                <div v-else-if="p.explorationLevel >= p.maxLevel" class="mt-1 text-[9px] text-emerald-400">✅ 최대 개척 완료!</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 전투 -->
+        <div v-if="fleetActiveTab==='fleet_combat'" class="space-y-2">
+          <div class="card py-2 px-3" style="border-color: rgba(251,113,133,0.3)">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-rose-400">☠️ {{ currentPirate.icon }} {{ currentPirate.name }}</span>
+              <span class="text-[9px] text-slate-500">웨이브 {{ pirateWave }}</span>
+            </div>
+
+            <!-- 전투력 비교 바 -->
+            <div class="mb-2">
+              <div class="flex items-center justify-between text-[8px] mb-0.5">
+                <span class="text-emerald-300">⚔️ 아군 {{ effectiveFleetPower(currentPirate.type) }}</span>
+                <span class="text-rose-300">☠️ 해적 {{ piratePower }}</span>
+              </div>
+              <div class="h-3 bg-slate-800 rounded-full overflow-hidden flex">
+                <div class="h-full transition-all duration-300" :style="{width: Math.min(100, (effectiveFleetPower(currentPirate.type) / Math.max(1, effectiveFleetPower(currentPirate.type) + piratePower) * 100))+'%', background: effectiveFleetPower(currentPirate.type) >= piratePower ? 'linear-gradient(90deg, #059669, #34d399)' : 'linear-gradient(90deg, #dc2626, #fb7185)'}"></div>
+              </div>
+            </div>
+
+            <div class="text-[9px] text-slate-500 mb-1">약점 함선: <span class="text-amber-300">{{ shipTypeName(currentPirate.weakTo) }} {{ weakShipCount }}척</span></div>
+
+            <div class="grid grid-cols-3 gap-1 text-[10px] mb-2">
+              <div class="bg-slate-950/60 p-1.5 rounded text-center"><div class="text-[8px] text-slate-500">아군 실효</div><div class="text-emerald-300 font-bold text-sm">{{ effectiveFleetPower(currentPirate.type) }}</div></div>
+              <div class="bg-slate-950/60 p-1.5 rounded text-center"><div class="text-[8px] text-slate-500">해적</div><div class="text-rose-300 font-bold text-sm">{{ piratePower }}</div></div>
+              <div class="bg-slate-950/60 p-1.5 rounded text-center"><div class="text-[8px] text-slate-500">함대</div><div class="text-slate-300 font-bold text-sm">{{ totalShips }}척</div></div>
+            </div>
+            <div class="text-[8px] text-amber-400/80 mb-1 text-center" v-if="effectiveFleetPower(currentPirate.type) >= piratePower*1.5">🔥 압도적 유리 — 약점 함선 다수 보유</div>
+            <div class="text-[8px] text-slate-500 mb-1 text-center" v-else-if="effectiveFleetPower(currentPirate.type) >= piratePower">⚔️ 유리한 전력</div>
+            <div class="text-[8px] text-rose-400/80 mb-1 text-center" v-else>⚠️ 전력 부족 — {{ shipTypeName(currentPirate.weakTo) }} 건조 필요</div>
+            <button class="btn btn-danger w-full text-xs py-2" @click="huntPirates($event)" :disabled="fleetPower<=0||combatCooldown>0">{{ combatCooldown>0 ? '재정비 '+fmtTime(combatCooldown) : '🚀 출격' }}</button>
+            <div class="text-[8px] text-amber-400/70 text-center mt-1">⏰ 다음 습격 {{ fmtTime(pirateAttackTimer) }}</div>
+            <div class="mt-2 max-h-20 overflow-y-auto text-[8px] leading-relaxed">
+              <div v-for="(l,i) in pirateLog" :key="i" :class="l.cls==='log-win'?'text-emerald-400':l.cls==='log-lose'?'text-rose-400':'text-slate-600'">{{ l.text }}</div>
+              <div v-if="pirateLog.length===0" class="text-slate-600">함대를 건조하세요</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: COLONY -->
+      <div v-if="activeTab==='colony'" class="space-y-3">
+        <div class="card card-accent py-2 px-3">
+          <div class="text-xs font-bold text-sky-300 mb-1">🏙️ 식민지 관리</div>
+          <div class="text-[9px] text-slate-500">각 식민지는 독립된 자원과 공장을 운영합니다. 운송선을 보내 본진으로 자원을 옮기세요.</div>
+          <div class="text-[8px] text-amber-400/80 mt-1">식민함선 {{ colonizer.count }}척 · 운송량 {{ colonizer.count * colonizer.level * 50 }}/회</div>
+        </div>
+
+        <div v-if="colonyCount === 0" class="card py-2 px-3 text-center">
+          <div class="text-sm text-slate-500">🌍 행성을 개척하여 식민지를 설립하세요!</div>
+          <div class="text-[9px] text-slate-600 mt-1">함대 → 탐험 탭에서 개척 가능</div>
+        </div>
+
+        <div v-for="c in visibleColonies" :key="c.planetId" class="card py-2 px-3" style="border-color:rgba(56,189,248,0.2)">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-sky-200">{{ c.name }}</span>
+            <span class="text-[9px] text-sky-400" v-if="c.transporting">🚀 운송중 {{ fmtTime(c.transportTime - c.transportProgress) }}</span>
+            <span class="text-[9px] text-slate-500" v-else>생산속도 ×{{ c.prodSpeed }}</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-1 mb-2">
+            <div v-for="f in c.factories" :key="f.id" class="bg-slate-900/60 rounded p-1.5 text-center text-[9px]">
+              <div>{{ colonyFactoryTypes[f.id].icon }} {{ colonyFactoryTypes[f.id].name }}</div>
+              <div class="text-purple-300" v-if="f.level > 0">LV {{ f.level }}</div>
+              <div class="text-slate-600" v-else>미건설</div>
+              <button class="btn btn-sm mt-1" :class="f.level >= 20 ? 'btn-ghost' : 'btn-primary'" style="font-size:7px;padding:2px 6px" @click="upgradeColonyFactory(c, f.id)" :disabled="!canUpgradeColonyFactory(c, f.id)">{{ f.level >= 20 ? 'MAX' : '⬆️ '+fmt(colonyUpgradeCost(f.level)) }}</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-1 text-[8px] mb-1">
+            <div v-for="(rate, k) in colonyResourceRate(c)" :key="k" class="text-emerald-400">
+              {{ {'metal':'⛏️','crystal':'💎','hydrogen':'⚡','plasma':'🔵','solar':'☀️','fission':'⚛️','fusion':'🔥'}[k] }} +{{ fmt(rate) }}/s
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-1 text-[8px] mb-2">
+            <span v-for="k in ['metal','crystal','hydrogen','plasma','solar','fission','fusion']" :key="k" class="bg-slate-900/60 rounded px-1.5 py-0.5" v-if="c.resources[k] > 0">
+              {{ {'metal':'⛏️','crystal':'💎','hydrogen':'⚡','plasma':'🔵','solar':'☀️','fission':'⚛️','fusion':'🔥'}[k] }} {{ fmt(c.resources[k]) }}
+            </span>
+          </div>
+
+          <button class="btn btn-sm btn-warning w-full text-[9px]" @click="startTransport(c)" :disabled="c.transporting || colonizer.count <= 0">
+            {{ c.transporting ? '🚀 운송중...' : '📦 본진으로 운송' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB: RESEARCH -->
+      <div v-if="activeTab==='research'" class="space-y-2">
+        <div class="text-[9px] text-slate-500 mb-1">🔬 연구하여 영구 효과를 얻으세요 (선행 연구 필요)</div>
+        <div v-for="r in research" :key="r.id" class="card py-2 px-3" :class="{'opacity-30': r.completed, 'border-amber-500/30': r.inProgress, 'border-slate-700': !r.completed && !r.inProgress && researchStatus(r).indexOf('필요')!==-1}">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-xs font-bold" :class="r.completed ? 'text-emerald-400' : 'text-slate-200'">{{ r.icon }} {{ r.name }}</span>
+              <div class="text-[9px] text-slate-500">{{ r.desc }}</div>
+              <div class="text-[8px] text-slate-600 mt-px" v-if="r.requires && !r.completed">🔗 필요: {{ (research.find(x=>x.id===r.requires)||{}).name }}</div>
+            </div>
+            <div v-if="r.inProgress" class="text-right flex-shrink-0 ml-2">
+              <div class="text-[10px] text-amber-300">{{ fmtTime(r.remaining) }}</div>
+              <div class="progress-bar w-16 mt-1"><div class="progress-fill bg-amber-400" :style="{width: (100-(r.remaining/r.time*100))+'%'}"></div></div>
+            </div>
+            <div v-else-if="!r.completed">
+              <button class="btn btn-sm" :class="researchStatus(r)==='연구 가능' ? 'btn-primary' : 'btn-ghost'" @click="startResearch(r)" :disabled="!canResearch(r)">{{ researchStatus(r) }}</button>
+              <div class="text-[7px] text-slate-600 text-right mt-px"><span v-for="(v,k) in r.cost">· {{ $RES_ICO[k]||k }} {{ fmt(v) }}</span></div>
+            </div>
+            <div v-else class="text-emerald-400 text-[11px] flex-shrink-0">✅</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: INFO -->
+      <div v-if="activeTab==='info'" class="space-y-2">
+        <div class="card card-accent py-2 px-3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-amber-400">🎯 메인 목표</span>
+            <span class="text-[9px] text-slate-500">{{ fmt(totalWealth) }} / {{ fmt(mainGoal) }}</span>
+          </div>
+          <div class="progress-bar mb-1"><div class="progress-fill" :style="{width: Math.min(100, totalWealth.toNumber()/mainGoal*100)+'%', background:'linear-gradient(90deg,#fbbf24,#f97316)'}"></div></div>
+          <div class="text-[9px] text-slate-500">우주 억만장자 달성 시 엔딩</div>
+        </div>
+
+        <div class="card py-2 px-3">
+          <div class="text-xs font-bold text-slate-200 mb-2">📊 내 정보</div>
+          <div class="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px]">
+            <div class="text-slate-500">총 자산</div><div class="text-slate-200 font-bold text-right">{{ fmt(totalWealth) }}</div>
+            <div class="text-slate-500">소득 배수</div><div class="text-slate-200 text-right">×{{ fmt(effectiveIncomeMult) }}</div>
+            <div class="text-slate-500">보유 건물</div><div class="text-slate-200 text-right">{{ ownedBuildingTypes }}/{{ buildings.length }}종</div>
+            <div class="text-slate-500">총 함선</div><div class="text-slate-200 text-right">{{ totalShips }}척</div>
+            <div class="text-slate-500">함대 전투력</div><div class="text-slate-200 text-right">{{ fmt(fleetPower) }}</div>
+            <div class="text-slate-500">식민 함선</div><div class="text-slate-200 text-right">{{ colonizer.count }}척 (LV{{ colonizer.level }})</div>
+            <div class="text-slate-500">행성 개척</div><div class="text-slate-200 text-right">{{ planets.filter(p=>p.explorationLevel>0).length }}/{{ planets.length }}</div>
+            <div class="text-slate-500">해적 웨이브</div><div class="text-slate-200 text-right">{{ pirateWave }}</div>
+          </div>
+        </div>
+
+        <div class="card py-2 px-3">
+          <div class="text-xs font-bold text-purple-300 mb-2">🏗️ 내 건물</div>
+          <div class="space-y-1" v-if="buildings.filter(b=>b.level>0).length > 0">
+            <div v-for="b in buildings.filter(b=>b.level>0)" :key="b.id" class="flex items-center justify-between text-[10px] bg-slate-900/50 rounded px-2 py-1">
+              <span>{{ b.icon }} {{ b.name }}</span>
+              <span class="text-purple-300">LV {{ b.level }}</span>
+              <span class="text-emerald-300">{{ fmt(b.income * b.level * effectiveIncomeMult * (1 + 0.12*(b.level-1))) }}/s</span>
+            </div>
+          </div>
+          <div v-else class="text-[9px] text-slate-600">건설된 건물이 없습니다</div>
+        </div>
+
+        <div class="card py-2 px-3">
+          <div class="text-xs font-bold text-sky-300 mb-2">🚀 내 함대</div>
+          <div class="space-y-1" v-if="totalShips > 0 || colonizer.count > 0">
+            <div v-for="s in shipTypes.filter(st=>ships[st.type].count>0)" :key="s.type" class="flex items-center justify-between text-[10px] bg-slate-900/50 rounded px-2 py-1">
+              <span>{{ s.icon }} {{ s.name }}</span>
+              <span class="text-sky-300">{{ ships[s.type].count }}척</span>
+              <span class="text-purple-300">LV {{ ships[s.type].level }}</span>
+            </div>
+            <div v-if="colonizer.count>0" class="flex items-center justify-between text-[10px] bg-slate-900/50 rounded px-2 py-1">
+              <span>🛸 식민 함선</span>
+              <span class="text-amber-300">{{ colonizer.count }}척</span>
+              <span class="text-purple-300">LV {{ colonizer.level }}</span>
+            </div>
+          </div>
+          <div v-else class="text-[9px] text-slate-600">보유한 함선이 없습니다</div>
+        </div>
+
+        <div class="card py-2 px-3">
+          <div class="flex items-center justify-between mb-1"><span class="text-xs font-bold text-slate-200">🏆 업적</span><span class="text-[9px] text-slate-500">{{ Object.keys(achieved).length }}/{{ achievements.length }}</span></div>
+          <div class="grid grid-cols-2 gap-1">
+            <div v-for="a in achievements" :key="a.id" class="text-[9px] p-0.5 rounded" :class="achieved[a.id] ? 'text-emerald-400' : 'text-slate-600'">{{ achieved[a.id] ? '🏆' : '🔒' }} {{ a.name }}</div>
+          </div>
+        </div>
+
+        <div class="card py-2 px-3">
+          <div class="flex items-center justify-between mb-1"><span class="text-xs font-bold text-slate-200">🎒 아이템</span><button class="btn btn-sm btn-ghost" @click="claimFree" :disabled="freeDispenserCD>0">{{ freeDispenserCD>0 ? fmtTime(freeDispenserCD) : '🎁' }}</button></div>
+          <div class="flex gap-1.5 flex-wrap">
+            <div v-for="it in itemDefs" :key="it.id" class="flex items-center gap-1 bg-slate-900/50 rounded px-2 py-1 text-[10px]"><span>{{ it.icon }}</span><span class="text-slate-300">{{ it.name }}</span><span class="text-slate-500">×{{ itemCount(it.id) }}</span><button class="btn btn-sm btn-success" style="padding:1px 6px;font-size:8px" @click="useItem(it.id)" :disabled="itemCount(it.id)<=0">사용</button></div>
+          </div>
+        </div>
+
+        <!-- 치트 버튼 -->
+        <button class="btn btn-sm btn-cheat w-full text-xs py-2" @click="toggleCheat">⚡ 치트 메뉴</button>
+
+        <!-- 치트 패널 -->
+        <div v-if="cheatOpen" class="card py-2 px-3" style="border-color:rgba(124,58,237,0.5)">
+          <div class="text-xs font-bold text-purple-400 mb-2">⚡ 치트</div>
+          <div class="cheat-panel">
+            <button class="btn btn-sm btn-cheat" @click="cheatMoney">💰 돈 ×100</button>
+            <button class="btn btn-sm btn-cheat" @click="cheatResources">📦 자원 +10000</button>
+            <button class="btn btn-sm btn-cheat" @click="cheatSpeed">⚡ 속도 ×{{ speedMult >= 100 ? '1' : speedMult >= 10 ? '100' : '10' }}</button>
+            <button class="btn btn-sm btn-cheat" @click="cheatReset" style="background:#dc2626">🔄 초기화</button>
+          </div>
+        </div>
+        <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.3)">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-300">✨ 환생</span>
+            <span class="text-[10px] text-amber-300" v-if="prestigePoints > 0">{{ prestigePoints }}P</span>
+          </div>
+          <div class="text-[9px] text-slate-500 mt-1" v-if="prestigePoints > 0">수입 보너스: +{{ Math.round(prestigeBonus*100) }}%</div>
+          <div class="text-[9px] text-slate-500 mt-1" v-else>모든 것을 초기화하고 영구 보너스를 얻습니다.</div>
+          <button class="btn btn-sm btn-warning mt-1" @click="prestige">✨ 환생 (총 자산 100k 이상)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAV BAR -->
+    <div class="nav-bar">
+      <div class="nav-item relative" :class="{active: activeTab==='buildings'}" @click="activeTab='buildings'"><span class="nav-icon">🏗️</span><div>기지</div><span class="nav-badge" v-if="buyableCount">{{ buyableCount }}</span></div>
+      <div class="nav-item" :class="{active: activeTab==='fleet'}" @click="activeTab='fleet'"><span class="nav-icon">🚀</span><div>함대</div></div>
+      <div class="nav-item" :class="{active: activeTab==='colony'}" @click="activeTab='colony'"><span class="nav-icon">🏙️</span><div>식민지</div><span class="nav-badge" v-if="colonyCount">{{ colonyCount }}</span></div>
+      <div class="nav-item" :class="{active: activeTab==='research'}" @click="activeTab='research'"><span class="nav-icon">🔬</span><div>연구</div></div>
+      <div class="nav-item" :class="{active: activeTab==='info'}" @click="activeTab='info'"><span class="nav-icon">👤</span><div>정보</div></div>
+    </div>
+
+    <!-- OFFLINE REPORT -->
+    <div class="overlay" v-if="offlineReport" @click.self="dismissOffline">
+      <div class="modal"><div class="text-sm font-bold text-sky-300 mb-2">🛰️ 복귀 환영!</div><div class="text-xs text-slate-300 mb-2">{{ fmtTime(offlineReport.seconds) }} 동안</div><div class="text-sm text-emerald-300 font-bold mb-3">💰 +{{ fmt(offlineReport.gained) }}</div><button class="btn btn-md btn-primary w-full" @click="dismissOffline">수령</button></div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" v-if="achievementToast">{{ achievementToast }}</div>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      mixins: [window.GameSystemsMixin],
+      mounted() {
+        this.loadSystems(); this.applyOffline(); this.recalcMaxes();
+        this.gameTick(); setInterval(this.gameTick.bind(this), 100);
+      },
+      methods: {
+        gameTick() {
+          this.tickSystems(0.1);
+          if ((this._saveTick = (this._saveTick || 0) + 1) % 10 === 0) this.saveSystems();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

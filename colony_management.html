@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>식민지 관리 사령부</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #0c101b; color: white; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .colony-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 20px; }
+        .card { background: #151f32; padding: 16px; border-radius: 12px; border: 1px solid #1e293b; }
+        .card.active { border-color: #38bdf8; }
+        .btn { background: #2563eb; padding: 6px 14px; color: white; border-radius: 8px; text-decoration: none; font-size: 12px; border: none; cursor: pointer; }
+        .btn-back { background: #334155; padding: 8px 16px; color: white; border-radius: 8px; text-decoration: none; font-size: 13px; }
+        .res-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+        .res-tag { background: rgba(15,23,42,0.6); padding: 3px 8px; border-radius: 6px; font-size: 11px; }
+        .factory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0; }
+        .factory { background: rgba(15,23,42,0.5); padding: 6px; border-radius: 6px; text-align: center; font-size: 11px; }
+        .factory .lv { color: #a78bfa; font-size: 13px; font-weight: bold; }
+        .no-colony { text-align: center; padding: 40px; color: #64748b; }
+        .res-icon { margin-right: 2px; }
+    </style>
+</head>
+<body>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <h1 style="font-size:18px;">🪐 식민지 관리 사령부</h1>
+        <a href="index.html" class="btn-back">⬅ 메인으로</a>
+    </div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:16px;">식민지 자원 현황 및 공장 관리 (실시간)</div>
+    <div id="app">
+        <div class="no-colony" v-if="colonies.length === 0">
+            <div style="font-size:32px;margin-bottom:8px;">🏗️</div>
+            <div>아직 개척된 식민지가 없습니다.</div>
+            <div style="font-size:11px;color:#64748b;margin-top:4px;">게임에서 행성을 개척하면 이곳에 표시됩니다.</div>
+        </div>
+        <div class="colony-grid" v-else>
+            <div v-for="c in colonies" :key="c.planetId" class="card" :class="{active: hasProduction(c)}">
+                <div style="font-size:14px;font-weight:bold;color:#7dd3fc;">🏙️ {{ c.name }}</div>
+                <div style="font-size:10px;color:#64748b;">생산속도 ×{{ c.prodSpeed }}</div>
+                <div class="res-grid">
+                    <div v-for="(val, k) in c.resources" :key="k" class="res-tag" v-if="val > 0" :style="{color: {'metal':'#34d399','crystal':'#a78bfa','hydrogen':'#38bdf8','plasma':'#f472b6','solar':'#fbbf24','fission':'#fb7185','fusion':'#e879f9'}[k] || '#94a3b8'}">
+                        <span class="res-icon">{{ {'metal':'⛏️','crystal':'💎','hydrogen':'⚡','plasma':'🔵','solar':'☀️','fission':'⚛️','fusion':'🔥'}[k] }}</span>
+                        {{ formatNum(val) }}
+                    </div>
+                    <div v-if="Object.values(c.resources).every(v => v === 0)" style="font-size:10px;color:#64748b;">자원 없음</div>
+                </div>
+                <div class="factory-grid">
+                    <div v-for="f in c.factories" :key="f.id" class="factory">
+                        <div>{{ ['⛏️','💎','⚡','🔵','☀️','⚛️'][f.id] || '🏭' }}</div>
+                        <div class="lv">{{ f.level > 0 ? 'LV '+f.level : '0' }}</div>
+                        <div style="font-size:8px;color:#64748b;">{{ ['메탈','크리스탈','수소','플라즈마','태양열','핵분열'][f.id] }}</div>
+                    </div>
+                </div>
+                <div v-if="c.transporting" style="font-size:10px;color:#fbbf24;margin-top:4px;">
+                    🚀 운송중... {{ formatTime(c.transportTime - c.transportProgress) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="vue.min.js"></script>
+    <script>
+        const RES_COLORS = { metal:'#34d399', crystal:'#a78bfa', hydrogen:'#38bdf8', plasma:'#f472b6', solar:'#fbbf24', fission:'#fb7185', fusion:'#e879f9' };
+        const RES_ICONS = { metal:'⛏️', crystal:'💎', hydrogen:'⚡', plasma:'🔵', solar:'☀️', fission:'⚛️', fusion:'🔥' };
+
+        new Vue({
+            el: '#app',
+            data: { colonies: [] },
+            methods: {
+                loadColonies() {
+                    try {
+                        const raw = localStorage.getItem('systemsState');
+                        if (!raw) return;
+                        const o = JSON.parse(raw);
+                        if (o.colonies) this.colonies = o.colonies;
+                    } catch(e) {}
+                },
+                hasProduction(c) {
+                    return c.factories && c.factories.some(f => f.level > 0);
+                },
+                formatNum(n) {
+                    if (!n || isNaN(n)) return '0';
+                    const abs = Math.abs(n);
+                    if (abs >= 1e12) return (n/1e12).toFixed(1)+'T';
+                    if (abs >= 1e9) return (n/1e9).toFixed(1)+'B';
+                    if (abs >= 1e6) return (n/1e6).toFixed(1)+'M';
+                    if (abs >= 1e3) return (n/1e3).toFixed(1)+'k';
+                    return Math.floor(n).toString();
+                },
+                formatTime(s) {
+                    s = Math.max(0, Math.ceil(s || 0));
+                    const m = Math.floor(s / 60), sec = s % 60;
+                    return m > 0 ? m + ':' + String(sec).padStart(2,'0') : sec + 's';
+                }
+            },
+            mounted() {
+                this.loadColonies();
+                setInterval(() => this.loadColonies(), 1000);
+            }
+        });
+    </script>
+</body>
+</html>

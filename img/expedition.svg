@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs><linearGradient id="exp_bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c101b"/><stop offset="1" stop-color="#1a1a2e"/></linearGradient></defs>
+  <rect width="300" height="200" fill="url(#exp_bg)"/>
+  <ellipse cx="150" cy="200" rx="200" ry="60" fill="#0f172a"/>
+  <polygon points="150,20 120,100 180,100" fill="#334155" stroke="#475569" stroke-width="1"/>
+  <rect x="115" y="100" width="70" height="40" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1"/>
+  <rect x="130" y="110" width="40" height="20" rx="3" fill="#0f172a"/>
+  <polygon points="90,85 40,100 115,100" fill="#475569" stroke="#64748b" stroke-width="1"/>
+  <polygon points="210,85 260,100 185,100" fill="#475569" stroke="#64748b" stroke-width="1"/>
+  <circle cx="150" cy="140" r="15" fill="#f59e0b" opacity="0.15"/>
+  <circle cx="150" cy="140" r="8" fill="#f59e0b" opacity="0.1"/>
+  <rect x="60" y="140" width="180" height="6" rx="3" fill="#f59e0b" opacity="0.08"/>
+  <text x="150" y="175" text-anchor="middle" fill="#64748b" font-size="10" font-family="sans-serif">식민지 개척선 | Expedition</text>
+</svg>
