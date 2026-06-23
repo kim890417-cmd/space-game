@@ -211,7 +211,7 @@
       <div v-if="activeTab==='fleet'" class="space-y-3">
         <div class="fleet-subnav">
           <div class="fleet-subnav-item" :class="{active: fleetActiveTab==='fleet_build'}" @click="fleetActiveTab='fleet_build'">🚀 함선</div>
-          <div class="fleet-subnav-item" :class="{active: fleetActiveTab==='fleet_explore'}" @click="fleetActiveTab='fleet_explore'">🌍 탐험</div>
+          <div class="fleet-subnav-item" :class="{active: fleetActiveTab==='fleet_systems'}" @click="fleetActiveTab='fleet_systems'">🌌 성계</div>
           <div class="fleet-subnav-item" :class="{active: fleetActiveTab==='fleet_combat'}" @click="fleetActiveTab='fleet_combat'">⚔️ 전투</div>
         </div>
 
@@ -315,57 +315,86 @@
           </div>
         </div>
 
-        <!-- 행성 탐험 -->
-        <div v-if="fleetActiveTab==='fleet_explore'" class="space-y-2">
+        <!-- 행성계 지도 -->
+        <div v-if="fleetActiveTab==='fleet_systems'" class="space-y-2">
           <div class="card py-2 px-3">
-            <div class="text-xs font-bold text-amber-300 mb-2">🌍 행성 탐사</div>
-            <div class="text-[9px] text-slate-500 mb-2">정찰기로 행성을 탐사하세요. 발견 후 식민함선을 보내 점령할 수 있습니다.<br>각 행성은 고유 특성이 있습니다.</div>
-            <div class="flex gap-2 text-[9px] mb-1">
-              <span class="text-sky-300">🛰️ 정찰기 {{ ships.scout?.count || 0 }}기</span>
-              <span class="text-amber-300">🛸 식민함선 {{ colonizer.count }}척</span>
-            </div>
-            <div class="text-[8px] text-slate-600" v-if="fameMilestones.filter(m=>m.reached).length < 4">🔒 새 행성은 명성 업적 달성 시 개방됩니다</div>
+            <div class="text-xs font-bold text-amber-300 mb-2">🌌 행성계 지도</div>
+            <div class="text-[9px] text-slate-500 mb-2">인접 성계를 정찰하고 개척하여 영토를 확장하세요.<br>해적 성계는 함대 전투력으로 점령할 수 있습니다.</div>
           </div>
 
-          <div v-if="exploring && !exploreChoice" class="card py-2 px-3" style="border-color:rgba(250,204,21,0.5)">
-            <div class="text-xs font-bold text-yellow-300 mb-1">🚀 {{ explorePlanet.name }} 탐사중...</div>
-            <div class="text-[9px] text-cyan-300/80 italic mb-1" v-if="exploreEvent">"{{ exploreEvent }}"</div>
-            <div class="text-[9px] text-slate-400 mb-1">성공 확률 {{ Math.round(exploreChance*100) }}%</div>
-            <div class="explore-bar"><div class="explore-fill bg-yellow-400" :style="{width: ((15-exploreTimer)/15*100)+'%'}"></div></div>
-            <div class="text-[9px] text-slate-500 mt-1">{{ fmtTime(exploreTimer) }}</div>
-          </div>
-          <div v-if="exploring && exploreChoice" class="card py-2 px-3" style="border-color:rgba(250,204,21,0.5);background:rgba(250,204,21,0.08)">
-            <div class="text-xs font-bold text-yellow-300 mb-1">🚀 {{ explorePlanet.name }} 탐사중...</div>
-            <div class="text-[10px] text-amber-200 mb-2">"{{ exploreChoice.text }}"</div>
-            <div class="flex gap-2">
-              <button class="btn btn-sm flex-1" style="background:#059669;color:#fff;font-size:9px" @click="resolveExploreChoice(0)">{{ exploreChoice.optA.text }}</button>
-              <button class="btn btn-sm flex-1" style="background:#dc2626;color:#fff;font-size:9px" @click="resolveExploreChoice(1)">{{ exploreChoice.optB.text }}</button>
-            </div>
-          </div>
-
-          <div v-for="p in visiblePlanets" :key="p.id" class="card py-2 px-3" :class="{'opacity-70': p.explorationLevel >= p.maxLevel}" :style="p.explorationLevel > 0 ? 'border-color:rgba(52,211,153,0.3)' : ''">
+          <div v-for="sys in visibleStarSystems" :key="sys.id" class="card py-2 px-3"
+            :style="sys.status==='colonized'?'border-color:rgba(52,211,153,0.4)':sys.status==='pirate'?'border-color:rgba(251,113,133,0.3)':sys.status==='owned'?'border-color:rgba(250,204,21,0.3)':''">
             <div class="flex gap-2 items-center">
               <div class="flex-shrink-0" style="width:80px">
-                <img :src="p.img" :alt="p.name" class="planet-img" onerror="this.src='https://placehold.co/80x64/0f172a/38bdf8?text='+encodeURIComponent(p.name)">
+                <img :src="sys.img" :alt="sys.name" class="planet-img" onerror="this.src='https://placehold.co/80x64/0f172a/38bdf8?text='+encodeURIComponent(sys.name)">
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold" :class="p.explorationLevel > 0 ? 'text-emerald-400' : 'text-slate-200'">{{ p.icon }} {{ p.name }}</span>
-                  <span class="text-[9px]" :class="p.explorationLevel > 0 ? 'text-emerald-400' : 'text-slate-500'">{{ p.explorationLevel > 0 ? '탐사 LV '+p.explorationLevel+'/'+p.maxLevel : '🌋 미탐사' }}</span>
+                  <span class="text-xs font-bold" :class="sys.status==='colonized'?'text-emerald-400':sys.status==='owned'?'text-yellow-300':sys.status==='pirate'?'text-rose-400':'text-slate-200'">
+                    {{ sys.icon }} {{ sys.name }}
+                  </span>
+                  <span class="text-[9px]" :class="sys.status==='colonized'?'text-emerald-400':sys.status==='owned'?'text-yellow-300':sys.status==='pirate'?'text-rose-400':'text-slate-500'">
+                    <template v-if="sys.status==='colonized'">✅ 개척 완료</template>
+                    <template v-else-if="sys.status==='owned'">🏠 본진</template>
+                    <template v-else-if="sys.status==='pirate'">☠️ 해적</template>
+                    <template v-else-if="sys.scouting">🛰️ 정찰중</template>
+                    <template v-else-if="sys.colonizing">🏗️ 개척중</template>
+                    <template v-else>❓ 미탐사</template>
+                  </span>
                 </div>
-                <div class="text-[9px] text-slate-500">{{ p.bonusDesc }}</div>
-                <div class="text-[8px] text-amber-300/80 mt-px">특성: {{ p.specialty }}</div>
-                <div v-if="p.explorationLevel < p.maxLevel && !exploring" class="mt-1">
-                  <div class="flex items-center gap-2">
-                    <span class="text-[9px] text-amber-400">성공 {{ Math.round(exploreChanceFor(p)*100) }}%</span>
-                    <button class="btn btn-sm btn-warning" @click="startExplore(p)" :disabled="!canExplore(p)">🛰️ 탐사</button>
+
+                <div class="text-[9px] text-slate-500" v-if="sys.status!=='unknown' || sys.scouting">{{ sys.bonusDesc }}</div>
+
+                <!-- 정찰 진행바 -->
+                <div v-if="sys.scouting" class="mt-1">
+                  <div class="flex items-center justify-between text-[9px]">
+                    <span class="text-cyan-300" v-if="sys.status==='pirate'">⚔️ 공격 진행중</span>
+                    <span class="text-cyan-300" v-else>🛰️ 정찰 진행중</span>
+                    <span class="text-slate-400">{{ fmtTime(sys.scoutTime - sys.scoutProgress) }}</span>
                   </div>
+                  <div class="progress-bar mt-0.5"><div class="progress-fill bg-cyan-400" :style="{width: (sys.scoutProgress/sys.scoutTime*100)+'%'}"></div></div>
                 </div>
-                <div v-else-if="p.explorationLevel >= p.maxLevel" class="mt-1 text-[9px] text-emerald-400">✅ 최대 탐사 완료!</div>
-                <div v-if="p.explorationLevel >= 1 && canEstablishColony(p)" class="mt-1">
-                  <button class="btn btn-sm btn-success" @click="establishColony(p)">🏙️ 식민지 건설 (🛸 1척)</button>
+
+                <!-- 개척 진행바 -->
+                <div v-if="sys.colonizing" class="mt-1">
+                  <div class="flex items-center justify-between text-[9px]">
+                    <span class="text-amber-300">🏗️ 개척 진행중</span>
+                    <span class="text-slate-400">{{ fmtTime(sys.colonizeTime - sys.colonizeProgress) }}</span>
+                  </div>
+                  <div class="progress-bar mt-0.5"><div class="progress-fill bg-amber-400" :style="{width: (sys.colonizeProgress/sys.colonizeTime*100)+'%'}"></div></div>
                 </div>
-                <div v-else-if="p.explorationLevel >= 1 && colonizer.count <= 0" class="mt-1 text-[9px] text-slate-500">🛸 식민함선 필요</div>
+
+                <!-- 해적 정보 -->
+                <div v-if="sys.status==='pirate' && !sys.scouting" class="text-[8px] text-rose-400/80 mt-0.5">☠️ 해적 전투력 {{ sys.piratePower }} · 내 함대 {{ fmt(fleetPower) }}</div>
+
+                <!-- 액션 버튼 -->
+                <div v-if="!sys.scouting && !sys.colonizing" class="flex flex-wrap gap-1 mt-1">
+                  <button v-if="sys.status==='unknown'" class="btn btn-sm btn-primary" style="font-size:8px;padding:2px 8px" @click="scoutSystem(sys)" :disabled="!canScoutSystem(sys)">
+                    🛰️ 정찰 ({{ fmtTime(sys.scoutTime) }})
+                  </button>
+                  <button v-if="sys.status==='pirate'" class="btn btn-sm btn-danger" style="font-size:8px;padding:2px 8px" @click="attackSystem(sys)" :disabled="!canAttackSystem(sys)">
+                    ⚔️ 공격 ({{ sys.piratePower }})
+                  </button>
+                  <button v-if="sys.status==='scouted'" class="btn btn-sm btn-success" style="font-size:8px;padding:2px 8px" @click="colonizeSystem(sys)" :disabled="!canColonizeSystem(sys)">
+                    🏙️ 개척 (🛸 1척)
+                  </button>
+                </div>
+
+                <!-- 필요 조건 -->
+                <div v-if="sys.status==='unknown' && !sys.scouting" class="text-[7px] text-slate-600 mt-0.5">
+                  <span v-if="sys.awarenessNeeded > awareness">📡 명성 {{ sys.awarenessNeeded }} 필요 · </span>
+                  <span v-if="canScoutSystem(sys)">정찰 가능</span>
+                  <span v-else-if="(ships.scout?.count||0)<=0">🛰️ 정찰기 필요</span>
+                </div>
+                <div v-if="sys.status==='scouted' && !sys.colonizing" class="text-[7px] text-slate-600 mt-0.5">
+                  <span v-if="canColonizeSystem(sys)">개척 가능</span>
+                  <span v-else-if="colonizer.count<=0">🛸 식민함선 필요</span>
+                  <span v-else>자원 부족</span>
+                </div>
+                <div v-if="sys.status==='pirate' && !sys.scouting" class="text-[7px] text-slate-600 mt-0.5">
+                  <span v-if="canAttackSystem(sys)">🚀 점령 가능</span>
+                  <span v-else>⚔️ 함대 전투력 {{ sys.piratePower }} 필요</span>
+                </div>
               </div>
             </div>
           </div>
@@ -420,7 +449,7 @@
 
         <div v-if="colonyCount === 0" class="card py-2 px-3 text-center">
           <div class="text-sm text-slate-500">🌍 행성을 개척하여 식민지를 설립하세요!</div>
-          <div class="text-[9px] text-slate-600 mt-1">함대 → 탐험 탭에서 개척 가능</div>
+          <div class="text-[9px] text-slate-600 mt-1">함대 → 성계 탭에서 개척 가능</div>
         </div>
 
         <div v-for="c in visibleColonies" :key="c.planetId" class="card py-2 px-3" :style="'border-color:'+(colonyTier(c)>=4?'rgba(250,204,21,0.5)':colonyTier(c)>=3?'rgba(56,189,248,0.4)':colonyTier(c)>=2?'rgba(52,211,153,0.3)':'rgba(56,189,248,0.2)')">

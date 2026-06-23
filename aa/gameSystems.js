@@ -100,7 +100,14 @@ const BUILDING_TEMPLATES = [
   { planetId: 'io', name: '이오 개척지', factorySlots: 6, prodSpeed: 1.0 },
   { planetId: 'titan', name: '타이탄 개척지', factorySlots: 6, prodSpeed: 1.1 },
   { planetId: 'kepler', name: '케플러-22b 개척지', factorySlots: 6, prodSpeed: 1.3 },
-  { planetId: 'andromeda', name: '안드로메다 전초기지', factorySlots: 6, prodSpeed: 1.5 }
+  { planetId: 'andromeda', name: '안드로메다 전초기지', factorySlots: 6, prodSpeed: 1.5 },
+  { planetId: 'alpha_centauri', name: 'α 센타우루스 개척지', factorySlots: 6, prodSpeed: 1.0 },
+  { planetId: 'sirius', name: '시리우스 개척지', factorySlots: 6, prodSpeed: 1.1 },
+  { planetId: 'barnard', name: '버나드 개척지', factorySlots: 6, prodSpeed: 1.2 },
+  { planetId: 'polaris', name: '폴라리스 개척지', factorySlots: 6, prodSpeed: 1.0 },
+  { planetId: 'betelgeuse', name: '베텔게우스 개척지', factorySlots: 6, prodSpeed: 1.2 },
+  { planetId: 'pirate_base', name: '해적 근거지 개척지', factorySlots: 6, prodSpeed: 1.4 },
+  { planetId: 'titan_system', name: '타이탄 성계 개척지', factorySlots: 6, prodSpeed: 1.8 }
 ];
 
 const COLONY_FACTORY_TYPES = [
@@ -131,6 +138,18 @@ const EXPLORE_CHOICES = [
   { id: 'space_wreck', text: '💫 거대한 우주 잔해 발견!', optA: { text: '🛠️ 수색한다', risk: 0.3 }, optB: { text: '🚀 진행한다', risk: 0 } },
   { id: 'energy_anomaly', text: '⚡ 에너지 변칙 감지!', optA: { text: '🧪 흡수한다', risk: 0.35 }, optB: { text: '⚠️ 우회한다', risk: 0 } }
 ];
+  const STAR_SYSTEMS = [
+    { id: 'sol', name: '태양계', icon: '☀️', img: 'img/system-sol.jpg', parent: null, status: 'owned', awarenessNeeded: 0, scoutTime: 0, colonizeCost: null, colonizeTime: 0, piratePower: null, bonusDesc: '본진 — 모든 것의 시작', planetId: null },
+    { id: 'alpha_centauri', name: 'α 센타우루스', icon: '⭐', img: 'img/system-alpha-centauri.jpg', parent: 'sol', status: 'unknown', awarenessNeeded: 50, scoutTime: 30, colonizeCost: { metal: 5000, crystal: 2000 }, colonizeTime: 60, piratePower: null, bonusDesc: '메탈 생산 +15%', planetId: 'alpha_centauri' },
+    { id: 'sirius', name: '시리우스', icon: '🔴', img: 'img/system-sirius.jpg', parent: 'sol', status: 'pirate', awarenessNeeded: 120, scoutTime: 30, colonizeCost: { metal: 10000, crystal: 4000, hydrogen: 1000 }, colonizeTime: 90, piratePower: 100, bonusDesc: '크리스탈 생산 +15%', planetId: 'sirius' },
+    { id: 'barnard', name: '버나드', icon: '🟤', img: 'img/system-barnard.jpg', parent: 'alpha_centauri', status: 'unknown', awarenessNeeded: 200, scoutTime: 40, colonizeCost: { metal: 15000, crystal: 6000, hydrogen: 2000 }, colonizeTime: 120, piratePower: null, bonusDesc: '수소 생산 +15%', planetId: 'barnard' },
+    { id: 'polaris', name: '폴라리스', icon: '💫', img: 'img/system-polaris.jpg', parent: 'sol', status: 'unknown', awarenessNeeded: 250, scoutTime: 45, colonizeCost: { metal: 20000, crystal: 8000, hydrogen: 3000 }, colonizeTime: 150, piratePower: null, bonusDesc: '연구속도 +20%, 인지도 +20%', planetId: 'polaris' },
+    { id: 'kepler', name: '케플러-22b', icon: '🟣', img: 'img/system-kepler.jpg', parent: 'sol', status: 'unknown', awarenessNeeded: 350, scoutTime: 50, colonizeCost: { metal: 30000, crystal: 12000, hydrogen: 5000, plasma: 2000 }, colonizeTime: 200, piratePower: null, bonusDesc: '모든 자원 생산 +20%', planetId: 'kepler' },
+    { id: 'betelgeuse', name: '베텔게우스', icon: '🔶', img: 'img/system-betelgeuse.jpg', parent: 'sirius', status: 'pirate', awarenessNeeded: 500, scoutTime: 50, colonizeCost: { metal: 50000, crystal: 20000, hydrogen: 8000, plasma: 3000 }, colonizeTime: 300, piratePower: 400, bonusDesc: '플라즈마 생산 +25%', planetId: 'betelgeuse' },
+    { id: 'pirate_base', name: '해적 근거지', icon: '☠️', img: 'img/system-pirate-base.jpg', parent: 'betelgeuse', status: 'pirate', awarenessNeeded: 700, scoutTime: 60, colonizeCost: { metal: 100000, crystal: 40000, hydrogen: 20000, plasma: 10000 }, colonizeTime: 500, piratePower: 1000, bonusDesc: '함대 전투력 +30%, 모든 수입 +10%', planetId: 'pirate_base' },
+    { id: 'andromeda', name: '안드로메다', icon: '🌌', img: 'img/system-andromeda.jpg', parent: 'kepler', status: 'unknown', awarenessNeeded: 900, scoutTime: 60, colonizeCost: { metal: 200000, crystal: 80000, hydrogen: 30000, plasma: 15000 }, colonizeTime: 600, piratePower: null, bonusDesc: '모든 수입 +40%', planetId: 'andromeda' },
+    { id: 'titan_system', name: '타이탄 성계', icon: '🪐', img: 'img/system-titan.jpg', parent: 'polaris', status: 'unknown', awarenessNeeded: 1500, scoutTime: 80, colonizeCost: { metal: 500000, crystal: 200000, hydrogen: 100000, plasma: 50000 }, colonizeTime: 1200, piratePower: null, bonusDesc: '함대 전투력 +50%, 모든 생산 +25%', planetId: 'titan_system' }
+  ];
   const PLANETS = [
     { id: 'earth', name: '지구', icon: '🌍', img: 'img/planet-terran.jpg', difficulty: 20, fameNeeded: 0,
       bonusDesc: '메탈 생산 +2% (최대 +40%)', bonusType: 'res', bonusRes: 'metal', bonusPerLevel: 0.02, maxLevel: 20,
@@ -252,6 +271,12 @@ const EXPLORE_CHOICES = [
         colonies: [],
         colonyFactoryTypes: COLONY_FACTORY_TYPES,
         colonyDetailPlanet: null,
+        starSystems: STAR_SYSTEMS.map(s => ({
+          ...s,
+          status: s.status || (s.id === 'sol' ? 'owned' : 'unknown'),
+          scouting: false, scoutProgress: 0,
+          colonizing: false, colonizeProgress: 0
+        })),
 
         cheatOpen: false,
         speedMult: 1,
@@ -352,42 +377,21 @@ const EXPLORE_CHOICES = [
         return '';
       },
       colonyCount() { return this.colonies.length; },
+      visibleStarSystems() {
+        return this.starSystems.filter(s => {
+          if (s.awarenessNeeded > this.awareness) return false;
+          if (s.id === 'sol') return true;
+          const parent = this.starSystems.find(p => p.id === s.parent);
+          return parent && (parent.status === 'owned' || parent.status === 'colonized');
+        });
+      },
       visibleColonies() {
         return this.colonies.filter(c => {
           const p = this.planets.find(x => x.id === c.planetId);
           return p && p.explorationLevel > 0;
         });
       },
-      colonyBuildings(c) {
-        if (!c || !c.factories) return [];
-        return c.factories.map((f, i) => ({
-          ...f,
-          template: this.colonyFactoryTypes[i] || this.colonyFactoryTypes[0]
-        }));
-      },
-      colonyResourceRate(c) {
-        if (!c || !c.factories) return {};
-        const rates = {};
-        const spec = SPECIALIZATIONS.find(s => s.id === c.specialization);
-        const specBonus = spec ? spec.prodBonus || 1 : 1;
-        const tier = this.colonyTier(c);
-        const tierB = [1, 1, 1.2, 1.5, 2.0][tier] || 1;
-        for (const f of c.factories) {
-          if (f.level <= 0) continue;
-          const t = this.colonyFactoryTypes[f.id] || this.colonyFactoryTypes[0];
-          if (!rates[t.res]) rates[t.res] = 0;
-          rates[t.res] += t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1) * specBonus * tierB;
-        }
-        return rates;
-      },
-      colonyTier(c) {
-        if (!c || !c.factories) return 1;
-        const totalLv = c.factories.reduce((s, f) => s + (f.level || 0), 0);
-        if (totalLv >= 60) return 4;
-        if (totalLv >= 30) return 3;
-        if (totalLv >= 10) return 2;
-        return 1;
-      }
+
     },
 
     methods: {
@@ -686,6 +690,110 @@ const EXPLORE_CHOICES = [
       cancelSpecialization() {
         this.colonySpecializing = null;
       },
+      colonyBuildings(c) {
+        if (!c || !c.factories) return [];
+        return c.factories.map((f, i) => ({
+          ...f,
+          template: this.colonyFactoryTypes[i] || this.colonyFactoryTypes[0]
+        }));
+      },
+      colonyResourceRate(c) {
+        if (!c || !c.factories) return {};
+        const rates = {};
+        const spec = SPECIALIZATIONS.find(s => s.id === c.specialization);
+        const specBonus = spec ? spec.prodBonus || 1 : 1;
+        const tier = this.colonyTier(c);
+        const tierB = [1, 1, 1.2, 1.5, 2.0][tier] || 1;
+        for (const f of c.factories) {
+          if (f.level <= 0) continue;
+          const t = this.colonyFactoryTypes[f.id] || this.colonyFactoryTypes[0];
+          if (!rates[t.res]) rates[t.res] = 0;
+          rates[t.res] += t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1) * specBonus * tierB;
+        }
+        return rates;
+      },
+      colonyTier(c) {
+        if (!c || !c.factories) return 1;
+        const totalLv = c.factories.reduce((s, f) => s + (f.level || 0), 0);
+        if (totalLv >= 60) return 4;
+        if (totalLv >= 30) return 3;
+        if (totalLv >= 10) return 2;
+        return 1;
+      },
+      canScoutSystem(sys) {
+        if (!sys || sys.id === 'sol' || sys.scouting || (sys.status !== 'unknown' && sys.status !== 'pirate')) return false;
+        if (sys.awarenessNeeded > this.awareness) return false;
+        return (this.ships.scout?.count || 0) > 0;
+      },
+      canAttackSystem(sys) {
+        if (!sys || sys.id === 'sol' || sys.scouting || sys.status !== 'pirate') return false;
+        if (sys.awarenessNeeded > this.awareness) return false;
+        return this.fleetPower >= (sys.piratePower || 0);
+      },
+      canColonizeSystem(sys) {
+        if (!sys || sys.id === 'sol' || sys.colonizing || sys.status !== 'scouted') return false;
+        if (this.colonizer.count <= 0) return false;
+        if (!sys.colonizeCost) return false;
+        if (this.colonies.some(c => c.planetId === sys.id)) return false;
+        for (const k in sys.colonizeCost) {
+          if (!this.resources[k] || this.resources[k].lt(sys.colonizeCost[k])) return false;
+        }
+        return true;
+      },
+      scoutSystem(sys) {
+        if (!this.canScoutSystem(sys)) return;
+        sys.scouting = true;
+        sys.scoutProgress = 0;
+        this.toast(`🛰️ ${sys.name} 정찰 시작 (${this.fmtTime(sys.scoutTime)})`);
+      },
+      attackSystem(sys) {
+        if (!this.canAttackSystem(sys)) return;
+        sys.scouting = true;
+        sys.scoutProgress = 0;
+        this.toast(`⚔️ ${sys.name} 공격 개시! (전투력 ${sys.piratePower})`);
+      },
+      colonizeSystem(sys) {
+        if (!this.canColonizeSystem(sys)) return;
+        for (const k in sys.colonizeCost) {
+          this.resources[k] = this.resources[k].sub(sys.colonizeCost[k]);
+        }
+        sys.colonizing = true;
+        sys.colonizeProgress = 0;
+        this.toast(`🏗️ ${sys.name} 개척 시작 (${this.fmtTime(sys.colonizeTime)})`);
+      },
+      tickStarSystems(dt) {
+        for (const sys of this.starSystems) {
+          if (sys.scouting) {
+            sys.scoutProgress += dt;
+            if (sys.scoutProgress >= sys.scoutTime) {
+              sys.scouting = false;
+              sys.scoutProgress = 0;
+              if (sys.status === 'pirate') {
+                sys.status = 'scouted';
+                this.toast(`⚔️ ${sys.name} 점령 성공! 이제 개척 가능`);
+                this.awareness += Math.floor((sys.piratePower || 0) / 10);
+              } else {
+                sys.status = 'scouted';
+                this.toast(`🛰️ ${sys.name} 정찰 완료! (${sys.bonusDesc})`);
+                this.awareness += Math.floor(sys.awarenessNeeded / 10);
+              }
+            }
+          }
+          if (sys.colonizing) {
+            sys.colonizeProgress += dt;
+            if (sys.colonizeProgress >= sys.colonizeTime) {
+              sys.colonizing = false;
+              sys.colonizeProgress = 0;
+              sys.status = 'colonized';
+              this.colonySpecializing = sys;
+            }
+          }
+        }
+      },
+      starSystemHasBonus(sys) {
+        if (!sys || sys.id === 'sol') return false;
+        return sys.status === 'colonized';
+      },
       startExplore(p) {
         if (!this.canExplore(p)) return;
         this.exploring = true; this.explorePlanet = p;
@@ -924,6 +1032,9 @@ const EXPLORE_CHOICES = [
         const transportBonus = spec ? spec.transportBonus || 1 : 1;
         const maxCapacity = this.colonizer.count * this.colonizer.level * 50 * transportBonus;
         const allRes = ['metal','crystal','hydrogen','plasma','solar','fission','fusion'];
+        const hydroCost = Math.ceil(maxCapacity * 0.001);
+        if (this.resources.hydrogen.lt(hydroCost)) { return; }
+        this.resources.hydrogen = this.resources.hydrogen.sub(hydroCost);
         for (const k of allRes) {
           const avail = Math.floor(colony.resources[k] || 0);
           if (avail > 0) {
@@ -935,10 +1046,7 @@ const EXPLORE_CHOICES = [
             }
           }
         }
-        if (total <= 0) { return; }
-        const hydroCost = Math.ceil(total * 0.001);
-        if (this.resources.hydrogen.lt(hydroCost)) { return; }
-        this.resources.hydrogen = this.resources.hydrogen.sub(hydroCost);
+        if (total <= 0) { this.resources.hydrogen = this.resources.hydrogen.add(hydroCost); return; }
         colony.transporting = true;
         colony.transportProgress = 0;
         const tier = this.colonyTier(colony);
@@ -1239,6 +1347,12 @@ const EXPLORE_CHOICES = [
           items: { timewarp: 1, surge: 1 }, boostTimer: 0, boostMultItem: 1, freeDispenserCD: 0,
           colonies: [], colonyDetailPlanet: null, exploring: false, explorePlanet: null, exploreChance: 0, exploreTimer: 0,
           exploreChoice: null, exploreChoiceCooldown: 0, colonySpecializing: null, autoTransportUnlocked: false,
+          starSystems: STAR_SYSTEMS.map(s => ({
+            ...s,
+            status: s.status || (s.id === 'sol' ? 'owned' : 'unknown'),
+            scouting: false, scoutProgress: 0,
+            colonizing: false, colonizeProgress: 0
+          })),
           eventMessage: '', eventTimer: 0, auctionActive: false, auctionBuilding: null, auctionPrice: 0, auctionDiscount: 0, auctionTimer: 0, auctionChance: 0
         };
         for (const k in defaults) this[k] = defaults[k];
@@ -1269,6 +1383,7 @@ const EXPLORE_CHOICES = [
         this.tickResearch(sdt);
         this.tickShips(sdt);
         this.tickExploration(sdt);
+        this.tickStarSystems(sdt);
         this.tickColonies(sdt);
         this.tickEvents(sdt);
         if (this.combatCooldown > 0) this.combatCooldown = Math.max(0, this.combatCooldown - sdt);
@@ -1319,6 +1434,11 @@ const EXPLORE_CHOICES = [
               eventTimer: c.eventTimer || 60,
               autoTransport: c.autoTransport || false,
               totalTransported: c.totalTransported || 0
+            })),
+            starSystems: this.starSystems.map(s => ({
+              id: s.id, status: s.status,
+              scouting: s.scouting || false, scoutProgress: s.scoutProgress || 0,
+              colonizing: s.colonizing || false, colonizeProgress: s.colonizeProgress || 0
             }))
           };
           for (const k of RES) data.resources[k] = this.resources[k].toFixed(3);
@@ -1414,6 +1534,18 @@ const EXPLORE_CHOICES = [
               autoTransportCooldown: 0,
               totalTransported: c.totalTransported || 0
             }));
+          }
+          if (o.starSystems) {
+            for (const saved of o.starSystems) {
+              const sys = this.starSystems.find(x => x.id === saved.id);
+              if (sys) {
+                sys.status = saved.status || 'unknown';
+                sys.scouting = saved.scouting || false;
+                sys.scoutProgress = saved.scoutProgress || 0;
+                sys.colonizing = saved.colonizing || false;
+                sys.colonizeProgress = saved.colonizeProgress || 0;
+              }
+            }
           }
           this.recalcMaxes();
         } catch (e) {}
