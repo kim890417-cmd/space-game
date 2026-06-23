@@ -400,8 +400,10 @@ const EXPLORE_CHOICES = [
       },
       visibleColonies() {
         return this.colonies.filter(c => {
+          const tmpl = COLONY_TEMPLATES.find(t => t.planetId === c.planetId);
+          if (!tmpl) return false;
           const p = this.planets.find(x => x.id === c.planetId);
-          return p && p.explorationLevel > 0;
+          return !p || p.explorationLevel > 0;
         });
       },
       colonyAwarenessPerSec() {
@@ -706,6 +708,10 @@ const EXPLORE_CHOICES = [
       chooseSpecialization(type) {
         const p = this.colonySpecializing;
         if (!p) return;
+        if (this.colonizer.count <= 0) return;
+        const tmpl = COLONY_TEMPLATES.find(t => t.planetId === p.id);
+        if (!tmpl) return;
+        if (this.colonies.some(c => c.planetId === p.id)) return;
         this.colonizer.count--;
         this.initColony(p.id, type);
         const spec = SPECIALIZATIONS.find(s => s.id === type);
@@ -1613,7 +1619,9 @@ const EXPLORE_CHOICES = [
       },
       planetImageForColony(pid) {
         const p = this.planets.find(x => x.id === pid);
-        return p ? p.img : null;
+        if (p) return p.img;
+        const sys = this.starSystems.find(x => x.id === pid);
+        return sys ? sys.img : null;
       },
       canExploreReason(p) {
         if (p.explorationLevel >= p.maxLevel) return '최대 개척 완료';

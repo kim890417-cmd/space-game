@@ -369,21 +369,6 @@ const COLONY_FACTORY_TYPES = [
         const bonus = Math.round((p.bonusPerLevel || 0) * p.explorationLevel * 100);
         return `${p.bonusDesc.replace(/\(.*?\)/, `(+${bonus}%)`)}`;
       },
-      planetImageForColony(pid) {
-        const p = this.planets.find(x => x.id === pid);
-        return p ? p.img : null;
-      },
-      colonyTotalFactoryLevel(c) {
-        return c.factories.reduce((s, f) => s + f.level, 0);
-      },
-      colonyAwarenessRate(c) {
-        return parseFloat((this.colonyTotalFactoryLevel(c) * 0.01).toFixed(2));
-      },
-      colonyFactoryRate(c, f) {
-        if (f.level <= 0) return 0;
-        const t = this.colonyFactoryTypes[f.id];
-        return parseFloat((t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1)).toFixed(2));
-      }
     },
 
     methods: {
