@@ -185,7 +185,7 @@
           <div v-for="b in visibleBuildings" :key="b.id" class="card relative build-card" :class="{'shake': b.cooldown>0 && b.level>0}">
             <div class="flex gap-2">
               <div class="img-wrap">
-                <img :src="b.img" :alt="b.name" class="build-img" onerror="this.src='https://placehold.co/80x72/0f172a/38bdf8?text='+encodeURIComponent(this.alt)" @click.stop="showPreview(b.img)" style="cursor:pointer">
+                <img :src="b.img" :alt="b.name" class="build-img" onerror="this.onerror=null;var m={'mine':'1','crystal_fac':'2','drone_hub':'11','refinery':'3','recycler':'10','solar_plant':'4','plasma_coil':'7','fission_reactor':'5','fusion_reactor':'6','outpost':'9'};this.src='img/'+(m[this.getAttribute('data-id')]||'1')+'.jpg'" @click.stop="showPreview(b.img)" style="cursor:pointer" :data-id="b.id">
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
@@ -265,7 +265,7 @@
                 <div class="text-[9px] text-slate-500">
                   기본 전투력 {{ s.power }}
                   <span class="text-rose-400/70" v-if="s.strongAgainst && s.type!=='scout'">· 상성 {{ pirateTypeName(s.strongAgainst) }}에 강함</span>
-                  <span class="text-sky-400/80" v-if="s.special">· 특수능력: 자동 정찰 ({{ ships.scout.count }}척 = 초당 {{ fmt(ships.scout.count * 0.3) }} 인지도)</span>
+                  <span class="text-sky-400/80" v-if="s.special">· 특수능력: {{ s.special }}<span v-if="s.type==='scout'"> ({{ ships.scout.count }}척 = 초당 {{ fmt(ships.scout.count * 0.3) }} 인지도)</span></span>
                 </div>
                 <div class="text-[9px] text-slate-400 mb-1">
                   <span>⛏️{{ fmt(s.cost.metal) }} 💎{{ fmt(s.cost.crystal) }}</span><span v-if="s.cost.hydrogen"> ⚡{{ fmt(s.cost.hydrogen) }}</span><span v-if="s.cost.plasma"> 🔵{{ fmt(s.cost.plasma) }}</span>
@@ -397,7 +397,9 @@
 
         <!-- 전투 -->
         <div v-if="fleetActiveTab==='fleet_combat'" class="space-y-2">
-          <div class="card py-2 px-3" style="border-color: rgba(251,113,133,0.3)">
+          <div class="card py-2 px-3" style="border-color: rgba(251,113,133,0.3);background-image:url('img/bg-combat.jpg');background-size:cover;background-position:center;position:relative">
+            <div style="position:absolute;inset:0;background:rgba(15,23,42,0.85);border-radius:10px"></div>
+            <div style="position:relative;z-index:1">
             <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-bold text-rose-400">☠️ {{ currentPirate.icon }} {{ currentPirate.name }}</span>
               <span class="text-[9px] text-slate-500">웨이브 {{ pirateWave }}</span>
@@ -429,6 +431,7 @@
             <div class="mt-2 max-h-20 overflow-y-auto text-[8px] leading-relaxed">
               <div v-for="(l,i) in pirateLog" :key="i" :class="l.cls==='log-win'?'text-emerald-400':l.cls==='log-lose'?'text-rose-400':'text-slate-600'">{{ l.text }}</div>
               <div v-if="pirateLog.length===0" class="text-slate-600">함대를 건조하세요</div>
+            </div>
             </div>
           </div>
         </div>
@@ -630,15 +633,18 @@
           <button class="btn btn-sm btn-warning mt-1" @click="prestige">✨ 환생 (자산 100k 이상)</button>
         </div>
 
-        <div class="card py-2 px-3" style="border-color:rgba(124,58,237,0.5)">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-purple-300">💎 각성석</span>
-            <span class="text-[10px] text-purple-300" v-if="awakeningStones > 0">{{ awakeningStones }}개</span>
-          </div>
-          <div class="text-[9px] text-slate-500 mt-1">도전 모드 클리어 보상으로 획득합니다.</div>
-          <div class="text-[9px] text-slate-500 mt-1" v-if="transcendLevel > 0">🌌 초월 LV {{ transcendLevel }} · 수입 +{{ Math.round(transcendBonus*100) }}%</div>
-          <div class="flex gap-1 mt-1" v-if="canTranscend()">
-            <button class="btn btn-sm btn-warning flex-1 text-[9px]" @click="transcend()">🌌 초월 (💎{{ 5+transcendLevel*5 }})</button>
+        <div class="card py-2 px-3" style="border-color:rgba(124,58,237,0.5);background-image:url('img/transcend-bg.jpg');background-size:cover;background-position:center;position:relative">
+          <div style="position:absolute;inset:0;background:rgba(15,23,42,0.8);border-radius:10px"></div>
+          <div style="position:relative;z-index:1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-purple-300"><img src="img/icon-awakening.png" alt="💎" style="width:18px;height:18px;display:inline;vertical-align:middle;margin-right:4px"> 각성석</span>
+              <span class="text-[10px] text-purple-300" v-if="awakeningStones > 0">{{ awakeningStones }}개</span>
+            </div>
+            <div class="text-[9px] text-slate-400 mt-1">도전 모드 클리어 보상으로 획득합니다.</div>
+            <div class="text-[9px] text-amber-300 mt-1" v-if="transcendLevel > 0">🌌 초월 LV {{ transcendLevel }} · 수입 +{{ Math.round(transcendBonus*100) }}%</div>
+            <div class="flex gap-1 mt-1" v-if="canTranscend()">
+              <button class="btn btn-sm btn-warning flex-1 text-[9px]" @click="transcend()">🌌 초월 (💎{{ 5+transcendLevel*5 }})</button>
+            </div>
           </div>
         </div>
 
@@ -674,7 +680,7 @@
           <div class="text-[8px] text-slate-500 mb-2">행성 탐험 시 일정 확률로 조우합니다</div>
           <div v-for="af in alienFactions" :key="af.id" class="bg-slate-900/50 rounded px-2 py-1.5 mb-1 text-[9px]">
             <div class="flex items-center justify-between mb-0.5">
-              <span>{{ af.icon }} <span class="font-bold text-slate-200">{{ af.name }}</span></span>
+              <span class="flex items-center gap-1"><img :src="'img/alien-'+af.id+'.jpg'" alt="" class="rounded-full" style="width:22px;height:22px;object-fit:cover" onerror="this.style.display='none'"> <span class="font-bold text-slate-200">{{ af.name }}</span></span>
               <span class="text-[8px] text-purple-300">평판 {{ alienRep[af.id]||0 }} · 티어 {{ alienTier[af.id]||0 }}</span>
             </div>
             <div class="text-[7px] text-slate-500">{{ af.desc }}</div>

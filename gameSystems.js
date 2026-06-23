@@ -20,25 +20,25 @@
 const RES_COLOR = { metal: '#34d399', crystal: '#a78bfa', hydrogen: '#38bdf8', plasma: '#f472b6', solar: '#fbbf24', fission: '#fb7185', fusion: '#e879f9' };
 
 const BUILDING_TEMPLATES = [
-    { id: 'mine', name: '지표 광산', icon: '⛏️', img: 'img/1.jpg', desc: '소행성 표면에서 금속 광물 채굴',
+    { id: 'mine', name: '지표 광산', icon: '⛏️', img: 'img/bld-mine.jpg', desc: '소행성 표면에서 금속 광물 채굴',
       basePrice: 8000, income: 30, awarenessNeeded: 0, awarenessGiven: 8, tier: 1, res: 'metal', output: 2.0 },
-    { id: 'crystal_fac', name: '크리스탈 합성소', icon: '💎', img: 'img/2.jpg', desc: '고밀도 에너지 결정 합성',
+    { id: 'crystal_fac', name: '크리스탈 합성소', icon: '💎', img: 'img/bld-crystal.jpg', desc: '고밀도 에너지 결정 합성',
       basePrice: 25000, income: 40, awarenessNeeded: 100, awarenessGiven: 10, tier: 1, res: 'crystal', output: 0.8 },
-    { id: 'drone_hub', name: '드론 허브', icon: '🛸', img: 'img/11.jpg', desc: '자동 드론으로 자원 수집',
+    { id: 'drone_hub', name: '드론 허브', icon: '🛸', img: 'img/bld-drone.jpg', desc: '자동 드론으로 자원 수집',
       basePrice: 35000, income: 60, awarenessNeeded: 300, awarenessGiven: 12, tier: 1, res: 'metal', output: 1.0 },
-    { id: 'refinery', name: '수소 정제소', icon: '⚡', img: 'img/3.jpg', desc: '듀테륨 정제로 수소 생산',
+    { id: 'refinery', name: '수소 정제소', icon: '⚡', img: 'img/bld-refinery.jpg', desc: '듀테륨 정제로 수소 생산',
       basePrice: 80000, income: 90, awarenessNeeded: 500, awarenessGiven: 15, tier: 2, res: 'hydrogen', output: 0.5 },
-    { id: 'recycler', name: '자원 재활용소', icon: '♻️', img: 'img/10.jpg', desc: '폐자원 재활용',
+    { id: 'recycler', name: '자원 재활용소', icon: '♻️', img: 'img/bld-recycler.jpg', desc: '폐자원 재활용',
       basePrice: 120000, income: 120, awarenessNeeded: 700, awarenessGiven: 18, tier: 2, res: 'metal', output: 0.6 },
-    { id: 'solar_plant', name: '태양열 발전소', icon: '☀️', img: 'img/4.jpg', desc: '항성 에너지 수집',
+    { id: 'solar_plant', name: '태양열 발전소', icon: '☀️', img: 'img/bld-solar.jpg', desc: '항성 에너지 수집',
       basePrice: 200000, income: 160, awarenessNeeded: 1000, awarenessGiven: 22, tier: 2, res: 'solar', output: 0.6 },
-    { id: 'plasma_coil', name: '플라즈마 코일', icon: '🔵', img: 'img/7.jpg', desc: '고에너지 플라즈마 안정화',
+    { id: 'plasma_coil', name: '플라즈마 코일', icon: '🔵', img: 'img/bld-plasma.jpg', desc: '고에너지 플라즈마 안정화',
       basePrice: 280000, income: 220, awarenessNeeded: 1500, awarenessGiven: 26, tier: 3, res: 'plasma', output: 0.4 },
-    { id: 'fission_reactor', name: '핵분열로', icon: '⚛️', img: 'img/5.jpg', desc: '원자핵 분열 에너지',
+    { id: 'fission_reactor', name: '핵분열로', icon: '⚛️', img: 'img/bld-fission.jpg', desc: '원자핵 분열 에너지',
       basePrice: 450000, income: 350, awarenessNeeded: 2200, awarenessGiven: 32, tier: 3, res: 'fission', output: 0.3 },
-    { id: 'fusion_reactor', name: '핵융합로', icon: '🔥', img: 'img/6.jpg', desc: '핵융합 반응 에너지',
+    { id: 'fusion_reactor', name: '핵융합로', icon: '🔥', img: 'img/bld-fusion.jpg', desc: '핵융합 반응 에너지',
       basePrice: 800000, income: 550, awarenessNeeded: 3200, awarenessGiven: 40, tier: 3, res: 'fusion', output: 0.2 },
-    { id: 'outpost', name: '전초기지', icon: '🚀', img: 'img/9.jpg', desc: '새 행성 자원 탐색',
+    { id: 'outpost', name: '전초기지', icon: '🚀', img: 'img/bld-outpost.jpg', desc: '새 행성 자원 탐색',
       basePrice: 1500000, income: 900, awarenessNeeded: 5000, awarenessGiven: 55, tier: 4, res: 'crystal', output: 0.5 }
   ];
 
@@ -68,12 +68,15 @@ const BUILDING_TEMPLATES = [
   const SHIP_TEMPLATES = [
     { type: 'scout', name: '정찰기', icon: '🛰️', power: 2, cost: { metal: 150 }, time: 5, strongAgainst: 'raider', awarenessNeeded: 0, img: 'img/ship-scout.jpg', maxLevel: 15, upgradeTime: 15, special: '정찰' },
     { type: 'corvette', name: '초계함', icon: '🚀', power: 6, cost: { metal: 600 }, time: 25, strongAgainst: 'pirate_fleet', awarenessNeeded: 15, img: 'img/ship-corvette.jpg', maxLevel: 12, upgradeTime: 30 },
-    { type: 'frigate', name: '호위함', icon: '🛡️', power: 14, cost: { metal: 1500, crystal: 400 }, time: 70, strongAgainst: 'marauder', awarenessNeeded: 50, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 50 },
-    { type: 'destroyer', name: '구축함', icon: '⚔️', power: 28, cost: { metal: 3200, crystal: 1200 }, time: 150, strongAgainst: 'juggernaut', awarenessNeeded: 120, img: 'img/ship-carrier.jpg', maxLevel: 8, upgradeTime: 90 },
-    { type: 'cruiser', name: '순양함', icon: '🔱', power: 50, cost: { metal: 7000, crystal: 3500, hydrogen: 1000 }, time: 350, strongAgainst: 'raider', awarenessNeeded: 250, img: 'img/ship-frigate.jpg', maxLevel: 7, upgradeTime: 180 },
-    { type: 'battleship', name: '전함', icon: '🚢', power: 90, cost: { metal: 18000, crystal: 9000, hydrogen: 3000 }, time: 700, strongAgainst: 'pirate_fleet', awarenessNeeded: 450, img: 'img/ship-battleship.jpg', maxLevel: 6, upgradeTime: 350 },
-    { type: 'carrier', name: '항공모함', icon: '✈️', power: 170, cost: { metal: 45000, crystal: 22000, hydrogen: 8000, plasma: 2000 }, time: 1600, strongAgainst: 'marauder', awarenessNeeded: 700, img: 'img/ship-destroyer.jpg', maxLevel: 5, upgradeTime: 600 },
-    { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 320, cost: { metal: 110000, crystal: 55000, hydrogen: 20000, plasma: 8000 }, time: 3000, strongAgainst: 'juggernaut', awarenessNeeded: 1100, img: 'img/ship-dreadnought.jpg', maxLevel: 4, upgradeTime: 1000 }
+      { type: 'frigate', name: '호위함', icon: '🛡️', power: 14, cost: { metal: 1500, crystal: 400 }, time: 70, strongAgainst: 'marauder', awarenessNeeded: 50, img: 'img/ship-frigate.jpg', maxLevel: 10, upgradeTime: 50 },
+      { type: 'torpedo', name: '어뢰정', icon: '🎯', power: 8, cost: { metal: 800, crystal: 200 }, time: 40, strongAgainst: 'pirate_fleet', awarenessNeeded: 80, img: 'img/ship-torpedo.jpg', maxLevel: 10, upgradeTime: 35 },
+      { type: 'destroyer', name: '구축함', icon: '⚔️', power: 28, cost: { metal: 3200, crystal: 1200 }, time: 150, strongAgainst: 'juggernaut', awarenessNeeded: 120, img: 'img/ship-destroyer.jpg', maxLevel: 8, upgradeTime: 90 },
+      { type: 'cruiser', name: '순양함', icon: '🔱', power: 50, cost: { metal: 7000, crystal: 3500, hydrogen: 1000 }, time: 350, strongAgainst: 'raider', awarenessNeeded: 250, img: 'img/ship-cruiser.jpg', maxLevel: 7, upgradeTime: 180 },
+      { type: 'repair', name: '수리함', icon: '🔧', power: 5, cost: { metal: 10000, crystal: 4000, hydrogen: 1500 }, time: 500, strongAgainst: null, awarenessNeeded: 350, img: 'img/ship-repair.jpg', maxLevel: 5, upgradeTime: 200, special: '피해 -50%' },
+      { type: 'battleship', name: '전함', icon: '🚢', power: 90, cost: { metal: 18000, crystal: 9000, hydrogen: 3000 }, time: 700, strongAgainst: 'pirate_fleet', awarenessNeeded: 450, img: 'img/ship-battleship.jpg', maxLevel: 6, upgradeTime: 350 },
+      { type: 'carrier', name: '항공모함', icon: '✈️', power: 170, cost: { metal: 45000, crystal: 22000, hydrogen: 8000, plasma: 2000 }, time: 1600, strongAgainst: 'marauder', awarenessNeeded: 700, img: 'img/ship-carrier.jpg', maxLevel: 5, upgradeTime: 600 },
+      { type: 'mothership', name: '모선', icon: '🌌', power: 500, cost: { metal: 200000, crystal: 80000, hydrogen: 30000, plasma: 15000 }, time: 5000, strongAgainst: 'juggernaut', awarenessNeeded: 900, img: 'img/ship-mothership.jpg', maxLevel: 3, upgradeTime: 1500 },
+      { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 320, cost: { metal: 110000, crystal: 55000, hydrogen: 20000, plasma: 8000 }, time: 3000, strongAgainst: 'juggernaut', awarenessNeeded: 1100, img: 'img/ship-dreadnought.jpg', maxLevel: 4, upgradeTime: 1000 }
   ];
 
   const PIRATE_TYPES = [
@@ -988,7 +991,8 @@ const COLONY_FACTORY_TYPES = [
 
       applyLosses(ratio) {
         let total = 0;
-        for (const s of this.shipTypes) { const cnt = this.ships[s.type]?.count || 0; if (cnt <= 0) continue; const loss = Math.min(cnt, Math.max(1, Math.round(cnt * ratio))); this.ships[s.type].count -= loss; total += loss; }
+        const effectiveRatio = (this.ships.repair?.count || 0) > 0 ? ratio * 0.5 : ratio;
+        for (const s of this.shipTypes) { const cnt = this.ships[s.type]?.count || 0; if (cnt <= 0) continue; const loss = Math.min(cnt, Math.max(1, Math.round(cnt * effectiveRatio))); this.ships[s.type].count -= loss; total += loss; }
         return total;
       },
       pushLog(text, cls) { this.pirateLog.unshift({ text, cls: cls || 'log-info' }); if (this.pirateLog.length > 30) this.pirateLog.pop(); },
