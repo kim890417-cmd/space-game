@@ -54,7 +54,8 @@ const BUILDING_TEMPLATES = [
     { id: 'r9', name: '핵융합 안정화', desc: '핵융합 생산 +100%', icon: '🔥', cost: { metal: 500000, crystal: 100000, hydrogen: 50000 }, time: 300, effect: g => { g.resMultipliers.fusion *= 2.0; }, requires: 'r3' },
     { id: 'r10', name: '우주 무역', desc: '소득 +40%', icon: '📈', cost: { metal: 800000, crystal: 200000, plasma: 50000 }, time: 400, effect: g => { g.incomeMult += 0.4; }, requires: 'r6' },
     { id: 'r11', name: '함선 생산 I', desc: '함선 건조 시간 -20%', icon: '🚀', cost: { metal: 300000, crystal: 80000 }, time: 150, effect: g => { g.shipBuildSpeedMult *= 0.8; }, requires: 'r4' },
-    { id: 'r12', name: '전투 교리', desc: '함대 전투력 +30%', icon: '⚔️', cost: { metal: 600000, crystal: 150000, solar: 30000 }, time: 200, effect: g => { g.fleetPowerMult *= 1.3; }, requires: 'r5' }
+    { id: 'r12', name: '전투 교리', desc: '함대 전투력 +30%', icon: '⚔️', cost: { metal: 600000, crystal: 150000, solar: 30000 }, time: 200, effect: g => { g.fleetPowerMult *= 1.3; }, requires: 'r5' },
+    { id: 'r13', name: '자동 물류', desc: '식민지 자원 자동 운송 해금', icon: '📦', cost: { metal: 500000, crystal: 200000, hydrogen: 50000 }, time: 300, effect: g => { g.autoTransportUnlocked = true; g.toast('📦 자동 물류 시스템 활성화!'); }, requires: 'r5' }
   ];
 
   const SHIP_TEMPLATES = [
@@ -108,6 +109,26 @@ const COLONY_FACTORY_TYPES = [
   { icon: '🔵', name: '플라즈마 수집기', res: 'plasma', baseOutput: 0.1 },
   { icon: '☀️', name: '태양열 패널', res: 'solar', baseOutput: 0.12 },
   { icon: '⚛️', name: '핵분열 발전기', res: 'fission', baseOutput: 0.08 }
+];
+const SPECIALIZATIONS = [
+  { id: 'resource', name: '자원 전초기지', icon: '⛏️', desc: '모든 자원 +25%, 운송량 +50%', prodBonus: 1.25, transportBonus: 1.5 },
+  { id: 'research', name: '연구 거점', icon: '🔬', desc: '인지도 +30%, 연구속도 +20%', awarenessBonus: 1.3, researchSpeed: 0.8 },
+  { id: 'military', name: '군사 기지', icon: '⚔️', desc: '함대 전투력 +20%, 약탈피해 -50%', fleetBonus: 1.2, raidProt: 0.5 }
+];
+const COLONY_EVENTS = [
+  { id: 'rich_vein', text: '💎 자원 광맥 발견!', effect: 'prod_boost', dur: 30, mult: 2.5, weight: 20 },
+  { id: 'tech_bk', text: '🔬 기술 발전!', effect: 'free_up', dur: 0, weight: 18 },
+  { id: 'pirate_raid', text: '☠️ 해적 습격!', effect: 'res_loss', dur: 0, loss: 0.15, weight: 15 },
+  { id: 'ancient_art', text: '🌌 고대 유물 발견!', effect: 'aware', dur: 0, weight: 22 },
+  { id: 'trade_ship', text: '🛸 무역선 도착!', effect: 'res_gain', dur: 0, weight: 18 },
+  { id: 'solar_storm', text: '🌀 태양 폭풍!', effect: 'halt', dur: 15, weight: 7 }
+];
+const EXPLORE_CHOICES = [
+  { id: 'ancient_signal', text: '📡 고대 문명의 신호를 감지했습니다!', optA: { text: '✅ 응답한다', risk: 0.4 }, optB: { text: '❌ 무시한다', risk: 0 } },
+  { id: 'asteroid_field', text: '☄️ 소행성대에 진입했습니다!', optA: { text: '🔄 회피 기동', risk: 0.2 }, optB: { text: '🛡️ 방어막 강화', risk: 0.1 } },
+  { id: 'alien_structure', text: '👽 외계 구조물을 발견했습니다!', optA: { text: '🔍 조사한다', risk: 0.5 }, optB: { text: '📷 스캔만 한다', risk: 0 } },
+  { id: 'space_wreck', text: '💫 거대한 우주 잔해 발견!', optA: { text: '🛠️ 수색한다', risk: 0.3 }, optB: { text: '🚀 진행한다', risk: 0 } },
+  { id: 'energy_anomaly', text: '⚡ 에너지 변칙 감지!', optA: { text: '🧪 흡수한다', risk: 0.35 }, optB: { text: '⚠️ 우회한다', risk: 0 } }
 ];
   const PLANETS = [
     { id: 'earth', name: '지구', icon: '🌍', img: 'img/planet-terran.jpg', difficulty: 20, fameNeeded: 0,
@@ -179,6 +200,9 @@ const COLONY_FACTORY_TYPES = [
         planets: PLANETS.map(p => ({ ...p, explorationLevel: 0 })),
         exploring: false, explorePlanet: null, exploreChance: 0, exploreTimer: 0,
         exploreEvent: null, exploreEventTimer: 0,
+        exploreChoice: null, exploreChoiceCooldown: 0,
+        colonySpecializing: null,
+        autoTransportUnlocked: false,
 
         pirateTypes: PIRATE_TYPES,
         pirateAttackTimer: 300,
@@ -294,7 +318,8 @@ const COLONY_FACTORY_TYPES = [
           const lv = this.ships[s.type]?.level || 1;
           p += cnt * s.power * lv;
         }
-        return p * this.fleetPowerMult;
+        const militaryBonus = this.colonies.some(c => c.specialization === 'military') ? 1.2 : 1;
+        return p * this.fleetPowerMult * militaryBonus;
       },
       currentPirate() {
         const pt = this.pirateTypes[(this.pirateWave - 1) % this.pirateTypes.length];
@@ -342,13 +367,25 @@ const COLONY_FACTORY_TYPES = [
       colonyResourceRate(c) {
         if (!c || !c.factories) return {};
         const rates = {};
+        const spec = SPECIALIZATIONS.find(s => s.id === c.specialization);
+        const specBonus = spec ? spec.prodBonus || 1 : 1;
+        const tier = this.colonyTier(c);
+        const tierB = [1, 1, 1.2, 1.5, 2.0][tier] || 1;
         for (const f of c.factories) {
           if (f.level <= 0) continue;
           const t = this.colonyFactoryTypes[f.id] || this.colonyFactoryTypes[0];
           if (!rates[t.res]) rates[t.res] = 0;
-          rates[t.res] += t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1);
+          rates[t.res] += t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1) * specBonus * tierB;
         }
         return rates;
+      },
+      colonyTier(c) {
+        if (!c || !c.factories) return 1;
+        const totalLv = c.factories.reduce((s, f) => s + (f.level || 0), 0);
+        if (totalLv >= 60) return 4;
+        if (totalLv >= 30) return 3;
+        if (totalLv >= 10) return 2;
+        return 1;
       }
     },
 
@@ -462,9 +499,11 @@ const COLONY_FACTORY_TYPES = [
         r.inProgress = true; r.remaining = r.time;
       },
       tickResearch(dt) {
+        const hasResearchColony = this.colonies.some(c => c.specialization === 'research');
+        const speedMult = hasResearchColony ? 0.8 : 1;
         for (const r of this.research) {
           if (r.inProgress) {
-            r.remaining = Math.max(0, r.remaining - dt);
+            r.remaining = Math.max(0, r.remaining - dt * (1 / speedMult));
             if (r.remaining <= 0) { r.inProgress = false; r.completed = true; r.effect(this); this.toast(`🔬 ${r.name}`); this.checkAchievements(); this.recalcMaxes(); }
           }
         }
@@ -632,9 +671,19 @@ const COLONY_FACTORY_TYPES = [
       },
       establishColony(p) {
         if (!this.canEstablishColony(p)) return;
+        this.colonySpecializing = p;
+      },
+      chooseSpecialization(type) {
+        const p = this.colonySpecializing;
+        if (!p) return;
         this.colonizer.count--;
-        this.initColony(p.id);
-        this.toast(`🏙️ ${p.name}에 식민지 건설 완료!`);
+        this.initColony(p.id, type);
+        const spec = SPECIALIZATIONS.find(s => s.id === type);
+        this.toast(`🏙️ ${p.name}에 ${spec ? spec.name : '식민지'} 건설 완료!`);
+        this.colonySpecializing = null;
+      },
+      cancelSpecialization() {
+        this.colonySpecializing = null;
       },
       startExplore(p) {
         if (!this.canExplore(p)) return;
@@ -643,11 +692,14 @@ const COLONY_FACTORY_TYPES = [
         this.exploreTimer = 15;
         this.exploreEvent = this.pickExploreEvent();
         this.exploreEventTimer = 3;
+        this.exploreChoice = null;
+        this.exploreChoiceCooldown = 5;
         this.toast(`🚀 ${p.name} 탐험 시작 (${Math.round(this.exploreChance*100)}%)`);
       },
       completeExplore() {
         const p = this.explorePlanet;
         if (!p) return;
+        this.exploreChoice = null;
         const roll = Math.random();
         if (roll < this.exploreChance) {
           p.explorationLevel = Math.min(p.maxLevel, p.explorationLevel + 1);
@@ -670,26 +722,70 @@ const COLONY_FACTORY_TYPES = [
       tickExploration(dt) {
         if (this.exploring) {
           this.exploreTimer -= dt;
+          this.exploreChoiceCooldown -= dt;
           this.exploreEventTimer -= dt;
           if (this.exploreEventTimer <= 0) {
-            this.exploreEvent = this.pickExploreEvent();
-            this.exploreEventTimer = 3;
+            if (!this.exploreChoice && this.exploreChoiceCooldown <= 0 && this.exploreTimer > 3 && Math.random() < 0.35) {
+              this.triggerExploreChoice();
+            } else {
+              this.exploreEvent = this.pickExploreEvent();
+              this.exploreEventTimer = 3;
+            }
           }
-          if (this.exploreTimer <= 0) this.completeExplore();
+          if (this.exploreTimer <= 0 && !this.exploreChoice) this.completeExplore();
         }
       },
+      triggerExploreChoice() {
+        const choice = EXPLORE_CHOICES[Math.floor(Math.random() * EXPLORE_CHOICES.length)];
+        this.exploreChoice = { ...choice };
+        this.exploreEventTimer = 10;
+      },
+      resolveExploreChoice(idx) {
+        if (!this.exploreChoice) return;
+        const choice = this.exploreChoice;
+        const opt = idx === 0 ? choice.optA : choice.optB;
+        if (opt.risk > 0 && Math.random() < opt.risk) {
+          const loss = Math.max(1, Math.floor((this.ships.scout?.count || 1) * 0.25));
+          this.ships.scout.count = Math.max(0, (this.ships.scout?.count || 0) - loss);
+          this.toast(`💥 정찰기 ${loss}기 손실!`);
+        } else {
+          const rewardRoll = Math.random();
+          if (rewardRoll < 0.3) {
+            const resKeys = ['metal', 'crystal', 'hydrogen'];
+            const k = resKeys[Math.floor(Math.random() * resKeys.length)];
+            const add = new Decimal(300 + Math.random() * 700);
+            this.resources[k] = Decimal.min(this.resources[k + 'Max'] || new Decimal(999999), this.resources[k].add(add));
+            this.toast(`📦 ${RES_ICO[k]} ${RES_KR[k]} ${this.fmt(add)} 발견!`);
+          } else if (rewardRoll < 0.5) {
+            this.exploreTimer = Math.max(3, this.exploreTimer - 5);
+            this.toast(`⏩ 탐험 진행도 +33%`);
+          } else if (rewardRoll < 0.7) {
+            const add = new Decimal(500 + Math.random() * 1500);
+            this.money = this.money.add(add);
+            this.toast(`💰 ${this.fmt(add)} 발견!`);
+          } else {
+            this.toast(`✨ 특별한 발견은 없었습니다.`);
+          }
+        }
+        this.exploreChoice = null;
+      },
 
-      initColony(planetId) {
+      initColony(planetId, specialization) {
         if (this.colonies.some(c => c.planetId === planetId)) return;
         const tmpl = COLONY_TEMPLATES.find(t => t.planetId === planetId);
         if (!tmpl) return;
         const factories = COLONY_FACTORY_TYPES.map((ft, i) => ({ id: i, level: 0 }));
         this.colonies.push({
           planetId, name: tmpl.name, prodSpeed: tmpl.prodSpeed,
+          specialization: specialization || 'resource',
           resources: { metal: 0, crystal: 0, hydrogen: 0, plasma: 0, solar: 0, fission: 0, fusion: 0 },
           factories,
           transporting: false, transportProgress: 0, transportTime: 0,
-          transportAmounts: {}
+          transportAmounts: {},
+          eventTimer: 60 + Math.random() * 60,
+          autoTransport: false,
+          autoTransportCooldown: 0,
+          totalTransported: 0
         });
         this.toast(`🏙️ ${tmpl.name} 설립!`);
       },
@@ -714,12 +810,38 @@ const COLONY_FACTORY_TYPES = [
       },
       tickColonies(dt) {
         for (const c of this.colonies) {
-          for (const f of c.factories) {
-            if (f.level <= 0) continue;
-            const t = this.colonyFactoryTypes[f.id];
-            const rate = t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1) * dt;
-            const cap = 1000 + f.level * 500;
-            c.resources[t.res] = Math.min(cap, (c.resources[t.res] || 0) + rate);
+          const spec = SPECIALIZATIONS.find(s => s.id === c.specialization);
+          const specBonus = spec ? spec.prodBonus || 1 : 1;
+          const tier = this.colonyTier(c);
+          const tierB = [1, 1, 1.2, 1.5, 2.0][tier] || 1;
+          const haltActive = c.eventBoost && c.eventBoost.haltTimer && c.eventBoost.haltTimer > 0;
+          if (haltActive) {
+            c.eventBoost.haltTimer -= dt;
+            if (c.eventBoost.haltTimer <= 0) c.eventBoost.haltTimer = null;
+          }
+          if (!haltActive) {
+            const prodBoost = (c.eventBoost && c.eventBoost.multiplier && c.eventBoost.timer > 0) ? c.eventBoost.multiplier : 1;
+            if (c.eventBoost && c.eventBoost.timer) {
+              c.eventBoost.timer -= dt;
+              if (c.eventBoost.timer <= 0) c.eventBoost.multiplier = null;
+            }
+            for (const f of c.factories) {
+              if (f.level <= 0) continue;
+              const t = this.colonyFactoryTypes[f.id];
+              const rate = t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1) * specBonus * tierB * prodBoost * dt;
+              const cap = 1000 + f.level * 500;
+              c.resources[t.res] = Math.min(cap, (c.resources[t.res] || 0) + rate);
+            }
+          }
+          c.eventTimer -= dt;
+          if (c.eventTimer <= 0) {
+            if (!c.transporting) this.triggerColonyEvent(c);
+            c.eventTimer = 60 + Math.random() * 60;
+          }
+          c.autoTransportCooldown = Math.max(0, (c.autoTransportCooldown || 0) - dt);
+          if (c.autoTransport && this.autoTransportUnlocked && !c.transporting && this.colonizer.count > 0 && (!c.autoTransportCooldown || c.autoTransportCooldown <= 0)) {
+            this.startTransport(c);
+            if (c.transporting) c.autoTransportCooldown = 10;
           }
           if (c.transporting) {
             c.transportProgress += dt;
@@ -728,17 +850,78 @@ const COLONY_FACTORY_TYPES = [
                 if (this.resources[k]) this.resources[k] = Decimal.min(this.resources[k + 'Max'] || new Decimal(999999), this.resources[k].add(c.transportAmounts[k]));
               }
               const totalVal = Object.values(c.transportAmounts).reduce((s, v) => s + v, 0);
+              c.totalTransported = (c.totalTransported || 0) + totalVal;
               this.toast(`📦 ${c.name} 자원 ${this.fmt(totalVal)} 본송 완료!`);
               c.transporting = false; c.transportProgress = 0; c.transportTime = 0; c.transportAmounts = {};
             }
           }
         }
       },
+      triggerColonyEvent(colony) {
+        const spec = SPECIALIZATIONS.find(s => s.id === colony.specialization);
+        let events = COLONY_EVENTS.map(e => ({ ...e }));
+        if (spec && spec.id === 'resource') {
+          events.find(e => e.id === 'rich_vein').weight = 30;
+          events.find(e => e.id === 'trade_ship').weight = 22;
+        } else if (spec && spec.id === 'research') {
+          events.find(e => e.id === 'tech_bk').weight = 28;
+          events.find(e => e.id === 'ancient_art').weight = 28;
+        } else if (spec && spec.id === 'military') {
+          const raid = events.find(e => e.id === 'pirate_raid');
+          if (raid) raid.weight = 8;
+        }
+        const totalW = events.reduce((s, e) => s + e.weight, 0);
+        let r = Math.random() * totalW;
+        let chosen = events[0];
+        for (const e of events) {
+          r -= e.weight;
+          if (r <= 0) { chosen = e; break; }
+        }
+        if (!chosen) return;
+        if (chosen.effect === 'prod_boost') {
+          if (!colony.eventBoost) colony.eventBoost = {};
+          colony.eventBoost.multiplier = chosen.mult || 2.5;
+          colony.eventBoost.timer = chosen.dur || 30;
+          this.toast(`💥 ${colony.name}: ${chosen.text} (${colony.eventBoost.timer}초)`);
+        } else if (chosen.effect === 'free_up') {
+          const upgradable = colony.factories.filter(f => f.level < 20);
+          if (upgradable.length > 0) {
+            const f = upgradable[Math.floor(Math.random() * upgradable.length)];
+            f.level++;
+            this.toast(`⬆️ ${colony.name}: ${chosen.text} (${this.colonyFactoryTypes[f.id].name} LV ${f.level})`);
+          }
+        } else if (chosen.effect === 'res_loss') {
+          const lossPct = (spec && spec.id === 'military') ? (chosen.loss || 0.15) * 0.5 : (chosen.loss || 0.15);
+          for (const k of Object.keys(colony.resources)) {
+            colony.resources[k] = Math.floor((colony.resources[k] || 0) * (1 - lossPct));
+          }
+          this.toast(`⚠️ ${colony.name}: ${chosen.text}`);
+        } else if (chosen.effect === 'aware') {
+          const amt = Math.floor(10 + Math.random() * 40);
+          this.awareness += amt;
+          this.toast(`📡 ${colony.name}: ${chosen.text} (+${amt} 인지도)`);
+        } else if (chosen.effect === 'res_gain') {
+          const amt = Math.floor(500 + Math.random() * 1500);
+          const rk = ['metal', 'crystal', 'hydrogen', 'plasma'][Math.floor(Math.random() * 4)];
+          colony.resources[rk] = (colony.resources[rk] || 0) + amt;
+          this.toast(`📦 ${colony.name}: ${chosen.text} (${RES_ICO[rk]} +${this.fmt(amt)})`);
+          if (spec && spec.id === 'resource') {
+            const bonus = Math.floor(amt * 0.3);
+            colony.resources[rk] = (colony.resources[rk] || 0) + bonus;
+          }
+        } else if (chosen.effect === 'halt') {
+          if (!colony.eventBoost) colony.eventBoost = {};
+          colony.eventBoost.haltTimer = chosen.dur || 15;
+          this.toast(`🌪️ ${colony.name}: ${chosen.text} (${colony.eventBoost.haltTimer}초 정지)`);
+        }
+      },
       startTransport(colony) {
         if (colony.transporting || this.colonizer.count <= 0) return;
         const amounts = {};
         let total = 0;
-        const maxCapacity = this.colonizer.count * this.colonizer.level * 50;
+        const spec = SPECIALIZATIONS.find(s => s.id === colony.specialization);
+        const transportBonus = spec ? spec.transportBonus || 1 : 1;
+        const maxCapacity = this.colonizer.count * this.colonizer.level * 50 * transportBonus;
         const allRes = ['metal','crystal','hydrogen','plasma','solar','fission','fusion'];
         for (const k of allRes) {
           const avail = Math.floor(colony.resources[k] || 0);
@@ -751,15 +934,20 @@ const COLONY_FACTORY_TYPES = [
             }
           }
         }
-        if (total <= 0) { this.toast('🚫 운송할 자원이 없습니다'); return; }
+        if (total <= 0) { return; }
         const hydroCost = Math.ceil(total * 0.001);
-        if (this.resources.hydrogen.lt(hydroCost)) { this.toast(`🚫 수소 부족 (필요: ${hydroCost})`); return; }
+        if (this.resources.hydrogen.lt(hydroCost)) { return; }
         this.resources.hydrogen = this.resources.hydrogen.sub(hydroCost);
         colony.transporting = true;
         colony.transportProgress = 0;
-        colony.transportTime = 30 + total * 0.01;
+        const tier = this.colonyTier(colony);
+        const timeReduction = tier >= 3 ? 0.8 : 1;
+        colony.transportTime = (30 + total * 0.01) * timeReduction;
         colony.transportAmounts = amounts;
-        this.toast(`📦 자원 ${this.fmt(total)} 운송 시작 (수소 -${hydroCost}, ${this.fmtTime(colony.transportTime)})`);
+        colony.transportTotal = total;
+        if (!colony.autoTransport) {
+          this.toast(`📦 자원 ${this.fmt(total)} 운송 시작 (수소 -${hydroCost}, ${this.fmtTime(colony.transportTime)})`);
+        }
       },
 
       effectiveFleetPower(pirateType) {
@@ -878,15 +1066,17 @@ const COLONY_FACTORY_TYPES = [
       triggerPirateRaid() {
         const enemy = this.currentPirate;
         const eff = this.effectiveFleetPower(enemy.type);
-        const autoRoll = eff * 0.9;
+        const hasMilColony = this.colonies.some(c => c.specialization === 'military');
+        const autoRoll = eff * (hasMilColony ? 1.2 : 0.9);
         if (autoRoll >= enemy.power) {
           this.pushLog(`🛡️ 자동 방어 성공 (${enemy.icon} ${enemy.name})`, 'log-win');
           this.toast(`🛡️ 방어 성공 ${enemy.name}`);
         } else {
-          const stolen = new Decimal(300 * this.pirateWave);
+          const stolen = new Decimal((hasMilColony ? 150 : 300) * this.pirateWave);
           this.money = this.money.sub(stolen);
-          for (const k of RES) { if (this.resources[k] && this.resources[k].gt(0)) this.resources[k] = this.resources[k].sub(this.resources[k].mul(0.1)); }
-          this.pushLog(`⚠️ 해적 약탈! ${this.fmt(stolen)} + 자원 10% 손실 (${enemy.icon})`, 'log-lose');
+          const resLoss = hasMilColony ? 0.05 : 0.1;
+          for (const k of RES) { if (this.resources[k] && this.resources[k].gt(0)) this.resources[k] = this.resources[k].sub(this.resources[k].mul(resLoss)); }
+          this.pushLog(`⚠️ 해적 약탈! ${this.fmt(stolen)} + 자원 ${Math.round(resLoss*100)}% 손실 (${enemy.icon})`, 'log-lose');
           this.toast(`⚠️ 해적 약탈 ${this.fmt(stolen)}`);
           this.pirateRaidAlert = { name: enemy.name, icon: enemy.icon, stolen: this.fmt(stolen), power: enemy.power };
           this.pirateRaidTimer = 8;
@@ -1047,6 +1237,7 @@ const COLONY_FACTORY_TYPES = [
           totalBuys: 0, totalTrades: 0, totalWealth: new Decimal(0), bestProfit: 0,
           items: { timewarp: 1, surge: 1 }, boostTimer: 0, boostMultItem: 1, freeDispenserCD: 0,
           colonies: [], colonyDetailPlanet: null, exploring: false, explorePlanet: null, exploreChance: 0, exploreTimer: 0,
+          exploreChoice: null, exploreChoiceCooldown: 0, colonySpecializing: null, autoTransportUnlocked: false,
           eventMessage: '', eventTimer: 0, auctionActive: false, auctionBuilding: null, auctionPrice: 0, auctionDiscount: 0, auctionTimer: 0, auctionChance: 0
         };
         for (const k in defaults) this[k] = defaults[k];
@@ -1114,14 +1305,19 @@ const COLONY_FACTORY_TYPES = [
             fameMilestones: this.fameMilestones.map(m => ({ id: m.id, reached: m.reached })),
             prestigePoints: this.prestigePoints,
             prestigeBonus: this.prestigeBonus,
+            autoTransportUnlocked: this.autoTransportUnlocked || false,
             colonies: this.colonies.map(c => ({
               planetId: c.planetId, name: c.name, prodSpeed: c.prodSpeed,
+              specialization: c.specialization || 'resource',
               resources: { ...c.resources },
               factories: c.factories.map(f => ({ id: f.id, level: f.level })),
               transporting: c.transporting || false,
               transportProgress: c.transportProgress || 0,
               transportTime: c.transportTime || 0,
-              transportAmounts: { ...(c.transportAmounts || {}) }
+              transportAmounts: { ...(c.transportAmounts || {}) },
+              eventTimer: c.eventTimer || 60,
+              autoTransport: c.autoTransport || false,
+              totalTransported: c.totalTransported || 0
             }))
           };
           for (const k of RES) data.resources[k] = this.resources[k].toFixed(3);
@@ -1194,6 +1390,7 @@ const COLONY_FACTORY_TYPES = [
           if (o.lastSeen) this.lastSeen = o.lastSeen;
           if (o.prestigePoints) this.prestigePoints = o.prestigePoints;
           if (o.prestigeBonus) this.prestigeBonus = o.prestigeBonus;
+          if (o.autoTransportUnlocked !== undefined) this.autoTransportUnlocked = o.autoTransportUnlocked;
           if (o.fameIncomeBonus !== undefined) this.fameIncomeBonus = o.fameIncomeBonus;
           if (o.fameMilestones) {
             for (const saved of o.fameMilestones) {
@@ -1204,12 +1401,17 @@ const COLONY_FACTORY_TYPES = [
           if (o.colonies) {
             this.colonies = o.colonies.map(c => ({
               planetId: c.planetId, name: c.name, prodSpeed: c.prodSpeed || 1,
+              specialization: c.specialization || 'resource',
               resources: c.resources || { metal: 0, crystal: 0, hydrogen: 0, plasma: 0, solar: 0, fission: 0, fusion: 0 },
               factories: (c.factories || []).map(f => ({ id: f.id, level: f.level || 0 })),
               transporting: c.transporting || false,
               transportProgress: c.transportProgress || 0,
               transportTime: c.transportTime || 0,
-              transportAmounts: c.transportAmounts || {}
+              transportAmounts: c.transportAmounts || {},
+              eventTimer: c.eventTimer || 60 + Math.random() * 60,
+              autoTransport: c.autoTransport || false,
+              autoTransportCooldown: 0,
+              totalTransported: c.totalTransported || 0
             }));
           }
           this.recalcMaxes();

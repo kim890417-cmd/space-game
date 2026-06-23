@@ -327,12 +327,20 @@
             <div class="text-[8px] text-slate-600" v-if="fameMilestones.filter(m=>m.reached).length < 4">🔒 새 행성은 명성 업적 달성 시 개방됩니다</div>
           </div>
 
-          <div v-if="exploring" class="card py-2 px-3" style="border-color:rgba(250,204,21,0.5)">
+          <div v-if="exploring && !exploreChoice" class="card py-2 px-3" style="border-color:rgba(250,204,21,0.5)">
             <div class="text-xs font-bold text-yellow-300 mb-1">🚀 {{ explorePlanet.name }} 탐사중...</div>
             <div class="text-[9px] text-cyan-300/80 italic mb-1" v-if="exploreEvent">"{{ exploreEvent }}"</div>
             <div class="text-[9px] text-slate-400 mb-1">성공 확률 {{ Math.round(exploreChance*100) }}%</div>
             <div class="explore-bar"><div class="explore-fill bg-yellow-400" :style="{width: ((15-exploreTimer)/15*100)+'%'}"></div></div>
             <div class="text-[9px] text-slate-500 mt-1">{{ fmtTime(exploreTimer) }}</div>
+          </div>
+          <div v-if="exploring && exploreChoice" class="card py-2 px-3" style="border-color:rgba(250,204,21,0.5);background:rgba(250,204,21,0.08)">
+            <div class="text-xs font-bold text-yellow-300 mb-1">🚀 {{ explorePlanet.name }} 탐사중...</div>
+            <div class="text-[10px] text-amber-200 mb-2">"{{ exploreChoice.text }}"</div>
+            <div class="flex gap-2">
+              <button class="btn btn-sm flex-1" style="background:#059669;color:#fff;font-size:9px" @click="resolveExploreChoice(0)">{{ exploreChoice.optA.text }}</button>
+              <button class="btn btn-sm flex-1" style="background:#dc2626;color:#fff;font-size:9px" @click="resolveExploreChoice(1)">{{ exploreChoice.optB.text }}</button>
+            </div>
           </div>
 
           <div v-for="p in visiblePlanets" :key="p.id" class="card py-2 px-3" :class="{'opacity-70': p.explorationLevel >= p.maxLevel}" :style="p.explorationLevel > 0 ? 'border-color:rgba(52,211,153,0.3)' : ''">
@@ -415,11 +423,23 @@
           <div class="text-[9px] text-slate-600 mt-1">함대 → 탐험 탭에서 개척 가능</div>
         </div>
 
-        <div v-for="c in visibleColonies" :key="c.planetId" class="card py-2 px-3" style="border-color:rgba(56,189,248,0.2)">
+        <div v-for="c in visibleColonies" :key="c.planetId" class="card py-2 px-3" :style="'border-color:'+(colonyTier(c)>=4?'rgba(250,204,21,0.5)':colonyTier(c)>=3?'rgba(56,189,248,0.4)':colonyTier(c)>=2?'rgba(52,211,153,0.3)':'rgba(56,189,248,0.2)')">
           <div class="flex items-center justify-between mb-1">
             <span class="text-xs font-bold text-sky-200">{{ c.name }}</span>
-            <span class="text-[9px] text-sky-400" v-if="c.transporting">🚀 운송중 {{ fmtTime(c.transportTime - c.transportProgress) }}</span>
-            <span class="text-[9px] text-slate-500" v-else>생산속도 ×{{ c.prodSpeed }}</span>
+            <div class="flex items-center gap-1">
+              <span class="text-[8px]" :class="colonyTier(c)>=4?'text-yellow-300':colonyTier(c)>=3?'text-sky-300':colonyTier(c)>=2?'text-emerald-300':'text-slate-500'">
+                {{ ['','🏕️ 전초기지','🏘️ 정착지','🏙️ 도시','🌆 메트로폴리스'][colonyTier(c)] || '' }}
+              </span>
+              <span class="text-[9px] text-sky-400" v-if="c.transporting">🚀 {{ fmtTime(c.transportTime - c.transportProgress) }}</span>
+            </div>
+          </div>
+          <div v-if="c.transporting" class="transport-bar mb-1" :style="{width: Math.min(100, (c.transportProgress/c.transportTime*100))+'%'}"></div>
+          <div class="text-[8px] text-slate-500 mb-1">{{ {resource:'⛏️ 자원',research:'🔬 연구',military:'⚔️ 군사'}[c.specialization] || '⛏️ 자원' }} 전문화 · 속도 ×{{ c.prodSpeed }}</div>
+          <div v-if="c.eventBoost && c.eventBoost.multiplier && c.eventBoost.timer > 0" class="text-[8px] text-yellow-400 mb-1 animate-pulse">
+            💥 생산 부스트 ×{{ c.eventBoost.multiplier }} ({{ fmtTime(c.eventBoost.timer) }})
+          </div>
+          <div v-if="c.eventBoost && c.eventBoost.haltTimer && c.eventBoost.haltTimer > 0" class="text-[8px] text-rose-400 mb-1 animate-pulse">
+            🌪️ 생산 중단! ({{ fmtTime(c.eventBoost.haltTimer) }})
           </div>
 
           <div class="grid grid-cols-3 gap-1 mb-2">
@@ -446,6 +466,12 @@
           <button class="btn btn-sm btn-warning w-full text-[9px]" @click="startTransport(c)" :disabled="c.transporting || colonizer.count <= 0">
             {{ c.transporting ? '🚀 운송중...' : '📦 본진으로 운송' }}
           </button>
+          <div v-if="autoTransportUnlocked" class="flex items-center justify-center gap-2 mt-1">
+            <button class="btn btn-sm text-[8px]" :class="c.autoTransport ? 'btn-success' : 'btn-ghost'" @click="c.autoTransport = !c.autoTransport" style="padding:2px 8px">
+              {{ c.autoTransport ? '✅ 자동운송 ON' : '📦 자동운송 OFF' }}
+            </button>
+            <span class="text-[7px] text-slate-600" v-if="c.totalTransported > 0">총 {{ fmt(c.totalTransported) }} 운송</span>
+          </div>
         </div>
       </div>
 
@@ -562,6 +588,26 @@
           <div class="text-[9px] text-slate-500 mt-1" v-else>모든 것을 초기화하고 영구 보너스를 얻습니다.</div>
           <button class="btn btn-sm btn-warning mt-1" @click="prestige">✨ 환생 (총 자산 100k 이상)</button>
         </div>
+      </div>
+    </div>
+
+    <!-- 전문화 선택 오버레이 -->
+    <div class="overlay" v-if="colonySpecializing" @click.self="cancelSpecialization">
+      <div class="modal">
+        <div class="text-sm font-bold text-amber-300 mb-2">🏙️ {{ colonySpecializing.name }} 전문화 선택</div>
+        <div class="text-[10px] text-slate-400 mb-3">식민함선 1척을 소모합니다. 전문화를 선택하세요:</div>
+        <div class="space-y-2">
+          <div v-for="s in [{id:'resource',icon:'⛏️',name:'자원 전초기지',desc:'모든 자원 생산 +25%, 운송량 +50%'},{id:'research',icon:'🔬',name:'연구 거점',desc:'인지도 +30%, 연구속도 +20%'},{id:'military',icon:'⚔️',name:'군사 기지',desc:'함대 전투력 +20%, 약탈피해 -50%'}]" :key="s.id" class="card py-2 px-3" style="cursor:pointer;border-color:rgba(56,189,248,0.3)" @click="chooseSpecialization(s.id)">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">{{ s.icon }}</span>
+              <div>
+                <div class="text-xs font-bold text-slate-200">{{ s.name }}</div>
+                <div class="text-[9px] text-slate-500">{{ s.desc }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-ghost w-full mt-2 text-[10px]" @click="cancelSpecialization">취소</button>
       </div>
     </div>
 
