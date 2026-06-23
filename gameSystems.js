@@ -643,7 +643,16 @@ const COLONY_FACTORY_TYPES = [
       },
 
       visiblePlanets() {
-        return this.planets.filter(p => p.fameNeeded <= this.awareness);
+        if (this.planets.length > 0) {
+          const p0 = this.planets[0];
+          console.log('[행성개척] planets[0] fameNeeded:', p0.fameNeeded, 'awareness:', this.awareness, 'keys:', Object.keys(p0).join(','), 'id:', p0.id);
+        }
+        const result = this.planets.filter(p => {
+          const pass = p.fameNeeded <= this.awareness;
+          if (!pass) console.warn('[행성개척] 필터실패:', p.id, 'fameNeeded:', p.fameNeeded, 'awareness:', this.awareness);
+          return pass;
+        });
+        return result;
       },
 
       canExplore(p) {
