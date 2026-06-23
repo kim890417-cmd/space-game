@@ -635,6 +635,8 @@
       mixins: [window.GameSystemsMixin],
       mounted() {
         this.loadSystems(); this.applyOffline(); this.recalcMaxes();
+        console.log('[행성개척] 마운트됨 - planets:', this.planets?.length, 'awareness:', this.awareness, 'visiblePlanets:', this.visiblePlanets?.length);
+        if (this.planets?.length > 0) console.log('[행성개척] planets[0] keys:', Object.keys(this.planets[0]).join(','), 'fameNeeded:', this.planets[0].fameNeeded);
         this.gameTick(); setInterval(this.gameTick.bind(this), 100);
       },
       methods: {
