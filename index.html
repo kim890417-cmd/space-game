@@ -69,6 +69,11 @@
     .explore-bar { height: 4px; background: #1e293b; border-radius: 2px; overflow: hidden; }
     .explore-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
     .cheat-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .travel-warp { position:relative; width:120px; height:120px; margin:0 auto; }
+    .warp-ring { position:absolute; inset:0; border-radius:50%; border:3px solid rgba(56,189,248,0.3); animation:warpPulse 1.5s ease-out infinite; }
+    .warp-ring-2 { animation-delay:0.5s; }
+    .warp-ring-3 { animation-delay:1s; }
+    @keyframes warpPulse { 0%{transform:scale(0.3);opacity:1} 100%{transform:scale(1.5);opacity:0} }
   </style>
 </head>
 <body>
@@ -159,7 +164,7 @@
           <div v-for="b in visibleBuildings" :key="b.id" class="card relative build-card" :class="{'shake': b.cooldown>0 && b.level>0}">
             <div class="flex gap-2">
               <div class="img-wrap">
-                <img :src="b.img" :alt="b.name" class="build-img" onerror="this.src='https://placehold.co/80x72/0f172a/38bdf8?text='+encodeURIComponent(this.alt)">
+                <img :src="b.img" :alt="b.name" class="build-img" onerror="this.src='https://placehold.co/80x72/0f172a/38bdf8?text='+encodeURIComponent(this.alt)" @click.stop="showPreview(b.img)" style="cursor:pointer">
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
@@ -219,7 +224,7 @@
           <div v-for="s in visibleShips" :key="s.type" class="card py-2 px-3" :style="s.type==='scout' ? 'border-color:rgba(56,189,248,0.4)' : 'border-color:rgba(30,41,59,1)'">
             <div class="flex gap-2">
               <div class="flex-shrink-0" style="width:100px">
-                <img :src="s.img" :alt="s.name" class="ship-img" onerror="this.src='https://placehold.co/100x80/0f172a/38bdf8?text='+encodeURIComponent(s.name)">
+                <img :src="s.img" :alt="s.name" class="ship-img" onerror="this.src='https://placehold.co/100x80/0f172a/38bdf8?text='+encodeURIComponent(s.name)" @click.stop="showPreview(s.img)" style="cursor:pointer">
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
@@ -283,7 +288,7 @@
           <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.3)">
             <div class="flex gap-2">
               <div class="flex-shrink-0" style="width:100px">
-                <img src="img/ship-colonizer.jpg" alt="식민 함선" class="ship-img" onerror="this.src='https://placehold.co/100x80/0f172a/eab308?text=Colonizer'">
+                <img src="img/ship-colonizer.jpg" alt="식민 함선" class="ship-img" onerror="this.src='https://placehold.co/100x80/0f172a/eab308?text=Colonizer'" @click.stop="showPreview('img/ship-colonizer.jpg')" style="cursor:pointer">
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
@@ -317,6 +322,14 @@
             <div class="text-[8px] text-slate-600" v-if="fameMilestones.filter(m=>m.reached).length < 4">🔒 새 행성은 명성 업적 달성 시 개방됩니다</div>
           </div>
 
+          <!-- Big 행성개척 button -->
+          <div v-if="!exploring" class="card py-3 px-3 text-center" style="border-color:rgba(250,204,21,0.3);cursor:pointer" @click="triggerPlanetColonization()">
+            <div class="text-3xl mb-1">🪐</div>
+            <div class="text-sm font-bold text-amber-300 mb-1">🌍 행성 개척 시작</div>
+            <div class="text-[9px] text-slate-500">클릭하여 탐험 가능한 행성을 확인하세요</div>
+            <div class="text-[8px] text-rose-400/80 mt-1" v-if="colonizer.count <= 0">⚠️ 식민 함선이 필요합니다 (함선 탭에서 건조)</div>
+          </div>
+
           <div v-if="exploring" class="card py-2 px-3" style="border-color:rgba(250,204,21,0.5)">
             <div class="text-xs font-bold text-yellow-300 mb-1">🚀 {{ explorePlanet.name }} 탐험중...</div>
             <div class="text-[9px] text-sky-300/80 mb-1 italic">{{ exploreFlavor }}</div>
@@ -325,22 +338,26 @@
             <div class="text-[9px] text-slate-500 mt-1">{{ fmtTime(exploreTimer) }}</div>
           </div>
 
+          <div class="text-[10px] font-bold text-slate-400 mt-1 mb-1">🪐 탐험 가능 행성</div>
+
           <div v-for="p in visiblePlanets" :key="p.id" class="card py-2 px-3" :class="{'opacity-70': p.explorationLevel >= p.maxLevel}" :style="p.explorationLevel > 0 ? 'border-color:rgba(52,211,153,0.3)' : ''">
             <div class="flex gap-2 items-center">
               <div class="flex-shrink-0" style="width:80px">
-                <img :src="p.img" :alt="p.name" class="planet-img" onerror="this.src='https://placehold.co/80x64/0f172a/38bdf8?text='+encodeURIComponent(p.name)">
+                <img :src="p.img" :alt="p.name" class="planet-img" onerror="this.src='https://placehold.co/80x64/0f172a/38bdf8?text='+encodeURIComponent(p.name)" @click.stop="showPreview(p.img)" style="cursor:pointer">
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <span class="text-xs font-bold" :class="p.explorationLevel > 0 ? 'text-emerald-400' : 'text-slate-200'">{{ p.icon }} {{ p.name }}</span>
-                  <span class="text-[9px]" :class="p.explorationLevel > 0 ? 'text-emerald-400' : 'text-slate-500'">{{ p.explorationLevel > 0 ? '개척 LV '+p.explorationLevel+'/'+p.maxLevel : '🌋 초급' }}</span>
+                  <span class="text-[9px]" :class="p.explorationLevel > 0 ? 'text-emerald-400' : 'text-slate-500'">{{ p.explorationLevel > 0 ? '개척 LV '+p.explorationLevel+'/'+p.maxLevel : '🌋 미개척' }}</span>
                 </div>
                 <div class="text-[9px] text-slate-500">{{ p.bonusDesc }}</div>
                 <div class="text-[8px] text-amber-300/80 mt-px">특성: {{ p.specialty }}</div>
+                <div class="text-[8px] text-emerald-400/80 mt-px" v-if="p.explorationLevel > 0">✅ 개척 보너스 활성화</div>
                 <div v-if="p.explorationLevel < p.maxLevel && !exploring" class="mt-1">
                   <div class="flex items-center gap-2">
                     <span class="text-[9px] text-amber-400">성공 {{ Math.round(exploreChanceFor(p)*100) }}%</span>
                     <button class="btn btn-sm btn-warning" @click="startExplore(p)" :disabled="!canExplore(p)">🚀 탐험</button>
+                    <span class="text-[8px] text-rose-400" v-if="!canExplore(p) && canExploreReason(p)">{{ canExploreReason(p) }}</span>
                   </div>
                 </div>
                 <div v-else-if="p.explorationLevel >= p.maxLevel" class="mt-1 text-[9px] text-emerald-400">✅ 최대 개척 완료!</div>
@@ -394,6 +411,7 @@
           <div class="text-xs font-bold text-sky-300 mb-1">🏙️ 식민지 관리</div>
           <div class="text-[9px] text-slate-500">각 식민지는 독립된 자원과 공장을 운영합니다. 운송선을 보내 본진으로 자원을 옮기세요.</div>
           <div class="text-[8px] text-amber-400/80 mt-1">식민함선 {{ colonizer.count }}척 · 운송량 {{ colonizer.count * colonizer.level * 50 }}/회</div>
+          <div class="text-[8px] text-emerald-400/80 mt-1" v-if="colonies.length > 0">🌍 식민지 혜택: 인지도 +{{ fmt(colonyAwarenessPerSec) }}/s · 수입 +{{ fmt(colonyIncomePerSec) }}/s</div>
         </div>
 
         <div v-if="colonyCount === 0" class="card py-2 px-3 text-center">
@@ -402,10 +420,18 @@
         </div>
 
         <div v-for="c in visibleColonies" :key="c.planetId" class="card py-2 px-3" style="border-color:rgba(56,189,248,0.2)">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-xs font-bold text-sky-200">{{ c.name }}</span>
-            <span class="text-[9px] text-sky-400" v-if="c.transporting">🚀 운송중 {{ fmtTime(c.transportTime - c.transportProgress) }}</span>
-            <span class="text-[9px] text-slate-500" v-else>생산속도 ×{{ c.prodSpeed }}</span>
+          <div class="flex items-center gap-2 mb-1">
+            <div class="flex-shrink-0" style="width:50px">
+              <img :src="planetImageForColony(c.planetId)" alt="" class="planet-img" style="height:40px;width:50px" @click.stop="showPreview(planetImageForColony(c.planetId))" v-if="planetImageForColony(c.planetId)">
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-sky-200">{{ c.name }}</span>
+                <span class="text-[9px] text-sky-400" v-if="c.transporting">🚀 운송중 {{ fmtTime(c.transportTime - c.transportProgress) }}</span>
+                <span class="text-[9px] text-slate-500" v-else>생산속도 ×{{ c.prodSpeed }}</span>
+              </div>
+              <div class="text-[8px] text-emerald-400/80">🏭 총 공장 레벨 {{ colonyTotalFactoryLevel(c) }} · 혜택: 인지도 +{{ fmt(colonyAwarenessRate(c)) }}/s</div>
+            </div>
           </div>
 
           <div class="grid grid-cols-3 gap-1 mb-2">
@@ -413,6 +439,7 @@
               <div>{{ colonyFactoryTypes[f.id].icon }} {{ colonyFactoryTypes[f.id].name }}</div>
               <div class="text-purple-300" v-if="f.level > 0">LV {{ f.level }}</div>
               <div class="text-slate-600" v-else>미건설</div>
+              <div class="text-[7px] text-emerald-400/60" v-if="f.level > 0">+{{ fmt(colonyFactoryRate(c, f)) }}/s</div>
               <button class="btn btn-sm mt-1" :class="f.level >= 20 ? 'btn-ghost' : 'btn-primary'" style="font-size:7px;padding:2px 6px" @click="upgradeColonyFactory(c, f.id)" :disabled="!canUpgradeColonyFactory(c, f.id)">{{ f.level >= 20 ? 'MAX' : '⬆️ '+fmt(colonyUpgradeCost(f.level)) }}</button>
             </div>
           </div>
@@ -429,9 +456,11 @@
             </span>
           </div>
 
-          <button class="btn btn-sm btn-warning w-full text-[9px]" @click="startTransport(c)" :disabled="c.transporting || colonizer.count <= 0">
-            {{ c.transporting ? '🚀 운송중...' : '📦 본진으로 운송' }}
-          </button>
+          <div class="flex gap-1">
+            <button class="btn btn-sm btn-warning flex-1 text-[9px]" @click="startTransport(c)" :disabled="c.transporting || colonizer.count <= 0">
+              {{ c.transporting ? '🚀 운송중...' : '📦 본진으로 운송' }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -559,6 +588,22 @@
       <div class="nav-item" :class="{active: activeTab==='colony'}" @click="activeTab='colony'"><span class="nav-icon">🏙️</span><div>식민지</div><span class="nav-badge" v-if="colonyCount">{{ colonyCount }}</span></div>
       <div class="nav-item" :class="{active: activeTab==='research'}" @click="activeTab='research'"><span class="nav-icon">🔬</span><div>연구</div></div>
       <div class="nav-item" :class="{active: activeTab==='info'}" @click="activeTab='info'"><span class="nav-icon">👤</span><div>정보</div></div>
+    </div>
+
+    <!-- IMAGE PREVIEW -->
+    <div class="overlay" v-if="previewImage" @click="closePreview()" style="z-index:300;cursor:pointer">
+      <img :src="previewImage" style="max-width:90vw;max-height:90vh;border-radius:12px;border:2px solid var(--accent);box-shadow:0 0 40px rgba(56,189,248,0.3)">
+    </div>
+
+    <!-- SPACE TRAVEL OVERLAY -->
+    <div class="overlay" v-if="exploreTravelOverlay" style="z-index:150;flex-direction:column;background:rgba(0,0,0,0.9)">
+      <div class="travel-warp">
+        <div class="warp-ring"></div>
+        <div class="warp-ring warp-ring-2"></div>
+        <div class="warp-ring warp-ring-3"></div>
+      </div>
+      <div style="color:var(--accent);font-size:18px;font-weight:bold;margin-top:20px;font-family:'Orbitron';text-shadow:0 0 20px rgba(56,189,248,0.5)">WARP DRIVE ACTIVE</div>
+      <div style="color:var(--text-dim);font-size:13px;margin-top:8px">🚀 {{ exploreFlavor }}</div>
     </div>
 
     <!-- RAID ALERT -->

@@ -172,7 +172,7 @@
           <div v-for="b in visibleBuildings" :key="b.id" class="card relative build-card" :class="{'shake': b.cooldown>0 && b.level>0}">
             <div class="flex gap-2">
               <div class="img-wrap">
-                <img :src="b.img" :alt="b.name" class="build-img" onerror="this.src='https://placehold.co/80x72/0f172a/38bdf8?text='+encodeURIComponent(this.alt)">
+                <img :src="b.img" :alt="b.name" class="build-img" onerror="this.src='https://placehold.co/80x72/0f172a/38bdf8?text='+encodeURIComponent(this.alt)" @click.stop="showPreview(b.img)" style="cursor:pointer">
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
@@ -232,7 +232,7 @@
           <div v-for="s in visibleShips" :key="s.type" class="card py-2 px-3" :style="!isShipUnlocked(s) ? 'border-color:rgba(251,113,133,0.3);opacity:0.7' : ''">
             <div class="flex gap-2">
               <div class="flex-shrink-0" style="width:100px">
-                <img :src="s.img" :alt="s.name" class="ship-img" onerror="this.src='https://placehold.co/100x80/0f172a/38bdf8?text='+encodeURIComponent(s.name)">
+                <img :src="s.img" :alt="s.name" class="ship-img" onerror="this.src='https://placehold.co/100x80/0f172a/38bdf8?text='+encodeURIComponent(s.name)" @click.stop="showPreview(s.img)" style="cursor:pointer">
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
@@ -295,7 +295,7 @@
           <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.3)">
             <div class="flex gap-2">
               <div class="flex-shrink-0" style="width:100px">
-                <img src="img/ship-colonizer.jpg" alt="식민 함선" class="ship-img" onerror="this.src='https://placehold.co/100x80/0f172a/eab308?text=Colonizer'">
+                <img src="img/ship-colonizer.jpg" alt="식민 함선" class="ship-img" onerror="this.src='https://placehold.co/100x80/0f172a/eab308?text=Colonizer'" @click.stop="showPreview('img/ship-colonizer.jpg')" style="cursor:pointer">
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
@@ -450,6 +450,7 @@
           <div class="text-xs font-bold text-sky-300 mb-1">🏙️ 식민지 관리</div>
           <div class="text-[9px] text-slate-500">각 식민지는 독립된 자원과 공장을 운영합니다. 운송선을 보내 본진으로 자원을 옮기세요.</div>
           <div class="text-[8px] text-amber-400/80 mt-1">식민함선 {{ colonizer.count }}척 · 운송량 {{ colonizer.count * colonizer.level * 50 }}/회</div>
+          <div class="text-[8px] text-emerald-400/80 mt-1" v-if="colonies.length > 0">🌍 식민지 혜택: 인지도 +{{ fmt(colonyAwarenessPerSec) }}/s · 수입 +{{ fmt(colonyIncomePerSec) }}/s</div>
         </div>
 
         <div v-if="colonyCount === 0" class="card py-2 px-3 text-center">
@@ -458,8 +459,13 @@
         </div>
 
         <div v-for="c in visibleColonies" :key="c.planetId" class="card py-2 px-3" :style="'border-color:'+(colonyTier(c)>=4?'rgba(250,204,21,0.5)':colonyTier(c)>=3?'rgba(56,189,248,0.4)':colonyTier(c)>=2?'rgba(52,211,153,0.3)':'rgba(56,189,248,0.2)')">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-xs font-bold text-sky-200">{{ c.name }}</span>
+          <div class="flex items-center gap-2 mb-1">
+            <div class="flex-shrink-0" style="width:50px">
+              <img :src="planetImageForColony(c.planetId)" alt="" class="planet-img" style="height:40px;width:50px" @click.stop="showPreview(planetImageForColony(c.planetId))" v-if="planetImageForColony(c.planetId)">
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-bold text-sky-200">{{ c.name }}</span>
             <div class="flex items-center gap-1">
               <span class="text-[8px]" :class="colonyTier(c)>=4?'text-yellow-300':colonyTier(c)>=3?'text-sky-300':colonyTier(c)>=2?'text-emerald-300':'text-slate-500'">
                 {{ ['','🏕️ 전초기지','🏘️ 정착지','🏙️ 도시','🌆 메트로폴리스'][colonyTier(c)] || '' }}
@@ -652,6 +658,22 @@
       <div class="nav-item" :class="{active: activeTab==='colony'}" @click="activeTab='colony'"><span class="nav-icon">🏙️</span><div>식민지</div><span class="nav-badge" v-if="colonyCount">{{ colonyCount }}</span></div>
       <div class="nav-item" :class="{active: activeTab==='research'}" @click="activeTab='research'"><span class="nav-icon">🔬</span><div>연구</div></div>
       <div class="nav-item" :class="{active: activeTab==='info'}" @click="activeTab='info'"><span class="nav-icon">👤</span><div>정보</div></div>
+    </div>
+
+    <!-- IMAGE PREVIEW -->
+    <div class="overlay" v-if="previewImage" @click="closePreview()" style="z-index:300;cursor:pointer">
+      <img :src="previewImage" style="max-width:90vw;max-height:90vh;border-radius:12px;border:2px solid var(--accent);box-shadow:0 0 40px rgba(56,189,248,0.3)">
+    </div>
+
+    <!-- SPACE TRAVEL OVERLAY -->
+    <div class="overlay" v-if="exploreTravelOverlay" style="z-index:150;flex-direction:column;background:rgba(0,0,0,0.9)">
+      <div class="travel-warp">
+        <div class="warp-ring"></div>
+        <div class="warp-ring warp-ring-2"></div>
+        <div class="warp-ring warp-ring-3"></div>
+      </div>
+      <div style="color:var(--accent);font-size:18px;font-weight:bold;margin-top:20px;font-family:'Orbitron';text-shadow:0 0 20px rgba(56,189,248,0.5)">WARP DRIVE ACTIVE</div>
+      <div style="color:var(--text-dim);font-size:13px;margin-top:8px">🚀 {{ exploreFlavor }}</div>
     </div>
 
     <!-- OFFLINE REPORT -->

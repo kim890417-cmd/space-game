@@ -60,11 +60,11 @@ const BUILDING_TEMPLATES = [
   const SHIP_TEMPLATES = [
     { type: 'scout', name: '정찰기', icon: '🛰️', power: 2, cost: { metal: 150 }, time: 5, strongAgainst: 'raider', awarenessNeeded: 0, img: 'img/ship-scout.jpg', maxLevel: 15, upgradeTime: 15, special: '정찰' },
     { type: 'corvette', name: '초계함', icon: '🚀', power: 6, cost: { metal: 600 }, time: 25, strongAgainst: 'pirate_fleet', awarenessNeeded: 15, img: 'img/ship-corvette.jpg', maxLevel: 12, upgradeTime: 30 },
-    { type: 'frigate', name: '호위함', icon: '🛡️', power: 14, cost: { metal: 1500, crystal: 400 }, time: 70, strongAgainst: 'marauder', awarenessNeeded: 50, img: 'img/ship-frigate.jpg', maxLevel: 10, upgradeTime: 50 },
-    { type: 'destroyer', name: '구축함', icon: '⚔️', power: 28, cost: { metal: 3200, crystal: 1200 }, time: 150, strongAgainst: 'juggernaut', awarenessNeeded: 120, img: 'img/ship-destroyer.jpg', maxLevel: 8, upgradeTime: 90 },
-    { type: 'cruiser', name: '순양함', icon: '🔱', power: 50, cost: { metal: 7000, crystal: 3500, hydrogen: 1000 }, time: 350, strongAgainst: 'raider', awarenessNeeded: 250, img: 'img/ship-cruiser.jpg', maxLevel: 7, upgradeTime: 180 },
+    { type: 'frigate', name: '호위함', icon: '🛡️', power: 14, cost: { metal: 1500, crystal: 400 }, time: 70, strongAgainst: 'marauder', awarenessNeeded: 50, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 50 },
+    { type: 'destroyer', name: '구축함', icon: '⚔️', power: 28, cost: { metal: 3200, crystal: 1200 }, time: 150, strongAgainst: 'juggernaut', awarenessNeeded: 120, img: 'img/ship-carrier.jpg', maxLevel: 8, upgradeTime: 90 },
+    { type: 'cruiser', name: '순양함', icon: '🔱', power: 50, cost: { metal: 7000, crystal: 3500, hydrogen: 1000 }, time: 350, strongAgainst: 'raider', awarenessNeeded: 250, img: 'img/ship-frigate.jpg', maxLevel: 7, upgradeTime: 180 },
     { type: 'battleship', name: '전함', icon: '🚢', power: 90, cost: { metal: 18000, crystal: 9000, hydrogen: 3000 }, time: 700, strongAgainst: 'pirate_fleet', awarenessNeeded: 450, img: 'img/ship-battleship.jpg', maxLevel: 6, upgradeTime: 350 },
-    { type: 'carrier', name: '항공모함', icon: '✈️', power: 170, cost: { metal: 45000, crystal: 22000, hydrogen: 8000, plasma: 2000 }, time: 1600, strongAgainst: 'marauder', awarenessNeeded: 700, img: 'img/ship-carrier.jpg', maxLevel: 5, upgradeTime: 600 },
+    { type: 'carrier', name: '항공모함', icon: '✈️', power: 170, cost: { metal: 45000, crystal: 22000, hydrogen: 8000, plasma: 2000 }, time: 1600, strongAgainst: 'marauder', awarenessNeeded: 700, img: 'img/ship-destroyer.jpg', maxLevel: 5, upgradeTime: 600 },
     { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 320, cost: { metal: 110000, crystal: 55000, hydrogen: 20000, plasma: 8000 }, time: 3000, strongAgainst: 'juggernaut', awarenessNeeded: 1100, img: 'img/ship-dreadnought.jpg', maxLevel: 4, upgradeTime: 1000 }
   ];
 
@@ -216,7 +216,12 @@ const COLONY_FACTORY_TYPES = [
         speedMult: 1,
         prestigePoints: 0,
         prestigeBonus: 0,
-        fleetActiveTab: 'fleet_build'
+        fleetActiveTab: 'fleet_build',
+        previewImage: null,
+        exploreTravelOverlay: false,
+        exploreTravelTimer: 0,
+        exploreSelectMode: false,
+        autoTransportUnlocked: false
       };
     },
 
@@ -332,6 +337,51 @@ const COLONY_FACTORY_TYPES = [
           rates[t.res] += t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1);
         }
         return rates;
+      },
+      colonyAwarenessPerSec() {
+        let total = 0;
+        for (const c of this.colonies) total += this.colonyTotalFactoryLevel(c);
+        return parseFloat((total * 0.01).toFixed(2));
+      },
+      colonyIncomePerSec() {
+        let total = 0;
+        for (const c of this.colonies) total += this.colonyTotalFactoryLevel(c);
+        return parseFloat((total * 1.5).toFixed(2));
+      },
+      planetImageForColony(pid) {
+        const p = this.planets.find(x => x.id === pid);
+        return p ? p.img : null;
+      },
+      colonyTotalFactoryLevel(c) {
+        return c.factories.reduce((s, f) => s + f.level, 0);
+      },
+      colonyAwarenessRate(c) {
+        return parseFloat((this.colonyTotalFactoryLevel(c) * 0.01).toFixed(2));
+      },
+      colonyFactoryRate(c, f) {
+        if (f.level <= 0) return 0;
+        const t = this.colonyFactoryTypes[f.id];
+        return parseFloat((t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1)).toFixed(2));
+      },
+      bonusDescForPlanet(p) {
+        if (!p || p.explorationLevel <= 0) return '';
+        const bonus = Math.round((p.bonusPerLevel || 0) * p.explorationLevel * 100);
+        return `${p.bonusDesc.replace(/\(.*?\)/, `(+${bonus}%)`)}`;
+      },
+      planetImageForColony(pid) {
+        const p = this.planets.find(x => x.id === pid);
+        return p ? p.img : null;
+      },
+      colonyTotalFactoryLevel(c) {
+        return c.factories.reduce((s, f) => s + f.level, 0);
+      },
+      colonyAwarenessRate(c) {
+        return parseFloat((this.colonyTotalFactoryLevel(c) * 0.01).toFixed(2));
+      },
+      colonyFactoryRate(c, f) {
+        if (f.level <= 0) return 0;
+        const t = this.colonyFactoryTypes[f.id];
+        return parseFloat((t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1)).toFixed(2));
       }
     },
 
@@ -602,18 +652,26 @@ const COLONY_FACTORY_TYPES = [
       },
       exploreChanceFor(p) {
         if (p.explorationLevel >= p.maxLevel) return 0;
-        const power = this.colonizer.count * (this.colonizer.level || 1);
-        const diffMod = p.difficulty * (1 + 0.1 * p.explorationLevel);
-        return Math.min(0.90, power / diffMod);
+        const colonizerPower = this.colonizer.count * (this.colonizer.level || 1);
+        const fleetBonus = Math.min(2, 1 + this.totalShips * 0.005);
+        const power = colonizerPower * fleetBonus;
+        const diffMod = p.difficulty * (1 + 0.15 * p.explorationLevel);
+        return Math.min(0.70, power / (power + diffMod * 0.8));
       },
       startExplore(p) {
         if (!this.canExplore(p)) return;
-        this.exploring = true; this.explorePlanet = p;
-        this.exploreChance = this.exploreChanceFor(p);
-        this.exploreTimer = Math.max(5, 30 - (this.colonizer.level || 1) * 2);
-        this.exploreFlavor = '🚀 항성계로 진입 중...';
-        this.exploreFlavorTimer = 3;
-        this.toast(`🚀 ${p.name} 탐험 시작 (${Math.round(this.exploreChance*100)}%, ${this.fmtTime(this.exploreTimer)})`);
+        this.exploreTravelOverlay = true;
+        this.exploreTravelTimer = 2;
+        this.exploreFlavor = '🚀 항성계로 워프 중...';
+        this.toast(`🚀 ${p.name} 탐험 시작 (${Math.round(this.exploreChanceFor(p)*100)}%, ${this.fmtTime(Math.max(5, 30 - (this.colonizer.level || 1) * 2))})`);
+        setTimeout(() => {
+          this.exploreTravelOverlay = false;
+          this.exploring = true; this.explorePlanet = p;
+          this.exploreChance = this.exploreChanceFor(p);
+          this.exploreTimer = Math.max(5, 30 - (this.colonizer.level || 1) * 2);
+          this.exploreFlavor = '🚀 항성계로 진입 중...';
+          this.exploreFlavorTimer = 3;
+        }, 2000);
       },
       completeExplore() {
         const p = this.explorePlanet;
@@ -700,6 +758,11 @@ const COLONY_FACTORY_TYPES = [
             const rate = t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1) * dt;
             const cap = 1000 + f.level * 500;
             c.resources[t.res] = Math.min(cap, (c.resources[t.res] || 0) + rate);
+          }
+          const totalLv = c.factories.reduce((s, f) => s + f.level, 0);
+          if (totalLv > 0) {
+            this.awareness += totalLv * 0.01 * dt;
+            this.money = this.money.add(totalLv * 1.5 * dt);
           }
           if (c.transporting) {
             c.transportProgress += dt;
@@ -883,6 +946,31 @@ const COLONY_FACTORY_TYPES = [
         d.style.color = color || '#fde68a';
         d.textContent = text;
         layer.appendChild(d); setTimeout(() => d.remove(), 1000);
+      },
+
+      showPreview(src) { this.previewImage = src; },
+      closePreview() { this.previewImage = null; },
+
+      triggerPlanetColonization() {
+        if (this.colonizer.count <= 0) {
+          this.toast('🚫 식민 함선이 필요합니다. 함선 탭에서 건조하세요.');
+          this.fleetActiveTab = 'fleet_build';
+          return;
+        }
+        this.exploreTravelOverlay = true;
+        this.exploreTravelTimer = 2;
+        this.exploreFlavor = '🪐 행성 개척 임무를 시작합니다...';
+        setTimeout(() => {
+          this.exploreTravelOverlay = false;
+          this.toast('🌍 탐험 가능한 행성을 확인하세요');
+        }, 2000);
+      },
+
+      canExploreReason(p) {
+        if (p.explorationLevel >= p.maxLevel) return '최대 개척 완료';
+        if (this.exploring) return '이미 탐험 중';
+        if (this.colonizer.count <= 0) return '식민함선 필요';
+        return '';
       },
 
       addOfflineIncome(seconds) {

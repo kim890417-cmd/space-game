@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body { background: #0c101b; color: white; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        .colony-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 20px; }
+        .colony-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-top: 20px; }
         .card { background: #151f32; padding: 16px; border-radius: 12px; border: 1px solid #1e293b; }
         .card.active { border-color: #38bdf8; }
         .btn { background: #2563eb; padding: 6px 14px; color: white; border-radius: 8px; text-decoration: none; font-size: 12px; border: none; cursor: pointer; }
@@ -18,6 +18,8 @@
         .factory .lv { color: #a78bfa; font-size: 13px; font-weight: bold; }
         .no-colony { text-align: center; padding: 40px; color: #64748b; }
         .res-icon { margin-right: 2px; }
+        .colony-img { width: 60px; height: 40px; object-fit: cover; border-radius: 6px; background: #0f172a; cursor:pointer; }
+        .rate-tag { font-size:10px;color:#34d399; }
     </style>
 </head>
 <body>
@@ -34,20 +36,28 @@
         </div>
         <div class="colony-grid" v-else>
             <div v-for="c in colonies" :key="c.planetId" class="card" :class="{active: hasProduction(c)}">
-                <div style="font-size:14px;font-weight:bold;color:#7dd3fc;">🏙️ {{ c.name }}</div>
-                <div style="font-size:10px;color:#64748b;">생산속도 ×{{ c.prodSpeed }}</div>
+                <div class="flex items-center gap-2 mb-2">
+                    <img :src="planetImg(c)" class="colony-img" @click="previewImg=planetImg(c)" v-if="planetImg(c)">
+                    <div>
+                        <div style="font-size:14px;font-weight:bold;color:#7dd3fc;">🏙️ {{ c.name }}</div>
+                        <div style="font-size:10px;color:#64748b;">생산속도 ×{{ c.prodSpeed }} · 🏭 총레벨 {{ totalFactoryLevel(c) }}</div>
+                    </div>
+                </div>
                 <div class="res-grid">
                     <div v-for="(val, k) in c.resources" :key="k" class="res-tag" v-if="val > 0" :style="{color: {'metal':'#34d399','crystal':'#a78bfa','hydrogen':'#38bdf8','plasma':'#f472b6','solar':'#fbbf24','fission':'#fb7185','fusion':'#e879f9'}[k] || '#94a3b8'}">
                         <span class="res-icon">{{ {'metal':'⛏️','crystal':'💎','hydrogen':'⚡','plasma':'🔵','solar':'☀️','fission':'⚛️','fusion':'🔥'}[k] }}</span>
                         {{ formatNum(val) }}
+                        <span class="rate-tag" v-if="factoryRate(c, k)">+{{ formatNum(factoryRate(c, k)) }}/s</span>
                     </div>
                     <div v-if="Object.values(c.resources).every(v => v === 0)" style="font-size:10px;color:#64748b;">자원 없음</div>
                 </div>
+                <div style="font-size:9px;color:#38bdf8;margin:4px 0;" v-if="hasProduction(c)">⚡ 식민지 혜택: 인지도 +{{ formatNum(totalFactoryLevel(c) * 0.01) }}/s</div>
                 <div class="factory-grid">
                     <div v-for="f in c.factories" :key="f.id" class="factory">
                         <div>{{ ['⛏️','💎','⚡','🔵','☀️','⚛️'][f.id] || '🏭' }}</div>
                         <div class="lv">{{ f.level > 0 ? 'LV '+f.level : '0' }}</div>
                         <div style="font-size:8px;color:#64748b;">{{ ['메탈','크리스탈','수소','플라즈마','태양열','핵분열'][f.id] }}</div>
+                        <div style="font-size:7px;color:#34d399;" v-if="f.level>0">{{ formatNum(factoryBaseOutput(f.id) * f.level * (1 + 0.15*(f.level-1)) * (c.prodSpeed||1)) }}/s</div>
                     </div>
                 </div>
                 <div v-if="c.transporting" style="font-size:10px;color:#fbbf24;margin-top:4px;">
@@ -55,16 +65,28 @@
                 </div>
             </div>
         </div>
+        <div class="overlay" v-if="previewImg" @click="previewImg=null" style="cursor:pointer;z-index:100">
+            <img :src="previewImg" style="max-width:90vw;max-height:90vh;border-radius:12px;border:2px solid #38bdf8;box-shadow:0 0 40px rgba(56,189,248,0.3)">
+        </div>
     </div>
 
     <script src="vue.min.js"></script>
     <script>
         const RES_COLORS = { metal:'#34d399', crystal:'#a78bfa', hydrogen:'#38bdf8', plasma:'#f472b6', solar:'#fbbf24', fission:'#fb7185', fusion:'#e879f9' };
         const RES_ICONS = { metal:'⛏️', crystal:'💎', hydrogen:'⚡', plasma:'🔵', solar:'☀️', fission:'⚛️', fusion:'🔥' };
+        const FACTORY_BASE = [0.3, 0.2, 0.15, 0.1, 0.12, 0.08];
+        const FACTORY_NAMES = ['메탈','크리스탈','수소','플라즈마','태양열','핵분열'];
+        const FACTORY_ICONS = ['⛏️','💎','⚡','🔵','☀️','⚛️'];
+        const PLANET_IMGS = {
+            earth: 'img/planet-terran.jpg', venus: 'img/planet-desert.jpg',
+            europa: 'img/planet-ice.jpg', io: 'img/planet-lava.jpg',
+            titan: 'img/planet-gas.jpg', kepler: 'img/planet-alien.jpg',
+            andromeda: 'img/expedition.jpg'
+        };
 
         new Vue({
             el: '#app',
-            data: { colonies: [] },
+            data: { colonies: [], previewImg: null },
             methods: {
                 loadColonies() {
                     try {
@@ -76,6 +98,23 @@
                 },
                 hasProduction(c) {
                     return c.factories && c.factories.some(f => f.level > 0);
+                },
+                planetImg(c) {
+                    return PLANET_IMGS[c.planetId] || null;
+                },
+                totalFactoryLevel(c) {
+                    return c.factories ? c.factories.reduce((s, f) => s + f.level, 0) : 0;
+                },
+                factoryBaseOutput(id) {
+                    return FACTORY_BASE[id] || 0;
+                },
+                factoryRate(c, resKey) {
+                    if (!c.factories) return 0;
+                    const idx = {metal:0, crystal:1, hydrogen:2, plasma:3, solar:4, fission:5}[resKey];
+                    if (idx === undefined) return 0;
+                    const f = c.factories[idx];
+                    if (!f || f.level <= 0) return 0;
+                    return f.level * FACTORY_BASE[idx] * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1);
                 },
                 formatNum(n) {
                     if (!n || isNaN(n)) return '0';
