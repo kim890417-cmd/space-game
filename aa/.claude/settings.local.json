@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk '/new Vue\\\\\\(\\\\{/{f=1} f{print} /^        \\\\}\\\\\\);/{if\\(f\\) exit}' index.html)",
+      "Bash(node --check /tmp/vuecheck.js)",
+      "Read(//tmp/**)",
+      "Bash(node --check gameSystems.js)",
+      "Bash(node --check /tmp/vuecheck2.js)",
+      "Bash(node *)",
+      "Bash(curl -s -m 90 -o img/test-planet.jpg \"https://image.pollinations.ai/prompt/majestic%20blue%20ocean%20earth-like%20planet%20in%20deep%20space%2C%20cinematic%2C%20ultra%20detailed%2C%20stars%2C%20nebula?width=512&height=512&nologo=true&seed=7\")",
+      "Bash(echo \"exit=$?\")",
+      "Bash(xxd)",
+      "Bash(cat \"C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-User-Desktop-aa\\\\6a197d8d-9a3a-4987-a9b3-712c0e78165a\\\\tasks\\\\bi72k7kts.output\")",
+      "Bash(ls -la img/ship-*.jpg img/expedition.jpg img/nebula.jpg)"
+    ]
+  }
+}

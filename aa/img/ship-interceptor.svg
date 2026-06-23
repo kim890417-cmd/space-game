@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs><linearGradient id="bg_s2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c101b"/><stop offset="1" stop-color="#1a1a2e"/></linearGradient></defs>
+  <rect width="300" height="200" fill="url(#bg_s2)"/>
+  <ellipse cx="150" cy="170" rx="140" ry="40" fill="#0f172a" opacity="0.5"/>
+  <polygon points="150,35 135,90 165,90" fill="#334155" stroke="#64748b" stroke-width="1"/>
+  <polygon points="120,75 80,100 140,100" fill="#475569" stroke="#64748b" stroke-width="1"/>
+  <polygon points="180,75 220,100 160,100" fill="#475569" stroke="#64748b" stroke-width="1"/>
+  <rect x="135" y="90" width="30" height="20" rx="2" fill="#334155" stroke="#38bdf8" stroke-width="1"/>
+  <polygon points="140,110 160,110 150,125" fill="#f59e0b" opacity="0.8"/>
+  <circle cx="150" cy="80" r="3" fill="#fbbf24" opacity="0.8"/>
+  <text x="150" y="190" text-anchor="middle" fill="#64748b" font-size="11" font-family="sans-serif">요격기 | Interceptor</text>
+</svg>

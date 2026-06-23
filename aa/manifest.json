@@ -1,0 +1,19 @@
+{
+  "name": "스페이스 컴퍼니: 우주 건물주",
+  "short_name": "스페이스 컴퍼니",
+  "description": "우주 건물주가 되어 은하계를 정복하세요",
+  "start_url": "index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c101b",
+  "theme_color": "#0c101b",
+  "categories": ["games", "simulation"],
+  "icons": [
+    {
+      "src": "img/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
