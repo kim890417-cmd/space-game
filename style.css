@@ -1,0 +1,84 @@
+html, body { background-color: #0c101b !important; color: #e2e8f0 !important; margin: 0; padding: 0; }
+body { background-image: url('img/bg-space.jpg'); background-size: cover; background-position: center; background-attachment: fixed; }
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 2px; }
+::selection { background: rgba(56,189,248,0.3); }
+
+/* === Phase 1: 시각·촉감 피드백 === */
+@keyframes float-up {
+  0%   { transform: translate(-50%, 0)   scale(0.6); opacity: 0; }
+  15%  { transform: translate(-50%,-10px) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%,-90px) scale(1.0); opacity: 0; }
+}
+@keyframes pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 14px rgba(56,189,248,0.25); }
+  50%      { box-shadow: 0 0 28px rgba(56,189,248,0.55); }
+}
+@keyframes res-bump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.18); color: #fde68a; }
+  100% { transform: scale(1); }
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-4px); }
+  40%,80% { transform: translateX(4px); }
+}
+
+.float-text { position: fixed; pointer-events: none; z-index: 998;
+  font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 15px;
+  text-shadow: 0 0 8px currentColor, 0 2px 4px rgba(0,0,0,0.7);
+  animation: float-up 1s ease-out forwards; white-space: nowrap;
+}
+#fxLayer { position: fixed; inset: 0; pointer-events: none; z-index: 998; overflow: hidden; }
+
+.click-btn.pop { animation: pop 0.25s ease-out; }
+.click-btn.glow { animation: pulse-glow 1.2s ease-in-out infinite; }
+.res-val.bump, .res-val-lg.bump { animation: res-bump 0.3s ease-out; }
+.card.shake { animation: shake 0.4s ease-in-out; }
+.btn-success.flash, .btn-primary.flash { animation: pop 0.3s ease-out; }
+
+/* === Phase 2: 그래픽 요소 === */
+.content { background-image:
+  radial-gradient(ellipse at 20% 10%, rgba(56,189,248,0.10), transparent 55%),
+  radial-gradient(ellipse at 80% 90%, rgba(168,139,250,0.12), transparent 60%);
+  background-attachment: fixed;
+}
+.content::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: url('img/nebula.jpg'); opacity: 0.08; background-size: cover; mix-blend-mode: screen;
+}
+.content > * { position: relative; z-index: 1; }
+
+.build-img { height: 84px; transition: transform 0.2s, filter 0.2s; }
+.build-card:hover .build-img { transform: scale(1.06); filter: brightness(1.15) drop-shadow(0 0 8px rgba(56,189,248,0.4)); }
+.build-card { transition: transform 0.15s, box-shadow 0.2s; }
+.build-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(56,189,248,0.15); }
+
+.click-btn::before { content: '✨'; position: absolute; top: -6px; right: -6px; font-size: 14px; opacity: 0; transition: opacity 0.2s; }
+.click-btn:hover::before { opacity: 0.9; }
+.click-btn { position: relative; }
+
+.logo-co { display: inline-flex; align-items: center; gap: 4px; }
+.logo-co .planet { width: 18px; height: 18px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #7dd3fc, #0369a1 70%);
+  box-shadow: 0 0 8px rgba(56,189,248,0.6), inset -3px -3px 6px rgba(0,0,0,0.4); }
+
+.space-banner { display: flex; gap: 6px; justify-content: center; padding: 4px 0 6px; opacity: 0.85; }
+.space-banner .orb { width: 22px; height: 22px; border-radius: 50%; opacity: 0.7;
+  border: 1px solid rgba(56,189,248,0.3); transition: opacity 0.3s, transform 0.3s; }
+.space-banner .orb.on { opacity: 1; transform: scale(1.1); box-shadow: 0 0 10px currentColor; }
+.orb.terran  { background: radial-gradient(circle at 35% 30%, #86efac, #14532d); color: #34d399; }
+.orb.desert  { background: radial-gradient(circle at 35% 30%, #fde68a, #78350f); color: #fbbf24; }
+.orb.ice     { background: radial-gradient(circle at 35% 30%, #bae6fd, #0c4a6e); color: #38bdf8; }
+.orb.lava    { background: radial-gradient(circle at 35% 30%, #fca5a5, #7f1d1d); color: #fb7185; }
+.orb.gas     { background: radial-gradient(circle at 35% 30%, #d8b4fe, #4c1d95); color: #a78bfa; }
+.orb.alien   { background: radial-gradient(circle at 35% 30%, #fbcfe8, #831843); color: #f472b6; }
+
+.hdr-logo-svg { width: 20px; height: 20px; vertical-align: middle; filter: drop-shadow(0 0 6px rgba(56,189,248,0.6)); }
+

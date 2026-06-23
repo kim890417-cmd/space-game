@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs><linearGradient id="bg_p4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c101b"/><stop offset="1" stop-color="#1a1a2e"/></linearGradient>
+  <radialGradient id="ice"><stop offset="0" stop-color="#7dd3fc"/><stop offset="30%" stop-color="#0ea5e9"/><stop offset="60%" stop-color="#0369a1"/><stop offset="100%" stop-color="#0f172a"/></radialGradient></defs>
+  <rect width="300" height="200" fill="url(#bg_p4)"/>
+  <circle cx="150" cy="100" r="55" fill="url(#ice)"/>
+  <path d="M120 70 L140 60 L160 70 L150 85 L130 85 Z" fill="#bae6fd" opacity="0.2"/>
+  <path d="M110 100 L130 90 L145 100 L135 115 L115 115 Z" fill="#bae6fd" opacity="0.15"/>
+  <path d="M150 110 L170 100 L185 110 L175 125 L155 125 Z" fill="#bae6fd" opacity="0.12"/>
+  <circle cx="140" cy="75" r="1.5" fill="#e0f2fe" opacity="0.6"/>
+  <circle cx="165" cy="95" r="1" fill="#e0f2fe" opacity="0.5"/>
+  <circle cx="125" cy="110" r="1.5" fill="#e0f2fe" opacity="0.4"/>
+  <text x="150" y="180" text-anchor="middle" fill="#64748b" font-size="11" font-family="sans-serif">얼음 행성 | Ice</text>
+</svg>
