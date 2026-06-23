@@ -321,6 +321,19 @@ const COLONY_FACTORY_TYPES = [
           return p && p.explorationLevel > 0;
         });
       },
+      colonyAwarenessPerSec() {
+        let total = 0;
+        for (const c of this.colonies) total += this.colonyTotalFactoryLevel(c);
+        return parseFloat((total * 0.01).toFixed(2));
+      },
+      colonyIncomePerSec() {
+        let total = 0;
+        for (const c of this.colonies) total += this.colonyTotalFactoryLevel(c);
+        return parseFloat((total * 1.5).toFixed(2));
+      },
+    },
+
+    methods: {
       colonyBuildings(c) {
         if (!c || !c.factories) return [];
         return c.factories.map((f, i) => ({
@@ -338,16 +351,6 @@ const COLONY_FACTORY_TYPES = [
           rates[t.res] += t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1);
         }
         return rates;
-      },
-      colonyAwarenessPerSec() {
-        let total = 0;
-        for (const c of this.colonies) total += this.colonyTotalFactoryLevel(c);
-        return parseFloat((total * 0.01).toFixed(2));
-      },
-      colonyIncomePerSec() {
-        let total = 0;
-        for (const c of this.colonies) total += this.colonyTotalFactoryLevel(c);
-        return parseFloat((total * 1.5).toFixed(2));
       },
       planetImageForColony(pid) {
         const p = this.planets.find(x => x.id === pid);
@@ -369,9 +372,6 @@ const COLONY_FACTORY_TYPES = [
         const bonus = Math.round((p.bonusPerLevel || 0) * p.explorationLevel * 100);
         return `${p.bonusDesc.replace(/\(.*?\)/, `(+${bonus}%)`)}`;
       },
-    },
-
-    methods: {
       fmt(n) {
         try { const d = new Decimal(n); if (!d.isFinite()) return '0'; const abs = d.abs();
           if (abs.gte('1e30')) return d.toExponential(2).replace('e+', 'e');
