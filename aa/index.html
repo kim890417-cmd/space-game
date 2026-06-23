@@ -229,7 +229,7 @@
             <div class="text-[9px] text-slate-500" v-else>모든 명성 달성!</div>
           </div>
 
-          <div v-for="s in visibleShips" :key="s.type" class="card py-2 px-3">
+          <div v-for="s in visibleShips" :key="s.type" class="card py-2 px-3" :style="!isShipUnlocked(s) ? 'border-color:rgba(251,113,133,0.3);opacity:0.7' : ''">
             <div class="flex gap-2">
               <div class="flex-shrink-0" style="width:100px">
                 <img :src="s.img" :alt="s.name" class="ship-img" onerror="this.src='https://placehold.co/100x80/0f172a/38bdf8?text='+encodeURIComponent(s.name)">
@@ -237,7 +237,7 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <div>
-                    <span class="text-xs font-bold text-slate-200">{{ s.icon }} {{ s.name }}</span>
+                    <span class="text-xs font-bold" :class="!isShipUnlocked(s) ? 'text-rose-400' : 'text-slate-200'">{{ s.icon }} {{ s.name }}</span>
                     <span class="text-[9px] text-sky-300 ml-1">{{ ships[s.type].count }}척</span>
                   </div>
                   <span class="text-[9px] text-purple-300">LV {{ ships[s.type].level }}/{{ s.maxLevel }}</span>
@@ -248,8 +248,13 @@
                   <span class="text-amber-400/70 ml-1">· 건조 {{ fmtTime(s.time) }}/척</span>
                 </div>
 
+                <!-- 잠김 표시 -->
+                <div v-if="!isShipUnlocked(s)" class="mt-1 p-1.5 bg-slate-900/60 rounded text-center">
+                  <span class="text-[10px] text-rose-400">🔒 {{ s.name }} 해금 조건: <span class="text-amber-300">타이탄 성계</span> 개척</span>
+                </div>
+
                 <!-- 전투력 바 -->
-                <div class="flex items-center gap-1 mb-1">
+                <div v-else class="flex items-center gap-1 mb-1">
                   <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                     <div class="h-full rounded-full" :style="{width: Math.min(100, (s.power * (ships[s.type].level || 1) / 440)*100)+'%', background: 'linear-gradient(90deg, #34d399, #3b82f6)'}"></div>
                   </div>

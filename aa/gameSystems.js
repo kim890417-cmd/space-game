@@ -62,12 +62,12 @@ const BUILDING_TEMPLATES = [
     { type: 'scout', name: '정찰기', icon: '🛰️', power: 0, cost: { metal: 200, crystal: 100 }, time: 10, strongAgainst: null, awarenessNeeded: 0, img: 'img/ship-scout.jpg', maxLevel: 5, upgradeTime: 20, role: 'explore' },
     { type: 'corvette', name: '초계함', icon: '🛡️', power: 6, cost: { metal: 400 }, time: 30, strongAgainst: 'raider', awarenessNeeded: 0, img: 'img/ship-corvette.jpg', maxLevel: 8, upgradeTime: 40, role: 'combat' },
     { type: 'frigate', name: '호위함', icon: '🚀', power: 14, cost: { metal: 1200, crystal: 500 }, time: 120, strongAgainst: 'pirate_fleet', awarenessNeeded: 40, img: 'img/ship-fighter.jpg', maxLevel: 8, upgradeTime: 80, role: 'combat' },
-    { type: 'destroyer', name: '구축함', icon: '💥', power: 50, cost: { metal: 12000, crystal: 6000 }, time: 600, strongAgainst: 'marauder', awarenessNeeded: 120, img: 'img/ship-battleship.jpg', maxLevel: 7, upgradeTime: 300, role: 'combat' },
-    { type: 'cruiser', name: '순양함', icon: '⚡', power: 120, cost: { metal: 35000, crystal: 18000, hydrogen: 5000 }, time: 1500, strongAgainst: 'warship', awarenessNeeded: 220, img: 'img/ship-carrier.jpg', maxLevel: 6, upgradeTime: 600, role: 'combat' },
-    { type: 'battleship', name: '전함', icon: '🚢', power: 250, cost: { metal: 80000, crystal: 40000, hydrogen: 15000 }, time: 3500, strongAgainst: 'battle_group', awarenessNeeded: 450, img: 'img/ship-cruiser.jpg', maxLevel: 5, upgradeTime: 1000, role: 'combat' },
-    { type: 'carrier', name: '항공모함', icon: '✈️', power: 500, cost: { metal: 200000, crystal: 100000, hydrogen: 40000, plasma: 12000 }, time: 6000, strongAgainst: 'armada', awarenessNeeded: 700, img: 'img/ship-destroyer.jpg', maxLevel: 4, upgradeTime: 1600, role: 'combat' },
+    { type: 'destroyer', name: '구축함', icon: '💥', power: 50, cost: { metal: 12000, crystal: 6000 }, time: 600, strongAgainst: 'marauder', awarenessNeeded: 120, img: 'img/ship-destroyer.jpg', maxLevel: 7, upgradeTime: 300, role: 'combat' },
+    { type: 'cruiser', name: '순양함', icon: '⚡', power: 120, cost: { metal: 35000, crystal: 18000, hydrogen: 5000 }, time: 1500, strongAgainst: 'warship', awarenessNeeded: 220, img: 'img/ship-cruiser.jpg', maxLevel: 6, upgradeTime: 600, role: 'combat' },
+    { type: 'battleship', name: '전함', icon: '🚢', power: 250, cost: { metal: 80000, crystal: 40000, hydrogen: 15000 }, time: 3500, strongAgainst: 'battle_group', awarenessNeeded: 450, img: 'img/ship-battleship.jpg', maxLevel: 5, upgradeTime: 1000, role: 'combat' },
+    { type: 'carrier', name: '항공모함', icon: '✈️', power: 500, cost: { metal: 200000, crystal: 100000, hydrogen: 40000, plasma: 12000 }, time: 6000, strongAgainst: 'armada', awarenessNeeded: 700, img: 'img/ship-carrier.jpg', maxLevel: 4, upgradeTime: 1600, role: 'combat' },
     { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 1000, cost: { metal: 400000, crystal: 200000, hydrogen: 80000, plasma: 30000 }, time: 10000, strongAgainst: 'dreadnought', awarenessNeeded: 1200, img: 'img/ship-dreadnought.jpg', maxLevel: 3, upgradeTime: 3000, role: 'combat' },
-    { type: 'titan', name: '타이탄', icon: '🗿', power: 2500, cost: { metal: 800000, crystal: 400000, hydrogen: 200000, plasma: 100000 }, time: 20000, strongAgainst: 'dreadnought', awarenessNeeded: 2000, img: 'img/ship-colonizer.jpg', maxLevel: 2, upgradeTime: 6000, role: 'combat' }
+    { type: 'titan', name: '타이탄', icon: '🗿', power: 2500, cost: { metal: 800000, crystal: 400000, hydrogen: 200000, plasma: 100000 }, time: 20000, strongAgainst: 'dreadnought', awarenessNeeded: 2000, img: 'img/ship-colonizer.jpg', maxLevel: 2, upgradeTime: 6000, role: 'combat', requiredSystem: 'titan_system' }
   ];
 
   const PIRATE_TYPES = [
@@ -322,7 +322,14 @@ const EXPLORE_CHOICES = [
         return m;
       },
       visibleBuildings() { return this.buildings.filter(b => b.awarenessNeeded <= this.awareness); },
-      visibleShips() { return this.shipTypes.filter(s => s.awarenessNeeded <= this.awareness); },
+      visibleShips() {
+        return this.shipTypes.filter(s => s.awarenessNeeded <= this.awareness);
+      },
+      isShipUnlocked(s) {
+        if (!s.requiredSystem) return true;
+        const sys = this.starSystems.find(x => x.id === s.requiredSystem);
+        return sys && sys.status === 'colonized';
+      },
       visibleResources() {
         const vis = { metal: true };
         for (const b of this.buildings) if (b.level > 0 && b.res) vis[b.res] = true;
