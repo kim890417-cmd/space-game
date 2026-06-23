@@ -54,7 +54,15 @@ const BUILDING_TEMPLATES = [
     { id: 'r9', name: '핵융합 안정화', desc: '핵융합 생산 +100%', icon: '🔥', cost: { metal: 500000, crystal: 100000, hydrogen: 50000 }, time: 300, effect: g => { g.resMultipliers.fusion *= 2.0; }, requires: 'r3' },
     { id: 'r10', name: '우주 무역', desc: '소득 +40%', icon: '📈', cost: { metal: 800000, crystal: 200000, plasma: 50000 }, time: 400, effect: g => { g.incomeMult += 0.4; }, requires: 'r6' },
     { id: 'r11', name: '함선 생산 I', desc: '함선 건조 시간 -20%', icon: '🚀', cost: { metal: 300000, crystal: 80000 }, time: 150, effect: g => { g.shipBuildSpeedMult *= 0.8; }, requires: 'r4' },
-    { id: 'r12', name: '전투 교리', desc: '함대 전투력 +30%', icon: '⚔️', cost: { metal: 600000, crystal: 150000, solar: 30000 }, time: 200, effect: g => { g.fleetPowerMult *= 1.3; }, requires: 'r5' }
+    { id: 'r12', name: '전투 교리', desc: '함대 전투력 +30%', icon: '⚔️', cost: { metal: 600000, crystal: 150000, solar: 30000 }, time: 200, effect: g => { g.fleetPowerMult *= 1.3; }, requires: 'r5' },
+    { id: 'r13', name: '식민지 자동 운송', desc: '식민지 자원 자동 수송', icon: '📦', cost: { metal: 400000, crystal: 100000, hydrogen: 20000 }, time: 180, effect: g => { g.colonyAutoTransport = true; }, requires: 'r6' },
+    { id: 'r14', name: '식민지 자동화', desc: '식민지 공장 자동 업그레이드', icon: '🏭', cost: { metal: 800000, crystal: 250000, hydrogen: 80000, plasma: 15000 }, time: 350, effect: g => { g.colonyAutoUpgrade = true; }, requires: 'r13' },
+    { id: 'r15', name: '자동 채굴 드론', desc: '5초마다 자동 클릭', icon: '🤖', cost: { metal: 1500000, crystal: 500000, hydrogen: 100000, solar: 50000 }, time: 450, effect: g => { g.autoClicker = true; }, requires: 'r11' },
+    { id: 'r16', name: '건물 관리 AI', desc: '가장 저렴한 건물 자동 구매', icon: '🧠', cost: { metal: 3000000, crystal: 1000000, hydrogen: 300000, plasma: 100000 }, time: 600, effect: g => { g.autoBuilder = true; }, requires: 'r15' },
+    { id: 'r17', name: '우주 무역 II', desc: '소득 +60%', icon: '📈', cost: { metal: 5000000, crystal: 2000000, hydrogen: 500000, plasma: 200000 }, time: 900, effect: g => { g.incomeMult += 0.6; }, requires: 'r10' },
+    { id: 'r18', name: '함선 생산 II', desc: '함선 건조 시간 -30%', icon: '🚀', cost: { metal: 4000000, crystal: 1500000, solar: 200000 }, time: 600, effect: g => { g.shipBuildSpeedMult *= 0.7; }, requires: 'r11' },
+    { id: 'r19', name: '전투 교리 II', desc: '함대 전투력 +50%', icon: '⚔️', cost: { metal: 8000000, crystal: 3000000, hydrogen: 800000, solar: 300000 }, time: 800, effect: g => { g.fleetPowerMult *= 1.5; }, requires: 'r12' },
+    { id: 'r20', name: '에너지 저장 II', desc: '모든 저장고 +100%', icon: '📦', cost: { metal: 6000000, crystal: 2500000, plasma: 500000 }, time: 700, effect: g => { g.storageMult *= 2.0; }, requires: 'r4' }
   ];
 
   const SHIP_TEMPLATES = [
@@ -216,17 +224,75 @@ const COLONY_FACTORY_TYPES = [
         speedMult: 1,
         prestigePoints: 0,
         prestigeBonus: 0,
+        buildingAwakened: {},
+        buildingAwakeningEffects: {
+          mine: { name: '대형 채굴', desc: '클릭력 +50%', clickMult: 0.5 },
+          crystal_fac: { name: '결정 가속', desc: '크리스탈 생산 +40%', resBonus: { crystal: 0.4 } },
+          drone_hub: { name: '드론 함대', desc: '모든 건물 월세 +20%', incomeMult: 0.2 },
+          refinery: { name: '고효율 정제', desc: '수소 생산 +50%', resBonus: { hydrogen: 0.5 } },
+          recycler: { name: '순환 경제', desc: '자원 저장고 +80%', storageMult: 0.8 },
+          solar_plant: { name: '다이슨 패널', desc: '태양열 생산 +50%', resBonus: { solar: 0.5 } },
+          plasma_coil: { name: '안정 플라즈마', desc: '플라즈마 생산 +50%', resBonus: { plasma: 0.5 } },
+          fission_reactor: { name: '고밀도 분열', desc: '핵분열 생산 +50%', resBonus: { fission: 0.5 } },
+          fusion_reactor: { name: '제로포인트 에너지', desc: '핵융합 +80%, 에너지 자원 +30%', resBonus: { fusion: 0.8, solar: 0.3, fission: 0.3 } },
+          outpost: { name: '심우주 기지', desc: '함대 전투력 +30%', fleetMult: 0.3 }
+        },
         fleetActiveTab: 'fleet_build',
         previewImage: null,
         exploreTravelOverlay: false,
         exploreTravelTimer: 0,
         exploreSelectMode: false,
-        autoTransportUnlocked: false
+        autoTransportUnlocked: false,
+        colonyAutoTransport: false,
+        colonyAutoUpgrade: false,
+        exchangeSellRate: { metal: 8, crystal: 20, hydrogen: 35, plasma: 70, solar: 50, fission: 80, fusion: 120 },
+        exchangeBuyRate: 1.5,
+        autoClicker: false,
+        autoBuilder: false,
+        autoClickerTimer: 0,
+        challengeActive: null,
+        challengesCompleted: {},
+        awakeningStones: 0,
+        transcendLevel: 0,
+        transcendBonus: 0,
+        stats: {
+          totalClicks: 0,
+          totalMoneyEarned: 0,
+          totalShipsBuilt: 0,
+          totalBattlesWon: 0,
+          totalBuildingsBuilt: 0,
+          totalResearchDone: 0,
+          timePlayed: 0,
+          maxWave: 1,
+          totalBattleLoot: 0
+        },
+        challengeModifiers: {},
+        challengeDefs: [
+          { id: 'ch1', name: '광물 부족', icon: '⛏️', desc: '메탈 생산 -80%', reward: 2 },
+          { id: 'ch2', name: '무역 금지', icon: '💰', desc: '건물 월세 -60%', reward: 2 },
+          { id: 'ch3', name: '해적의 시대', icon: '☠️', desc: '해적 전투력 ×3', reward: 3 },
+          { id: 'ch4', name: '느린 진보', icon: '⏳', desc: '연구 시간 ×3, 함선 건조 ×2', reward: 3 },
+          { id: 'ch5', name: '고립 우주', icon: '🪐', desc: '식민지/행성 탐험 불가', reward: 5 }
+        ],
+        alienRep: { merchanter: 0, warlord: 0, architech: 0 },
+        alienTier: { merchanter: 0, warlord: 0, architech: 0 },
+        alienFactions: [
+          { id: 'merchanter', name: '교역 연맹', icon: '🤝', desc: '상업적 외계 종족', thresholds: [30, 100, 300],
+            bonuses: ['거래소 매수 수수료 제거', '모든 수입 +20%', '건물 구매 비용 -30%'] },
+          { id: 'warlord', name: '전투 종족', icon: '⚔️', desc: '호전적 외계 종족', thresholds: [40, 120, 350],
+            bonuses: ['함대 전투력 +25%', '함선 건조 시간 -40%', '전투 승리 시 각성석 확률 5%'] },
+          { id: 'architech', name: '기술 위원회', icon: '🔮', desc: '과학자 외계 종족', thresholds: [50, 150, 400],
+            bonuses: ['연구 시간 -40%', '모든 저장고 +100%', '인지도 획득량 +100%'] }
+        ]
       };
     },
-
     computed: {
       totalShips() { let n = 0; for (const t in this.ships) n += this.ships[t].count || 0; return n; },
+      effectiveClickPower() {
+        let cp = this.clickPower;
+        if (this.buildingAwakened.mine) cp *= 1.5;
+        return cp;
+      },
       totalWealthCalc() {
         let sum = this.money;
         for (const b of this.buildings) if (b.level > 0) sum = sum.add(b.basePrice * (0.5 + b.level * 0.5));
@@ -242,6 +308,7 @@ const COLONY_FACTORY_TYPES = [
         for (const k of RES) rates[k] = 0;
         for (const b of this.buildings)
           if (b.level > 0 && b.res) rates[b.res] = (rates[b.res] || 0) + b.output * b.level * (1 + 0.15 * (b.level - 1));
+        if (this.challengeModifiers.metalProd) rates.metal = (rates.metal || 0) * this.challengeModifiers.metalProd;
         for (const p of this.planets) {
           if (p.explorationLevel <= 0) continue;
           const bonus = 1 + (p.bonusPerLevel || 0) * p.explorationLevel;
@@ -252,12 +319,27 @@ const COLONY_FACTORY_TYPES = [
           if (p.penalty && rates[p.penalty])
             rates[p.penalty] *= Math.max(0.5, 1 - 0.2 * p.explorationLevel);
         }
+        for (const bid in this.buildingAwakened) {
+          if (this.buildingAwakened[bid]) {
+            const eff = this.buildingAwakeningEffects[bid];
+            if (eff.resBonus) for (const k in eff.resBonus) if (rates[k]) rates[k] *= 1 + eff.resBonus[k];
+          }
+        }
         return rates;
       },
       effectiveIncomeMult() {
         let m = this.incomeMult * (1 + this.fameIncomeBonus) * (1 + this.prestigeBonus);
+        if (this.challengeModifiers.incomeMult) m *= this.challengeModifiers.incomeMult;
+        if (this.alienTier.merchanter >= 2) m *= 1.2;
+        if (this.transcendBonus > 0) m *= 1 + this.transcendBonus;
         for (const p of this.planets)
           if (p.explorationLevel > 0 && p.bonusType === 'income') m *= 1 + (p.bonusPerLevel || 0) * p.explorationLevel;
+        for (const bid in this.buildingAwakened) {
+          if (this.buildingAwakened[bid]) {
+            const eff = this.buildingAwakeningEffects[bid];
+            if (eff.incomeMult) m *= 1 + eff.incomeMult;
+          }
+        }
         return m;
       },
       visibleBuildings() { return this.buildings.filter(b => b.awarenessNeeded <= this.awareness); },
@@ -280,17 +362,23 @@ const COLONY_FACTORY_TYPES = [
         let p = 0;
         for (const s of this.shipTypes) {
           const cnt = this.ships[s.type]?.count || 0;
-          const lv = this.ships[s.type]?.level || 1;
-          p += cnt * s.power * lv;
+          p += cnt * this.shipPower(s);
         }
-        return p * this.fleetPowerMult;
+        let mult = this.fleetPowerMult;
+        if (this.buildingAwakened.outpost) mult *= 1.3;
+        if (this.alienTier.warlord >= 1) mult *= 1.25;
+        return p * mult;
       },
       currentPirate() {
         const pt = this.pirateTypes[(this.pirateWave - 1) % this.pirateTypes.length];
-        const scale = Math.pow(1.25, this.pirateWave - 1);
+        const scale = Math.pow(1.30, this.pirateWave - 1);
         return { type: pt.type, name: pt.name, icon: pt.icon, weakTo: pt.weakTo, power: Math.floor(pt.powerBase * scale) };
       },
-      piratePower() { return this.currentPirate ? this.currentPirate.power : 0; },
+      piratePower() {
+        let p = this.currentPirate ? this.currentPirate.power : 0;
+        if (this.challengeModifiers.piratePow) p *= this.challengeModifiers.piratePow;
+        return p;
+      },
       weakShipCount() {
         if (!this.currentPirate) return 0;
         const t = this.currentPirate.weakTo;
@@ -330,6 +418,14 @@ const COLONY_FACTORY_TYPES = [
         let total = 0;
         for (const c of this.colonies) total += this.colonyTotalFactoryLevel(c);
         return parseFloat((total * 1.5).toFixed(2));
+      },
+      effectiveAwarenessMult() {
+        let m = this.awarenessMult;
+        if (this.alienTier.architech >= 3) m *= 2;
+        return m;
+      },
+      effectiveExchangeBuyRate() {
+        return this.alienTier.merchanter >= 1 ? 1.0 : this.exchangeBuyRate;
       },
     },
 
@@ -396,7 +492,8 @@ const COLONY_FACTORY_TYPES = [
         this.money = this.money.sub(b.currentPrice);
         b.owned = 1; b.level = 1; b.cooldown = 10;
         this.totalBuys++; this.totalTrades++;
-        this.awareness += b.awarenessGiven * this.awarenessMult;
+          this.awareness += b.awarenessGiven * this.effectiveAwarenessMult;
+        this.stats.totalBuildingsBuilt++;
         this.checkAchievements(); this.recalcMaxes(); this.checkMissions(); this.checkFameMilestones();
         this.toast(`✅ ${b.name} 건설`);
         if (e) this.spawnFloatText('✅ ' + b.icon, '#34d399', e.clientX, e.clientY - 8);
@@ -417,10 +514,36 @@ const COLONY_FACTORY_TYPES = [
         const cost = this.upgradeCost(b);
         this.money = this.money.sub(cost);
         b.level++;
-        this.awareness += b.awarenessGiven * b.level * this.awarenessMult;
+        this.awareness += b.awarenessGiven * b.level * this.effectiveAwarenessMult;
         this.toast(`⬆️ ${b.name} LV ${b.level}`);
         if (e) this.spawnFloatText('⬆️ LV' + b.level, '#a78bfa', e.clientX, e.clientY - 8);
         this.boostResourceBump(b.res);
+      },
+
+      canAwakenBuilding(b) { return b.level >= b.maxLevel && !this.buildingAwakened[b.id]; },
+      awakenBuilding(b) {
+        if (!this.canAwakenBuilding(b)) return;
+        this.$set(this.buildingAwakened, b.id, true);
+        b.level = 1;
+        const eff = this.buildingAwakeningEffects[b.id];
+        this.toast(`✨ ${b.name} 각성! ${eff.desc}`);
+        if (b.res) this.boostResourceBump(b.res);
+      },
+
+      canTranscend() {
+        const allAwakened = this.buildings.every(b => this.buildingAwakened[b.id]);
+        return allAwakened && this.awakeningStones >= 5 + this.transcendLevel * 5;
+      },
+      transcend() {
+        if (!this.canTranscend()) return;
+        if (!confirm(`초월하시겠습니까?\n• 모든 건물 각성이 초기화됩니다\n• 각성석 ${5 + this.transcendLevel * 5}개 소모\n• 영구 수입 +50% (총 ${Math.round((this.transcendBonus + 0.5) * 100)}%)\n계속하시겠습니까?`)) return;
+        this.awakeningStones -= 5 + this.transcendLevel * 5;
+        this.transcendLevel++;
+        this.transcendBonus += 0.5;
+        this.buildingAwakened = {};
+        for (const b of this.buildings) b.level = 1;
+        this.toast(`🌌 초월 LV ${this.transcendLevel}! 수입 +${Math.round(this.transcendBonus * 100)}%`);
+        this.spawnFloatText('🌌 초월!', '#fbbf24', window.innerWidth / 2, window.innerHeight / 3);
       },
 
       tickPrices(dt) {
@@ -456,7 +579,7 @@ const COLONY_FACTORY_TYPES = [
         const b = this.auctionBuilding;
         if (Math.random() < this.auctionChance && this.money.gte(this.auctionPrice) && b.level === 0) {
           this.money = this.money.sub(this.auctionPrice); b.owned = 1; b.level = 1; this.totalBuys++;
-          this.awareness += b.awarenessGiven * this.awarenessMult;
+        this.awareness += b.awarenessGiven * this.effectiveAwarenessMult;
           this.toast(`🎉 낙찰! ${b.name}`);
         } else { this.toast('😔 실패...'); }
         this.auctionActive = false; this.auctionBuilding = null;
@@ -481,10 +604,12 @@ const COLONY_FACTORY_TYPES = [
         r.inProgress = true; r.remaining = r.time;
       },
       tickResearch(dt) {
+        let rdt = dt / (this.challengeModifiers.researchTime || 1);
+        if (this.alienTier.architech >= 1) rdt /= 0.6;
         for (const r of this.research) {
           if (r.inProgress) {
-            r.remaining = Math.max(0, r.remaining - dt);
-            if (r.remaining <= 0) { r.inProgress = false; r.completed = true; r.effect(this); this.toast(`🔬 ${r.name}`); this.checkAchievements(); this.recalcMaxes(); }
+            r.remaining = Math.max(0, r.remaining - rdt);
+            if (r.remaining <= 0) { r.inProgress = false; r.completed = true; this.stats.totalResearchDone++; r.effect(this); this.toast(`🔬 ${r.name}`); this.checkAchievements(); this.recalcMaxes(); }
           }
         }
       },
@@ -517,7 +642,7 @@ const COLONY_FACTORY_TYPES = [
         const s = this.ships[st.type];
         s.building = true; s.buildCount = count; s.totalTime = st.time * count * this.shipBuildSpeedMult; s.elapsed = 0;
         s.buildCost = { metal: (st.cost.metal || 0) * count, crystal: (st.cost.crystal || 0) * count, hydrogen: (st.cost.hydrogen || 0) * count, plasma: (st.cost.plasma || 0) * count };
-        this.awareness += Math.max(1, Math.floor(st.power / 10)) * this.awarenessMult;
+        this.awareness += Math.max(1, Math.floor(st.power / 10)) * this.effectiveAwarenessMult;
         this.toast(`🚀 ${st.name} ${count}척 건조 시작 (${this.fmtTime(s.totalTime)})`);
       },
       cancelBuild(type) {
@@ -534,16 +659,17 @@ const COLONY_FACTORY_TYPES = [
         this.toast(`↩️ ${st.name} 건조 취소 (자원 반환)`);
       },
       tickShips(dt) {
+        const sdt = dt / (this.challengeModifiers.shipTime || 1);
         for (const t in this.ships) {
           const s = this.ships[t];
           if (s.building) {
-            s.elapsed += dt;
+            s.elapsed += sdt;
             if (s.elapsed >= s.totalTime) {
-              s.building = false; s.count += s.buildCount; s.buildCount = 0; s.totalTime = 0; s.elapsed = 0;
+              s.building = false; s.count += s.buildCount; this.stats.totalShipsBuilt += s.buildCount; s.buildCount = 0; s.totalTime = 0; s.elapsed = 0;
             }
           }
           if (s.upgrading) {
-            s.upgradeElapsed += dt;
+            s.upgradeElapsed += sdt;
             if (s.upgradeElapsed >= s.upgradeTotalTime) {
               s.upgrading = false; s.level++; s.upgradeElapsed = 0; s.upgradeTotalTime = 0;
               const st = this.shipTypes.find(x => x.type === t);
@@ -552,12 +678,17 @@ const COLONY_FACTORY_TYPES = [
           }
         }
         if (this.colonizer.building) {
-          this.colonizer.elapsed += dt;
+          this.colonizer.elapsed += sdt;
           if (this.colonizer.elapsed >= this.colonizer.totalTime) {
             this.colonizer.building = false; this.colonizer.count += this.colonizer.buildCount;
             this.colonizer.buildCount = 0; this.colonizer.totalTime = 0; this.colonizer.elapsed = 0;
           }
         }
+      },
+
+      shipPower(st) {
+        const lv = (this.ships[st.type]?.level || 1);
+        return st.power * (1 + (lv - 1) * 0.3);
       },
 
       shipUpgradeCostText(st) {
@@ -570,7 +701,7 @@ const COLONY_FACTORY_TYPES = [
       },
       shipUpgradeCost(st) {
         const lv = this.ships[st.type]?.level || 1;
-        const scale = Math.pow(lv + 1, 1.7) * 0.5;
+        const scale = Math.pow(lv + 1, 2.2) * 0.35;
         const costs = {};
         for (const k in st.cost) costs[k] = Math.floor((st.cost[k] || 100) * scale);
         return costs;
@@ -629,6 +760,7 @@ const COLONY_FACTORY_TYPES = [
       },
 
       canExplore(p) {
+        if (this.challengeModifiers.noColony) return false;
         if (p.explorationLevel >= p.maxLevel || this.exploring) return false;
         return this.colonizer.count > 0;
       },
@@ -666,6 +798,7 @@ const COLONY_FACTORY_TYPES = [
           this.toast(`🎉 ${p.name} 개척 성공! LV ${p.explorationLevel}/${p.maxLevel} (+${bonus}%)`);
           this.spawnFloatText('🎉 +Lv!', '#fbbf24', window.innerWidth/2, window.innerHeight/2);
           this.checkAchievements();
+          if (!this.challengeModifiers.noColony && Math.random() < 0.25) this.alienEncounter();
         } else {
           const loss = Math.max(1, Math.floor(this.colonizer.count * 0.2));
           this.colonizer.count = Math.max(0, this.colonizer.count - loss);
@@ -753,8 +886,25 @@ const COLONY_FACTORY_TYPES = [
                 if (this.resources[k]) this.resources[k] = Decimal.min(this.resources[k + 'Max'] || new Decimal(999999), this.resources[k].add(c.transportAmounts[k]));
               }
               const totalVal = Object.values(c.transportAmounts).reduce((s, v) => s + v, 0);
-              this.toast(`📦 ${c.name} 자원 ${this.fmt(totalVal)} 본송 완료!`);
               c.transporting = false; c.transportProgress = 0; c.transportTime = 0; c.transportAmounts = {};
+            }
+          } else if (this.colonyAutoTransport && this.colonizer.count > 0) {
+            const totalRes = Object.values(c.resources).reduce((s, v) => (s || 0) + (v || 0), 0);
+            const totalCap = c.factories.reduce((s, f) => s + (1000 + f.level * 500), 0);
+            if (totalRes > totalCap * 0.7 && this.resources.hydrogen.gte(Math.ceil(totalRes * 0.001))) {
+              this.startTransport(c);
+            }
+          }
+          if (this.colonyAutoUpgrade) {
+            for (let i = 0; i < c.factories.length; i++) {
+              const f = c.factories[i];
+              if (f.level >= 20) continue;
+              const cost = this.colonyUpgradeCost(f.level);
+              const t = this.colonyFactoryTypes[i];
+              if (c.resources[t.res] >= cost && Math.random() < 0.02) {
+                c.resources[t.res] -= cost;
+                f.level++;
+              }
             }
           }
         }
@@ -791,12 +941,14 @@ const COLONY_FACTORY_TYPES = [
         let p = 0;
         for (const s of this.shipTypes) {
           const cnt = this.ships[s.type]?.count || 0;
-          const lv = this.ships[s.type]?.level || 1;
           let mult = 1;
           if (s.strongAgainst === pirateType) mult = 1.6;
-          p += cnt * s.power * lv * mult;
+          p += cnt * this.shipPower(s) * mult;
         }
-        return p * this.fleetPowerMult;
+        let m = this.fleetPowerMult;
+        if (this.buildingAwakened.outpost) m *= 1.3;
+        if (this.alienTier.warlord >= 1) m *= 1.25;
+        return p * m;
       },
       shipTypeName(type) { const s = this.shipTypes.find(x => x.type === type); return s ? s.name : type; },
       pirateTypeName(type) { const p = this.pirateTypes.find(x => x.type === type); return p ? p.name : type; },
@@ -815,7 +967,15 @@ const COLONY_FACTORY_TYPES = [
           this.awareness += fameGain;
           this.pushLog(`✅ 승리 +${this.fmt(loot)}${lost ? ` (손실 ${lost}척)` : ''} 📡명성 +${fameGain}`, 'log-win');
           if (e) this.spawnFloatText('+' + this.fmt(loot), '#34d399', e.clientX, e.clientY - 8);
-          this.pirateWave++; this.combatCooldown = 10; this.pirateAttackTimer = 300; this.checkAchievements(); this.checkFameMilestones();
+          this.pirateWave++; this.combatCooldown = 10; this.pirateAttackTimer = 300;
+          this.stats.totalBattlesWon++;
+          this.stats.totalBattleLoot += loot.toNumber();
+          this.stats.maxWave = Math.max(this.stats.maxWave, this.pirateWave);
+          if (this.alienTier.warlord >= 3 && Math.random() < 0.05) {
+            this.awakeningStones++;
+            this.toast('💎 전리품: 각성석 +1!');
+          }
+          this.checkAchievements(); this.checkFameMilestones();
         } else {
           const lost = this.applyLosses(0.25);
           const penalty = new Decimal(200 * this.pirateWave);
@@ -914,8 +1074,9 @@ const COLONY_FACTORY_TYPES = [
       },
 
       doClick(e) {
-        const gain = this.clickPower * (this.boostTimer > 0 ? this.boostMultItem : 1);
+        const gain = this.effectiveClickPower * (this.boostTimer > 0 ? this.boostMultItem : 1);
         this.money = this.money.add(gain);
+        this.stats.totalClicks++;
         if (e) this.spawnFloatText('+' + this.fmt(gain), '#fde68a', e.clientX, e.clientY);
         const btn = this.$refs.clickBtn; if (btn) { btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop'); }
       },
@@ -934,6 +1095,7 @@ const COLONY_FACTORY_TYPES = [
       closePreview() { this.previewImage = null; },
 
       triggerPlanetColonization() {
+        if (this.challengeModifiers.noColony) { this.toast('🚫 도전: 고립 우주 - 식민지 불가'); return; }
         if (this.colonizer.count <= 0) {
           this.toast('🚫 식민 함선이 필요합니다. 함선 탭에서 건조하세요.');
           this.fleetActiveTab = 'fleet_build';
@@ -959,9 +1121,59 @@ const COLONY_FACTORY_TYPES = [
         return '';
       },
 
+      alienEncounter() {
+        const facs = this.alienFactions;
+        const af = facs[Math.floor(Math.random() * facs.length)];
+        const repGain = 1 + Math.floor(Math.random() * 4);
+        const oldRep = this.alienRep[af.id] || 0;
+        const oldTier = this.alienTier[af.id] || 0;
+        this.$set(this.alienRep, af.id, oldRep + repGain);
+        this.toast(`${af.icon} ${af.name} 조우! 평판 +${repGain} (총 ${oldRep + repGain})`);
+        this.checkAlienTier(af.id);
+      },
+      checkAlienTier(factionId) {
+        const af = this.alienFactions.find(f => f.id === factionId);
+        if (!af) return;
+        const rep = this.alienRep[factionId] || 0;
+        let newTier = 0;
+        for (let i = af.thresholds.length - 1; i >= 0; i--) {
+          if (rep >= af.thresholds[i]) { newTier = i + 1; break; }
+        }
+        const oldTier = this.alienTier[factionId] || 0;
+        if (newTier > oldTier) {
+          this.$set(this.alienTier, factionId, newTier);
+          this.toast(`🎖️ ${af.name} 티어 ${newTier} 달성! ${af.bonuses[newTier-1]}`);
+          this.spawnFloatText('🎖️ 티어' + newTier, '#a78bfa', window.innerWidth/2, window.innerHeight/3);
+        }
+      },
+
       addOfflineIncome(seconds) {
         this.money = this.money.add(this.passiveIncome * seconds * this.effectiveIncomeMult);
         for (const k of RES) { const rate = (this.resourceIncome[k] || 0) * (this.resMultipliers[k] || 1); if (rate > 0) this.resources[k] = Decimal.min(this.resources[k + 'Max'] || new Decimal(999999), this.resources[k].add(rate * seconds)); }
+      },
+
+      sellResource(resKey, amount) {
+        if (!this.resources[resKey] || this.resources[resKey].lt(amount) || amount <= 0) return;
+        const rate = this.exchangeSellRate[resKey] || 10;
+        this.resources[resKey] = this.resources[resKey].sub(amount);
+        this.money = this.money.add(rate * amount);
+        this.toast(`🔁 ${(window.RES_ICO&&window.RES_ICO[resKey])||''} ${this.fmt(amount)} → 💰 ${this.fmt(rate * amount)}`);
+      },
+      buyResource(resKey, amount) {
+        if (amount <= 0) return;
+        const rate = Math.floor((this.exchangeSellRate[resKey] || 10) * this.effectiveExchangeBuyRate);
+        const cost = rate * amount;
+        if (this.money.lt(cost)) return;
+        const maxCap = this.resources[resKey + 'Max'] || new Decimal(999999);
+        const current = this.resources[resKey] || new Decimal(0);
+        const canBuy = maxCap.sub(current);
+        if (canBuy.lte(0)) { this.toast('🚫 저장고 가득'); return; }
+        const actualAmount = Math.min(amount, canBuy.toNumber());
+        const actualCost = Math.floor(rate * actualAmount);
+        if (this.money.lt(actualCost)) return;
+        this.money = this.money.sub(actualCost);
+        this.resources[resKey] = current.add(actualAmount);
+        this.toast(`🔁 💰 ${this.fmt(actualCost)} → ${(window.RES_ICO&&window.RES_ICO[resKey])||''} ${this.fmt(actualAmount)}`);
       },
       applyOffline() {
         if (!this.lastSeen) return;
@@ -1049,8 +1261,35 @@ const COLONY_FACTORY_TYPES = [
           }
         }
         const sm = this.storageMult * (1 + buildingBonus / 1000) * (1 + exploreBonus) * (1 + colonyBonus / 100);
+        if (this.alienTier.architech >= 2) sm *= 2;
         const bases = { metal: 50000, crystal: 30000, hydrogen: 15000, plasma: 10000, solar: 10000, fission: 8000, fusion: 8000 };
         for (const k of RES) this.resources[k + 'Max'] = new Decimal(Math.floor((bases[k] || 10000) * sm));
+      },
+
+      startChallenge(cd) {
+        if (!this.canStartChallenge(cd)) return;
+        if (!confirm(`도전 '${cd.name}'을(를) 시작합니다. 모든 것이 초기화됩니다.\n${cd.desc}\n보상: 각성석 ${cd.reward}개\n계속하시겠습니까?`)) return;
+        this.$set(this.challengeModifiers, 'metalProd', cd.id === 'ch1' ? 0.2 : 1);
+        this.$set(this.challengeModifiers, 'incomeMult', cd.id === 'ch2' ? 0.4 : 1);
+        this.$set(this.challengeModifiers, 'piratePow', cd.id === 'ch3' ? 3 : 1);
+        this.$set(this.challengeModifiers, 'researchTime', cd.id === 'ch4' ? 3 : 1);
+        this.$set(this.challengeModifiers, 'shipTime', cd.id === 'ch4' ? 2 : 1);
+        this.$set(this.challengeModifiers, 'noColony', cd.id === 'ch5');
+        this.challengeActive = cd.id;
+        this.cheatReset();
+        this.toast(`🏆 도전: ${cd.name} 시작! (보상: 각성석 ${cd.reward}개)`);
+      },
+      canStartChallenge(cd) {
+        if (this.challengeActive === cd.id) return false;
+        return this.totalWealthCalc.gte(this.mainGoal) || this.challengesCompleted[cd.id] || Object.keys(this.challengesCompleted).length > 0;
+      },
+      completeChallenge(cd) {
+        this.$set(this.challengesCompleted, cd.id, true);
+        this.awakeningStones += cd.reward;
+        this.challengeActive = null;
+        this.challengeModifiers = {};
+        this.toast(`🎉 도전 완료! ${cd.name} +${cd.reward} 각성석 (총 ${this.awakeningStones}개)`);
+        this.spawnFloatText('🎉 완료!', '#fbbf24', window.innerWidth / 2, window.innerHeight / 2);
       },
 
       cheatMoney() { this.money = this.money.mul(100); this.toast('💰 ×100 돈!'); },
@@ -1066,10 +1305,39 @@ const COLONY_FACTORY_TYPES = [
       },
       toggleCheat() { this.cheatOpen = !this.cheatOpen; },
 
+      exportSave() {
+        try {
+          this.saveSystems();
+          const raw = localStorage.getItem('systemsState');
+          if (!raw) return this.toast('🚫 저장 실패');
+          navigator.clipboard.writeText(raw).then(() => this.toast('📋 세이브 복사 완료!')).catch(() => this.toast('🚫 클립보드 실패'));
+        } catch (e) { this.toast('🚫 오류'); }
+      },
+      importSave() {
+        const text = prompt('불러올 세이브 코드를 붙여넣으세요:');
+        if (!text) return;
+        try {
+          JSON.parse(text);
+          localStorage.setItem('systemsState', text);
+          this.toast('📋 세이브 불러오기 완료! 새로고침하세요.');
+        } catch (e) { this.toast('🚫 잘못된 세이브 코드'); }
+      },
+
       cheatReset() {
         if (!confirm('정말 초기화? (환생 포인트는 유지)')) return;
         const pp = this.prestigePoints;
         const pb = this.prestigeBonus;
+        const ba = { ...this.buildingAwakened };
+        const cat = this.colonyAutoTransport;
+        const cau = this.colonyAutoUpgrade;
+        const ac = this.autoClicker;
+        const ab = this.autoBuilder;
+        const cc = { ...this.challengesCompleted };
+        const as = this.awakeningStones;
+        const tl = this.transcendLevel;
+        const tb = this.transcendBonus;
+        const ar = { ...this.alienRep };
+        const at = { ...this.alienTier };
         const defaults = {
           money: new Decimal(2000), clickPower: 200,
           resources: { metal: new Decimal(100), metalMax: new Decimal(500), crystal: new Decimal(10), crystalMax: new Decimal(300), hydrogen: new Decimal(0), hydrogenMax: new Decimal(200), plasma: new Decimal(0), plasmaMax: new Decimal(200), solar: new Decimal(0), solarMax: new Decimal(200), fission: new Decimal(0), fissionMax: new Decimal(200), fusion: new Decimal(0), fusionMax: new Decimal(200) },
@@ -1094,6 +1362,17 @@ const COLONY_FACTORY_TYPES = [
         for (const k in defaults) this[k] = defaults[k];
         this.prestigePoints = pp;
         this.prestigeBonus = pb;
+        this.buildingAwakened = ba;
+        this.colonyAutoTransport = cat;
+        this.colonyAutoUpgrade = cau;
+        this.autoClicker = ac;
+        this.autoBuilder = ab;
+        this.challengesCompleted = cc;
+        this.awakeningStones = as;
+        this.transcendLevel = tl;
+        this.transcendBonus = tb;
+        this.alienRep = ar;
+        this.alienTier = at;
         this.incomeMult = 1 + pb;
         this.recalcMaxes();
         this.toast('🔄 초기화 완료');
@@ -1114,15 +1393,34 @@ const COLONY_FACTORY_TYPES = [
       },
 
       tickSystems(dt) {
+        this.stats.timePlayed += dt;
         const sdt = dt * this.speedMult;
         this.tickPrices(sdt);
         this.tickIncome(sdt);
         this.tickResearch(sdt);
         this.tickShips(sdt);
-        this.tickExploration(sdt);
-        this.tickColonies(sdt);
+        if (!this.challengeModifiers.noColony) {
+          this.tickExploration(sdt);
+          this.tickColonies(sdt);
+        }
         this.tickEvents(sdt);
         if (this.combatCooldown > 0) this.combatCooldown = Math.max(0, this.combatCooldown - sdt);
+        if (this.autoClicker) {
+          this.autoClickerTimer -= sdt;
+          if (this.autoClickerTimer <= 0) {
+            this.autoClickerTimer = 5;
+            this.money = this.money.add(this.effectiveClickPower * (this.boostTimer > 0 ? this.boostMultItem : 1));
+          }
+        }
+        if (this.autoBuilder && (this._autoBuilderCD = (this._autoBuilderCD || 0) - sdt) <= 0) {
+          this._autoBuilderCD = 10;
+          const avail = this.visibleBuildings.filter(b => this.canBuyBuilding(b));
+          if (avail.length) avail.sort((a, b) => a.currentPrice - b.currentPrice)[0] && this.buyBuilding(avail.sort((a, b) => a.currentPrice - b.currentPrice)[0], null);
+        }
+        if (this.challengeActive && this.totalWealth.gte(this.mainGoal)) {
+          const cd = this.challengeDefs.find(c => c.id === this.challengeActive);
+          if (cd) this.completeChallenge(cd);
+        }
         this.checkAchievements();
         this.checkMissions();
         this.checkFameMilestones();
@@ -1153,6 +1451,20 @@ const COLONY_FACTORY_TYPES = [
             fameMilestones: this.fameMilestones.map(m => ({ id: m.id, reached: m.reached })),
             prestigePoints: this.prestigePoints,
             prestigeBonus: this.prestigeBonus,
+            buildingAwakened: this.buildingAwakened,
+            colonyAutoTransport: this.colonyAutoTransport,
+            colonyAutoUpgrade: this.colonyAutoUpgrade,
+            autoClicker: this.autoClicker,
+            autoBuilder: this.autoBuilder,
+            autoClickerTimer: this.autoClickerTimer,
+            challengeActive: this.challengeActive,
+            challengesCompleted: this.challengesCompleted,
+            awakeningStones: this.awakeningStones,
+            transcendLevel: this.transcendLevel,
+            transcendBonus: this.transcendBonus,
+            stats: this.stats,
+            alienRep: this.alienRep,
+            alienTier: this.alienTier,
             exploreFlavor: '', exploreFlavorTimer: 0,
             colonies: this.colonies.map(c => ({
               planetId: c.planetId, name: c.name, prodSpeed: c.prodSpeed,
@@ -1237,6 +1549,20 @@ const COLONY_FACTORY_TYPES = [
           if (o.lastSeen) this.lastSeen = o.lastSeen;
           if (o.prestigePoints) this.prestigePoints = o.prestigePoints;
           if (o.prestigeBonus) this.prestigeBonus = o.prestigeBonus;
+          if (o.buildingAwakened) this.buildingAwakened = o.buildingAwakened;
+          if (o.colonyAutoTransport) this.colonyAutoTransport = o.colonyAutoTransport;
+          if (o.colonyAutoUpgrade) this.colonyAutoUpgrade = o.colonyAutoUpgrade;
+          if (o.autoClicker) this.autoClicker = o.autoClicker;
+          if (o.autoBuilder) this.autoBuilder = o.autoBuilder;
+          if (o.autoClickerTimer) this.autoClickerTimer = o.autoClickerTimer;
+          if (o.challengeActive) this.challengeActive = o.challengeActive;
+          if (o.challengesCompleted) this.challengesCompleted = o.challengesCompleted;
+          if (o.awakeningStones) this.awakeningStones = o.awakeningStones;
+          if (o.transcendLevel) this.transcendLevel = o.transcendLevel;
+          if (o.transcendBonus) this.transcendBonus = o.transcendBonus;
+          if (o.stats) Object.assign(this.stats, o.stats);
+          if (o.alienRep) Object.assign(this.alienRep, o.alienRep);
+          if (o.alienTier) Object.assign(this.alienTier, o.alienTier);
           if (o.fameIncomeBonus !== undefined) this.fameIncomeBonus = o.fameIncomeBonus;
           if (o.fameMilestones) {
             for (const saved of o.fameMilestones) {

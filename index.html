@@ -122,9 +122,14 @@
           <button class="click-btn" ref="clickBtn" @click="doClick($event)" :class="{glow: boostTimer>0}" :style="boostTimer>0?{boxShadow:'0 0 30px rgba(251,191,36,0.5)'}:{}">💸</button>
           <div class="text-[10px] text-slate-500">
             <div>클릭당</div>
-            <div class="text-sm font-bold text-slate-200">+{{ fmt(clickPower * (boostTimer>0?boostMultItem:1)) }}</div>
+            <div class="text-sm font-bold text-slate-200">+{{ fmt(effectiveClickPower * (boostTimer>0?boostMultItem:1)) }}</div>
           </div>
           <div class="text-[9px] text-amber-400 ml-1" v-if="boostTimer>0">⚡ ×{{ boostMultItem }} {{ fmtTime(boostTimer) }}</div>
+        </div>
+
+        <div class="flex items-center gap-2 justify-center text-[8px] py-0.5" v-if="autoClicker || autoBuilder">
+          <span v-if="autoClicker" class="text-sky-400">🤖 자동클릭 {{ fmtTime(autoClickerTimer) }}</span>
+          <span v-if="autoBuilder" class="text-emerald-400">🧠 자동건설</span>
         </div>
 
         <div class="card card-accent py-2 px-3">
@@ -160,6 +165,22 @@
           <div class="text-[8px] text-slate-600 mt-1">{{ fmtTime(auctionTimer) }}</div>
         </div>
 
+        <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.3)">
+          <div class="text-[10px] font-bold text-amber-300 mb-1">💱 자원 거래소</div>
+          <div class="text-[7px] text-slate-500 mb-2">판매: 자원→돈 · 구매: 돈→자원 (매수 +50% 수수료)</div>
+          <div class="space-y-1">
+            <div v-for="k in ['metal','crystal','hydrogen','plasma','solar','fission','fusion']" :key="k" v-if="visibleResources[k]" class="flex items-center justify-between bg-slate-900/50 rounded px-2 py-1 text-[9px]">
+              <span class="w-16">{{ {'metal':'⛏️ 메탈','crystal':'💎 크리스탈','hydrogen':'⚡ 수소','plasma':'🔵 플라즈마','solar':'☀️ 태양열','fission':'⚛️ 핵분열','fusion':'🔥 핵융합'}[k] }}</span>
+              <span class="text-emerald-400/70">판매 {{ exchangeSellRate[k] }}/개</span>
+              <span class="text-rose-400/70">매수 {{ Math.floor(exchangeSellRate[k]*effectiveExchangeBuyRate) }}/개</span>
+              <div class="flex gap-0.5">
+                <button class="btn btn-sm btn-success" style="font-size:7px;padding:1px 4px" @click="sellResource(k,Math.min(100,(resources[k]||0).toNumber()))" :disabled="!(resources[k]||0).gte(1)">📤</button>
+                <button class="btn btn-sm btn-primary" style="font-size:7px;padding:1px 4px" @click="buyResource(k,10)" :disabled="money.lt(Math.floor(exchangeSellRate[k]*effectiveExchangeBuyRate)*10)">📥</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="space-y-2">
           <div v-for="b in visibleBuildings" :key="b.id" class="card relative build-card" :class="{'shake': b.cooldown>0 && b.level>0}">
             <div class="flex gap-2">
@@ -185,12 +206,15 @@
                 <div v-else class="flex items-center justify-between mt-1">
                   <span class="text-[8px] text-slate-500">월수익 <span class="text-emerald-300">{{ fmt(b.income * b.level * effectiveIncomeMult * (1 + 0.12*(b.level-1))) }}/s</span></span>
                   <span class="text-[8px] text-purple-300/80" v-if="b.level < b.maxLevel">⬆️ {{ fmt(upgradeCost(b)) }} → +{{ fmt(upgradePreview(b).dIncome) }}/s</span>
-                  <span class="text-[8px] text-amber-400/80" v-else>MAX</span>
+                  <span class="text-[8px] text-emerald-400/80" v-else-if="buildingAwakened[b.id]">✨ {{ buildingAwakeningEffects[b.id].name }}</span>
+                  <span class="text-[8px] text-amber-400/80" v-else>MAX · 각성 가능</span>
                 </div>
 
                 <div class="flex gap-1 mt-1">
                   <button v-if="b.level===0" class="btn btn-sm btn-success flex-1" @click="buyBuilding(b, $event)" :disabled="!canBuyBuilding(b)">건설</button>
-                  <button v-else class="btn btn-sm flex-1" style="background:#7c3aed;color:#fff" @click="upgradeBuilding(b, $event)" :disabled="!canUpgradeBuilding(b)">{{ b.level>=b.maxLevel ? 'MAX' : '⬆️ 업글' }}</button>
+                  <button v-else-if="buildingAwakened[b.id]" class="btn btn-sm btn-ghost flex-1" disabled>✨ 각성</button>
+                  <button v-else-if="b.level>=b.maxLevel" class="btn btn-sm btn-warning flex-1" @click="awakenBuilding(b)">✨ 각성</button>
+                  <button v-else class="btn btn-sm flex-1" style="background:#7c3aed;color:#fff" @click="upgradeBuilding(b, $event)" :disabled="!canUpgradeBuilding(b)">⬆️ 업글</button>
                 </div>
                 <div class="text-[7px] text-slate-600 mt-px" v-if="b.cooldown>0">⏳ {{ fmtTime(b.cooldown) }}</div>
               </div>
@@ -251,9 +275,9 @@
                 <!-- 전투력 바 -->
                 <div class="flex items-center gap-1 mb-1">
                   <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                    <div class="h-full rounded-full" :style="{width: Math.min(100, (s.power * (ships[s.type].level || 1) / 800)*100)+'%', background: 'linear-gradient(90deg, #34d399, #3b82f6)'}"></div>
+                      <div class="h-full rounded-full" :style="{width: Math.min(100, (shipPower(s) / 800)*100)+'%', background: 'linear-gradient(90deg, #34d399, #3b82f6)'}"></div>
                   </div>
-                  <span class="text-[8px] font-bold text-slate-400">{{ s.power * (ships[s.type].level || 1) }}pt</span>
+                    <span class="text-[8px] font-bold text-slate-400">{{ fmt(shipPower(s)) }}pt</span>
                 </div>
 
                 <div v-if="ships[s.type].building" class="mb-1">
@@ -417,6 +441,12 @@
           <div class="text-[9px] text-slate-500">각 식민지는 독립된 자원과 공장을 운영합니다. 운송선을 보내 본진으로 자원을 옮기세요.</div>
           <div class="text-[8px] text-amber-400/80 mt-1">식민함선 {{ colonizer.count }}척 · 운송량 {{ colonizer.count * colonizer.level * 50 }}/회</div>
           <div class="text-[8px] text-emerald-400/80 mt-1" v-if="colonies.length > 0">🌍 식민지 혜택: 인지도 +{{ fmt(colonyAwarenessPerSec) }}/s · 수입 +{{ fmt(colonyIncomePerSec) }}/s</div>
+          <div class="flex gap-2 mt-1 text-[8px]">
+            <span v-if="colonyAutoTransport" class="text-sky-400">📦 자동운송 ON</span>
+            <span v-else class="text-slate-600">📦 자동운송 🔒</span>
+            <span v-if="colonyAutoUpgrade" class="text-purple-400">🏭 자동업글 ON</span>
+            <span v-else class="text-slate-600">🏭 자동업글 🔒</span>
+          </div>
         </div>
 
         <div v-if="colonyCount === 0" class="card py-2 px-3 text-center">
@@ -547,6 +577,20 @@
         </div>
 
         <div class="card py-2 px-3">
+          <div class="text-xs font-bold text-slate-200 mb-2">📈 통계</div>
+          <div class="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px]">
+            <div class="text-slate-500">플레이 시간</div><div class="text-slate-200 font-bold text-right">{{ fmtTime(Math.round(stats.timePlayed)) }}</div>
+            <div class="text-slate-500">클릭 횟수</div><div class="text-slate-200 text-right">{{ fmt(stats.totalClicks) }}회</div>
+            <div class="text-slate-500">건물 구매</div><div class="text-slate-200 text-right">{{ fmt(stats.totalBuildingsBuilt) }}회</div>
+            <div class="text-slate-500">함선 건조</div><div class="text-slate-200 text-right">{{ fmt(stats.totalShipsBuilt) }}척</div>
+            <div class="text-slate-500">연구 완료</div><div class="text-slate-200 text-right">{{ stats.totalResearchDone }}개</div>
+            <div class="text-slate-500">전투 승리</div><div class="text-slate-200 text-right">{{ fmt(stats.totalBattlesWon) }}회</div>
+            <div class="text-slate-500">최대 웨이브</div><div class="text-slate-200 text-right">{{ stats.maxWave }}</div>
+            <div class="text-slate-500">전리품 총합</div><div class="text-slate-200 text-right">{{ fmt(stats.totalBattleLoot) }}</div>
+          </div>
+        </div>
+
+        <div class="card py-2 px-3">
           <div class="flex items-center justify-between mb-1"><span class="text-xs font-bold text-slate-200">🏆 업적</span><span class="text-[9px] text-slate-500">{{ Object.keys(achieved).length }}/{{ achievements.length }}</span></div>
           <div class="grid grid-cols-2 gap-1">
             <div v-for="a in achievements" :key="a.id" class="text-[9px] p-0.5 rounded" :class="achieved[a.id] ? 'text-emerald-400' : 'text-slate-600'">{{ achieved[a.id] ? '🏆' : '🔒' }} {{ a.name }}</div>
@@ -571,6 +615,8 @@
             <button class="btn btn-sm btn-cheat" @click="cheatResources">📦 자원 +10000</button>
             <button class="btn btn-sm btn-cheat" @click="cheatSpeed">⚡ 속도 ×{{ speedMult >= 100 ? '1' : speedMult >= 10 ? '100' : '10' }}</button>
             <button class="btn btn-sm btn-cheat" @click="cheatReset" style="background:#dc2626">🔄 초기화</button>
+            <button class="btn btn-sm btn-cheat" @click="exportSave" style="background:#059669">📋 Export</button>
+            <button class="btn btn-sm btn-cheat" @click="importSave" style="background:#d97706">📥 Import</button>
           </div>
         </div>
         <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.3)">
@@ -582,6 +628,63 @@
           <div class="text-[9px] text-slate-500 mt-1" v-else>모든 것을 초기화하고 영구 수입 보너스를 얻습니다.<br>보유 자원이 많을수록 더 많은 포인트를 획득합니다!</div>
           <div class="text-[8px] text-emerald-400/80 mt-1">예상 포인트: 현재 자산 기준 약 {{ prestigePoints > 0 ? '?' : Math.max(2, Math.floor(Math.pow((totalWealth.toNumber() + Object.values(resources).reduce((a,b)=>a+(b.toNumber?.()||0),0)) / 50000, 0.55))) }}P</div>
           <button class="btn btn-sm btn-warning mt-1" @click="prestige">✨ 환생 (자산 100k 이상)</button>
+        </div>
+
+        <div class="card py-2 px-3" style="border-color:rgba(124,58,237,0.5)">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-purple-300">💎 각성석</span>
+            <span class="text-[10px] text-purple-300" v-if="awakeningStones > 0">{{ awakeningStones }}개</span>
+          </div>
+          <div class="text-[9px] text-slate-500 mt-1">도전 모드 클리어 보상으로 획득합니다.</div>
+          <div class="text-[9px] text-slate-500 mt-1" v-if="transcendLevel > 0">🌌 초월 LV {{ transcendLevel }} · 수입 +{{ Math.round(transcendBonus*100) }}%</div>
+          <div class="flex gap-1 mt-1" v-if="canTranscend()">
+            <button class="btn btn-sm btn-warning flex-1 text-[9px]" @click="transcend()">🌌 초월 (💎{{ 5+transcendLevel*5 }})</button>
+          </div>
+        </div>
+
+        <div class="card py-2 px-3" style="border-color:rgba(251,113,133,0.4)">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-rose-300">🏆 도전 모드</span>
+            <span class="text-[8px] text-slate-500" v-if="challengeActive">진행중: {{ (challengeDefs.find(c=>c.id===challengeActive)||{}).name }}</span>
+          </div>
+          <div class="text-[8px] text-slate-500 mb-1">조건 속에서 1B 목표를 달성하세요. 완료 시 각성석 획득!</div>
+          <div class="space-y-1">
+            <div v-for="cd in challengeDefs" :key="cd.id" class="flex items-center justify-between bg-slate-900/50 rounded px-2 py-1 text-[9px]"
+                 :class="{'opacity-40': challengesCompleted[cd.id] && challengeActive !== cd.id, 'border border-rose-400/30': challengeActive === cd.id}">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1">
+                  <span>{{ cd.icon }}</span>
+                  <span class="font-bold" :class="challengesCompleted[cd.id] ? 'text-emerald-400' : 'text-slate-200'">{{ cd.name }}</span>
+                  <span class="text-amber-400 text-[8px]">💎×{{ cd.reward }}</span>
+                </div>
+                <div class="text-[7px] text-slate-500">{{ cd.desc }}</div>
+              </div>
+              <button v-if="!challengesCompleted[cd.id] || challengeActive === cd.id"
+                      class="btn btn-sm btn-danger" style="font-size:7px;padding:2px 6px;flex-shrink:0;margin-left:4px"
+                      @click="startChallenge(cd)" :disabled="challengeActive && challengeActive !== cd.id">
+                {{ challengeActive === cd.id ? '진행중...' : '시작' }}
+              </button>
+              <span v-else class="text-emerald-400 text-[10px] flex-shrink-0 ml-1">✅</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card py-2 px-3" style="border-color:rgba(168,139,250,0.3)">
+          <div class="text-xs font-bold text-purple-300 mb-1">👽 외계 종족</div>
+          <div class="text-[8px] text-slate-500 mb-2">행성 탐험 시 일정 확률로 조우합니다</div>
+          <div v-for="af in alienFactions" :key="af.id" class="bg-slate-900/50 rounded px-2 py-1.5 mb-1 text-[9px]">
+            <div class="flex items-center justify-between mb-0.5">
+              <span>{{ af.icon }} <span class="font-bold text-slate-200">{{ af.name }}</span></span>
+              <span class="text-[8px] text-purple-300">평판 {{ alienRep[af.id]||0 }} · 티어 {{ alienTier[af.id]||0 }}</span>
+            </div>
+            <div class="text-[7px] text-slate-500">{{ af.desc }}</div>
+            <div class="flex gap-1 mt-0.5">
+              <span v-for="(b,i) in af.bonuses" :key="i" class="text-[7px] px-1 py-px rounded"
+                    :class="(alienTier[af.id]||0) > i ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-600'">
+                T{{i+1}}: {{ b }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
