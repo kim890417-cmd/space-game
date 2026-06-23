@@ -262,6 +262,7 @@ const COLONY_FACTORY_TYPES = [
       },
       visibleBuildings() { return this.buildings.filter(b => b.awarenessNeeded <= this.awareness); },
       visibleShips() { return this.shipTypes.filter(s => s.awarenessNeeded <= this.awareness); },
+      visiblePlanets() { return this.planets.filter(p => p.fameNeeded <= this.awareness); },
       visibleResources() {
         const vis = { metal: true };
         for (const b of this.buildings) if (b.level > 0 && b.res) vis[b.res] = true;
@@ -642,21 +643,6 @@ const COLONY_FACTORY_TYPES = [
         this.toast(`⬆️ 식민 함선 LV ${this.colonizer.level}`);
       },
 
-      visiblePlanets() {
-        if (this.planets.length === 0) return [];
-        const p0 = this.planets[0];
-        if (typeof p0.fameNeeded === 'undefined') {
-          console.warn('[행성개척] fameNeeded 누락! keys:', Object.keys(p0));
-          return [...this.planets];
-        }
-        const filtered = this.planets.filter(p => p.fameNeeded <= this.awareness);
-        if (filtered.length === 0 && this.planets.length > 0 && this.awareness > 0) {
-          console.warn('[행성개척] 모든행성필터실패! 샘플:', this.planets.map(p => ({ id: p.id, fn: p.fameNeeded, type: typeof p.fameNeeded })));
-          return [...this.planets];
-        }
-        return filtered;
-      },
-
       canExplore(p) {
         if (p.explorationLevel >= p.maxLevel || this.exploring) return false;
         return this.colonizer.count > 0;
@@ -968,8 +954,6 @@ const COLONY_FACTORY_TYPES = [
           this.fleetActiveTab = 'fleet_build';
           return;
         }
-        console.log('[행성개척] colonizer:', this.colonizer.count, 'awareness:', this.awareness, 'planets:', this.planets?.length, 'visiblePlanets:', this.visiblePlanets?.length);
-        console.log('[행성개척] fleetActiveTab:', this.fleetActiveTab, 'exploring:', this.exploring);
         this.exploreTravelOverlay = true;
         this.exploreTravelTimer = 2;
         this.exploreFlavor = '🪐 행성 개척 임무를 시작합니다...';

@@ -330,6 +330,7 @@ const EXPLORE_CHOICES = [
       visibleShips() {
         return this.shipTypes.filter(s => s.awarenessNeeded <= this.awareness);
       },
+      visiblePlanets() { return this.planets.filter(p => p.fameNeeded <= this.awareness); },
       isShipUnlocked(s) {
         if (!s.requiredSystem) return true;
         const sys = this.starSystems.find(x => x.id === s.requiredSystem);
@@ -679,10 +680,6 @@ const EXPLORE_CHOICES = [
         for (const k in costs) this.resources[k] = this.resources[k].sub(costs[k]);
         this.colonizer.level++;
         this.toast(`⬆️ 식민 함선 LV ${this.colonizer.level}`);
-      },
-
-      visiblePlanets() {
-        return this.planets.filter(p => p.fameNeeded <= this.awareness);
       },
 
       canExplore(p) {
