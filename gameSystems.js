@@ -475,33 +475,6 @@ const COLONY_FACTORY_TYPES = [
       visibleBuildings() {
         return this.buildings;
       },
-      buildingLockReason(b) {
-        if (b.level > 0 || b.building) return '';
-        if (b.awarenessNeeded > this.awareness)
-          return '📡 인지도 ' + this.fmt(b.awarenessNeeded) + ' 필요 (현재 ' + this.fmt(this.awareness) + ')';
-        if (b.unlockRequires) {
-          const parts = [];
-          for (const reqId in b.unlockRequires) {
-            const reqBld = this.buildings.find(bb => bb.id === reqId);
-            const need = b.unlockRequires[reqId];
-            const cur = reqBld ? reqBld.level : 0;
-            parts.push((reqBld?.name || reqId) + ' LV ' + need + (cur >= need ? '' : ' (현재 ' + cur + ')'));
-          }
-          return '🔒 필요: ' + parts.join(' / ');
-        }
-        return '';
-      },
-      buildingLocked(b) {
-        if (b.level > 0 || b.building) return false;
-        if (b.awarenessNeeded > this.awareness) return true;
-        if (b.unlockRequires) {
-          for (const reqId in b.unlockRequires) {
-            const reqBld = this.buildings.find(bb => bb.id === reqId);
-            if (!reqBld || reqBld.level < b.unlockRequires[reqId]) return true;
-          }
-        }
-        return false;
-      },
       visibleShips() {
         return this.shipTypes.filter(s => {
           if (s.awarenessNeeded > this.awareness) return false;
@@ -639,6 +612,33 @@ const COLONY_FACTORY_TYPES = [
     },
 
     methods: {
+      buildingLockReason(b) {
+        if (b.level > 0 || b.building) return '';
+        if (b.awarenessNeeded > this.awareness)
+          return '📡 인지도 ' + this.fmt(b.awarenessNeeded) + ' 필요 (현재 ' + this.fmt(this.awareness) + ')';
+        if (b.unlockRequires) {
+          const parts = [];
+          for (const reqId in b.unlockRequires) {
+            const reqBld = this.buildings.find(bb => bb.id === reqId);
+            const need = b.unlockRequires[reqId];
+            const cur = reqBld ? reqBld.level : 0;
+            parts.push((reqBld?.name || reqId) + ' LV ' + need + (cur >= need ? '' : ' (현재 ' + cur + ')'));
+          }
+          return '🔒 필요: ' + parts.join(' / ');
+        }
+        return '';
+      },
+      buildingLocked(b) {
+        if (b.level > 0 || b.building) return false;
+        if (b.awarenessNeeded > this.awareness) return true;
+        if (b.unlockRequires) {
+          for (const reqId in b.unlockRequires) {
+            const reqBld = this.buildings.find(bb => bb.id === reqId);
+            if (!reqBld || reqBld.level < b.unlockRequires[reqId]) return true;
+          }
+        }
+        return false;
+      },
       colonyBuildings(c) {
         if (!c || !c.factories) return [];
         return c.factories.map((f, i) => ({
