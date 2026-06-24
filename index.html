@@ -280,23 +280,23 @@
                   </div>
                   <div class="flex items-center gap-1">
                     <span class="text-[9px] text-purple-300">LV {{ ships[s.type].level }}/{{ s.maxLevel }}</span>
-                    <span class="text-[7px] text-slate-600">{{ ['','Ⅰ티어','Ⅱ티어','Ⅲ티어','Ⅳ티어','Ⅴ티어','Ⅵ티어','Ⅶ티어'][shipTypes.indexOf(s)+1] || '' }}</span>
+                    <span class="text-[8px] font-bold" :class="'tier-'+getShipTier(s.type)">{{ ['','★','★★','★★★','★★★★','★★★★★','★★★★★★','★★★★★★★','★★★★★★★★','★★★★★★★★★'][getShipTier(s.type)] || '' }}</span>
                   </div>
                 </div>
                 <div class="text-[9px] text-slate-500">
                   기본 전투력 {{ s.power }}
-                  <span class="text-rose-400/70" v-if="s.strongAgainst && s.type!=='scout'">· 상성 {{ pirateTypeName(s.strongAgainst) }}에 강함</span>
-                  <span class="text-sky-400/80" v-if="s.special">· 특수능력: {{ s.special }}<span v-if="s.type==='scout'"> ({{ ships.scout.count }}척 = 초당 {{ fmt(ships.scout.count * 0.3) }} 인지도)</span></span>
+                  <span class="text-rose-400/70" v-if="s.strongAgainst">· 상성 {{ pirateTypeName(s.strongAgainst) }}에 강함</span>
+                  <span class="text-sky-400/80" v-if="s.special">· 특수능력: {{ s.special }}</span>
                 </div>
                 <div class="text-[9px] text-slate-400 mb-1">
-                  <span>⛏️{{ fmt(s.cost.metal) }} 💎{{ fmt(s.cost.crystal) }}</span><span v-if="s.cost.hydrogen"> ⚡{{ fmt(s.cost.hydrogen) }}</span><span v-if="s.cost.plasma"> 🔵{{ fmt(s.cost.plasma) }}</span>
+                  <span>⛏️{{ fmt(s.cost.metal) }} 💎{{ fmt(s.cost.crystal) }}</span><span v-if="s.cost.hydrogen"> ⚡{{ fmt(s.cost.hydrogen) }}</span><span v-if="s.cost.solar"> ☀️{{ fmt(s.cost.solar) }}</span><span v-if="s.cost.plasma"> 🔵{{ fmt(s.cost.plasma) }}</span><span v-if="s.cost.fission"> ⚛️{{ fmt(s.cost.fission) }}</span><span v-if="s.cost.fusion"> 🔥{{ fmt(s.cost.fusion) }}</span>
                   <span class="text-amber-400/70 ml-1">· 건조 {{ fmtTime(s.time) }}/척</span>
                 </div>
-
+                
                 <!-- 전투력 바 -->
                 <div class="flex items-center gap-1 mb-1">
                   <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full" :style="{width: Math.min(100, (shipPower(s) / 800)*100)+'%', background: 'linear-gradient(90deg, #34d399, #3b82f6)'}"></div>
+                      <div class="h-full rounded-full" :style="{width: Math.min(100, (shipPower(s) / Math.max(s.power*10, 100))*100)+'%', background: 'linear-gradient(90deg, #34d399, #3b82f6)'}"></div>
                   </div>
                     <span class="text-[8px] font-bold text-slate-400">{{ fmt(shipPower(s)) }}pt</span>
                 </div>
@@ -340,20 +340,20 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <span class="text-xs font-bold text-amber-300">🛸 식민 함선</span>
-                  <span class="text-[9px] text-amber-300">{{ colonizer.count }}척 · LV {{ colonizer.level }}</span>
+                  <span class="text-[9px] text-amber-300">{{ colonizer.count }}척</span>
                 </div>
-                <div class="text-[9px] text-slate-500">행성 탐험 및 점령에 사용 · 탐험력 {{ colonizer.count * colonizer.level }}</div>
-                <div class="text-[9px] text-slate-400 mb-1">⛏️5000 💎2500 · 건조 {{ fmtTime(30) }}</div>
+                <div class="text-[9px] text-slate-500">행성 탐험 및 점령에 사용 · 탐험력 {{ colonizerPower }}</div>
+                <div class="text-[9px] text-slate-400 mb-1">⛏️5000 💎2500 · 건조 {{ fmtTime(60) }}/척</div>
                 <div v-if="colonizer.building" class="mb-1">
                   <div class="flex items-center justify-between text-[10px]">
-                    <span class="text-amber-300">건조중</span>
+                    <span class="text-amber-300">건조중 {{ colonizer.buildCount }}척</span>
                     <span class="text-slate-400">{{ fmtTime(colonizer.totalTime - colonizer.elapsed) }}</span>
                   </div>
                   <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" :style="{width: (colonizer.elapsed/colonizer.totalTime*100)+'%'}"></div></div>
                 </div>
                 <div v-else class="flex gap-1">
-                  <button class="btn btn-sm btn-warning" @click="buildColonizer()" :disabled="colonizer.building || resources.metal.lt(5000) || resources.crystal.lt(2500)">건조</button>
-                  <button class="btn btn-sm btn-ghost" @click="upgradeColonizer()" :disabled="!canUpgradeColonizer()">{{ colonizer.level < 15 ? '⬆️ '+fmt(colonizerUpgradeCost().metal||0)+' '+fmt(colonizerUpgradeCost().crystal||0) : 'MAX' }}</button>
+                  <input type="number" class="ship-qty" v-model.number="colonizer.colonizerQty" min="1" max="999" style="width:40px">
+                  <button class="btn btn-sm btn-warning" @click="buildColonizer()" :disabled="colonizer.building || resources.metal.lt(5000 * (colonizer.colonizerQty||1)) || resources.crystal.lt(2500 * (colonizer.colonizerQty||1))">건조</button>
                 </div>
               </div>
             </div>
@@ -365,7 +365,7 @@
           <div class="card py-2 px-3">
             <div class="text-xs font-bold text-amber-300 mb-2">🌍 행성 개척</div>
             <div class="text-[9px] text-slate-500 mb-2">식민 함선을 보내 행성을 개척하세요. 반복 개척 시 보너스가 누적됩니다.<br>각 행성은 고유 특성이 있습니다.</div>
-            <div class="text-[9px] text-emerald-300 mb-2">보유 식민 함선: {{ colonizer.count }}척 · 탐험력: {{ colonizerPower }} · 소요시간: {{ fmtTime(Math.max(5, 30 - (colonizer.level||1)*2)) }}</div>
+            <div class="text-[9px] text-emerald-300 mb-2">보유 식민 함선: {{ colonizer.count }}척 · 탐험력: {{ colonizerPower }} · 소요시간: {{ fmtTime(Math.max(30, 120 - colonizer.count * 5)) }}</div>
             <div class="text-[8px] text-slate-600" v-if="fameMilestones.filter(m=>m.reached).length < 4">🔒 새 행성은 명성 업적 달성 시 개방됩니다</div>
           </div>
 
@@ -381,7 +381,7 @@
             <div class="text-xs font-bold text-yellow-300 mb-1">🚀 {{ explorePlanet.name }} 탐험중...</div>
             <div class="text-[9px] text-sky-300/80 mb-1 italic">{{ exploreFlavor }}</div>
             <div class="text-[9px] text-slate-400 mb-1">성공 확률 {{ Math.round(exploreChance*100) }}%</div>
-            <div class="explore-bar"><div class="explore-fill bg-yellow-400" :style="{width: ((exploreTimer / Math.max(5, 30 - (colonizer.level||1)*2))*100)+'%'}"></div></div>
+            <div class="explore-bar"><div class="explore-fill bg-yellow-400" :style="{width: ((exploreTimer / Math.max(30, 120 - colonizer.count * 5))*100)+'%'}"></div></div>
             <div class="text-[9px] text-slate-500 mt-1">{{ fmtTime(exploreTimer) }}</div>
           </div>
 
@@ -738,7 +738,7 @@
             <div class="text-slate-500">보유 건물</div><div class="text-slate-200 text-right">{{ ownedBuildingTypes }}/{{ buildings.length }}종</div>
             <div class="text-slate-500">총 함선</div><div class="text-slate-200 text-right">{{ totalShips }}척</div>
             <div class="text-slate-500">함대 전투력</div><div class="text-slate-200 text-right">{{ fmt(fleetPower) }}</div>
-            <div class="text-slate-500">식민 함선</div><div class="text-slate-200 text-right">{{ colonizer.count }}척 (LV{{ colonizer.level }})</div>
+            <div class="text-slate-500">식민 함선</div><div class="text-slate-200 text-right">{{ colonizer.count }}척</div>
             <div class="text-slate-500">행성 개척</div><div class="text-slate-200 text-right">{{ planets.filter(p=>p.explorationLevel>0).length }}/{{ planets.length }}</div>
             <div class="text-slate-500">해적 웨이브</div><div class="text-slate-200 text-right">{{ pirateWave }}</div>
           </div>
@@ -767,7 +767,6 @@
             <div v-if="colonizer.count>0" class="flex items-center justify-between text-[10px] bg-slate-900/50 rounded px-2 py-1">
               <span>🛸 식민 함선</span>
               <span class="text-amber-300">{{ colonizer.count }}척</span>
-              <span class="text-purple-300">LV {{ colonizer.level }}</span>
             </div>
           </div>
           <div v-else class="text-[9px] text-slate-600">보유한 함선이 없습니다</div>
