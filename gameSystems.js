@@ -67,8 +67,8 @@ const BUILDING_TEMPLATES = [
 
   const SHIP_TEMPLATES = [
     { type: 'scout', name: '정찰기', icon: '🛰️', power: 2, cost: { metal: 150 }, time: 5, strongAgainst: 'raider', awarenessNeeded: 0, img: 'img/ship-scout.jpg', maxLevel: 15, upgradeTime: 15, special: '정찰' },
-    { type: 'corvette', name: '초계함', icon: '🚀', power: 6, cost: { metal: 600 }, time: 25, strongAgainst: 'pirate_fleet', awarenessNeeded: 15, img: 'img/ship-corvette.jpg', maxLevel: 12, upgradeTime: 30 },
-      { type: 'frigate', name: '호위함', icon: '🛡️', power: 14, cost: { metal: 1500, crystal: 400 }, time: 70, strongAgainst: 'marauder', awarenessNeeded: 50, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 50 },
+    { type: 'corvette', name: '초계함', icon: '🚀', power: 6, cost: { metal: 600 }, time: 25, strongAgainst: 'pirate_fleet', awarenessNeeded: 15, img: 'img/ship-cruiser.jpg', maxLevel: 12, upgradeTime: 30 },
+      { type: 'frigate', name: '호위함', icon: '🛡️', power: 14, cost: { metal: 1500, crystal: 400 }, time: 70, strongAgainst: 'marauder', awarenessNeeded: 50, img: 'img/ship-corvette.jpg', maxLevel: 10, upgradeTime: 50 },
       { type: 'torpedo', name: '어뢰정', icon: '🎯', power: 8, cost: { metal: 800, crystal: 200 }, time: 40, strongAgainst: 'pirate_fleet', awarenessNeeded: 80, img: 'img/ship-torpedo.jpg', maxLevel: 10, upgradeTime: 35 },
       { type: 'destroyer', name: '구축함', icon: '⚔️', power: 28, cost: { metal: 3200, crystal: 1200 }, time: 150, strongAgainst: 'juggernaut', awarenessNeeded: 120, img: 'img/ship-battleship.jpg', maxLevel: 8, upgradeTime: 90 },
       { type: 'cruiser', name: '순양함', icon: '🔱', power: 50, cost: { metal: 7000, crystal: 3500, hydrogen: 1000 }, time: 350, strongAgainst: 'raider', awarenessNeeded: 250, img: 'img/ship-frigate.jpg', maxLevel: 7, upgradeTime: 180 },
@@ -224,6 +224,7 @@ const COLONY_FACTORY_TYPES = [
         colonyDetailPlanet: null,
 
         cheatOpen: false,
+        guideOpen: { buildings: true, fleet: true, colony: true, research: true },
         speedMult: 1,
         prestigePoints: 0,
         prestigeBonus: 0,
