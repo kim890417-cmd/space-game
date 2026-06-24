@@ -320,6 +320,23 @@ const COLONY_FACTORY_TYPES = [
         _saveTick: 0, _toastT: null,
         lastSeen: 0, offlineReport: null,
 
+        constructionSlots: [
+          { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 },
+          { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 }
+        ],
+        maxConstructionSlots: 2,
+        tradeShip: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, cargo: 100, speed: 1, level: 1, tradeQty: 1 },
+        tradePosts: TRADE_POSTS.map(p => ({
+          ...p, prices: {
+            metal: { base: p.prices.metal, current: p.prices.metal },
+            crystal: { base: p.prices.crystal, current: p.prices.crystal },
+            hydrogen: { base: p.prices.hydrogen, current: p.prices.hydrogen }
+          }, priceTimer: Math.random() * 120
+        })),
+        tradeLocation: 0, trading: false, tradeRemaining: 0, tradeTotal: 0,
+        tradeCargo: { metal: 0, crystal: 0, hydrogen: 0 }, totalTradeProfit: 0, tradeLog: [],
+        tradeQty: { metal: 1, crystal: 1, hydrogen: 1 },
+
         colonies: [],
         colonyFactoryTypes: COLONY_FACTORY_TYPES,
         colonyDetailPlanet: null,
