@@ -21,34 +21,34 @@ const RES_COLOR = { metal: '#34d399', crystal: '#a78bfa', hydrogen: '#38bdf8', p
 
 const BUILDING_TEMPLATES = [
     { id: 'mine', name: '지표 광산', icon: '⛏️', img: 'img/bld-mine.jpg', desc: '소행성 표면에서 금속 광물 채굴',
-      basePrice: 8000, income: 30, awarenessNeeded: 0, awarenessGiven: 8, tier: 1, res: 'metal', output: 2.0, buildTime: 3 },
+      basePrice: 8000, income: 30, awarenessNeeded: 0, awarenessGiven: 8, tier: 1, res: 'metal', output: 2.0, buildTime: 5 },
     { id: 'crystal_fac', name: '크리스탈 합성소', icon: '💎', img: 'img/bld-crystal.jpg', desc: '고밀도 에너지 결정 합성',
       basePrice: 250000, income: 40, awarenessNeeded: 200, awarenessGiven: 12, tier: 2, res: 'crystal', output: 0.8,
-      unlockRequires: { mine: 3 }, buildTime: 10 },
+      unlockRequires: { mine: 3 }, buildTime: 15 },
     { id: 'drone_hub', name: '드론 허브', icon: '🛸', img: 'img/bld-drone.jpg', desc: '자동 드론으로 자원 수집',
       basePrice: 750000, income: 60, awarenessNeeded: 500, awarenessGiven: 16, tier: 3, res: 'metal', output: 1.5,
-      unlockRequires: { mine: 5, crystal_fac: 2 }, buildTime: 20 },
+      unlockRequires: { mine: 5, crystal_fac: 2 }, buildTime: 30 },
     { id: 'refinery', name: '수소 정제소', icon: '⚡', img: 'img/bld-refinery.jpg', desc: '듀테륨 정제로 수소 생산',
       basePrice: 2000000, income: 90, awarenessNeeded: 1500, awarenessGiven: 22, tier: 4, res: 'hydrogen', output: 0.5,
-      unlockRequires: { drone_hub: 3, crystal_fac: 5 }, buildTime: 45 },
+      unlockRequires: { drone_hub: 3, crystal_fac: 5 }, buildTime: 60 },
     { id: 'recycler', name: '자원 재활용소', icon: '♻️', img: 'img/bld-recycler.jpg', desc: '폐자원 재활용',
       basePrice: 4000000, income: 120, awarenessNeeded: 4000, awarenessGiven: 30, tier: 5, res: 'metal', output: 2.0,
-      unlockRequires: { refinery: 3, drone_hub: 5 }, buildTime: 90 },
+      unlockRequires: { refinery: 3, drone_hub: 5 }, buildTime: 120 },
     { id: 'solar_plant', name: '태양열 발전소', icon: '☀️', img: 'img/bld-solar.jpg', desc: '항성 에너지 수집',
       basePrice: 6000000, income: 160, awarenessNeeded: 10000, awarenessGiven: 40, tier: 6, res: 'solar', output: 1.0,
-      unlockRequires: { recycler: 3, refinery: 5 }, buildTime: 150 },
+      unlockRequires: { recycler: 3, refinery: 5 }, buildTime: 200 },
     { id: 'plasma_coil', name: '플라즈마 코일', icon: '🔵', img: 'img/bld-plasma.jpg', desc: '고에너지 플라즈마 안정화',
       basePrice: 10000000, income: 220, awarenessNeeded: 25000, awarenessGiven: 50, tier: 7, res: 'plasma', output: 0.5,
-      unlockRequires: { solar_plant: 4, recycler: 6 }, buildTime: 240 },
+      unlockRequires: { solar_plant: 4, recycler: 6 }, buildTime: 300 },
     { id: 'fission_reactor', name: '핵분열로', icon: '⚛️', img: 'img/bld-fission.jpg', desc: '원자핵 분열 에너지',
       basePrice: 15000000, income: 350, awarenessNeeded: 50000, awarenessGiven: 65, tier: 8, res: 'fission', output: 0.4,
-      unlockRequires: { plasma_coil: 4, solar_plant: 6 }, buildTime: 480 },
+      unlockRequires: { plasma_coil: 4, solar_plant: 6 }, buildTime: 600 },
     { id: 'fusion_reactor', name: '핵융합로', icon: '🔥', img: 'img/bld-fusion.jpg', desc: '핵융합 반응 에너지',
       basePrice: 25000000, income: 550, awarenessNeeded: 100000, awarenessGiven: 80, tier: 9, res: 'fusion', output: 0.3,
-      unlockRequires: { fission_reactor: 4, plasma_coil: 6 }, buildTime: 900 },
+      unlockRequires: { fission_reactor: 4, plasma_coil: 6 }, buildTime: 1200 },
     { id: 'outpost', name: '전초기지', icon: '🚀', img: 'img/bld-outpost.jpg', desc: '새 행성 자원 탐색',
       basePrice: 50000000, income: 900, awarenessNeeded: 200000, awarenessGiven: 100, tier: 10, res: 'crystal', output: 1.0,
-      unlockRequires: { fusion_reactor: 4, fission_reactor: 6 }, buildTime: 1800 }
+      unlockRequires: { fusion_reactor: 4, fission_reactor: 6 }, buildTime: 2400 }
   ];
 
   const RESEARCH_LIST = [
@@ -76,7 +76,7 @@ const BUILDING_TEMPLATES = [
 
   const SHIP_TEMPLATES = [
     { type: 'scout', name: '정찰기', icon: '🛰️', power: 0.1, cost: { metal: 100 }, time: 30, strongAgainst: null, awarenessNeeded: 0, img: 'img/ship-scout.jpg', maxLevel: 5, upgradeTime: 30, special: '탐사' },
-    { type: 'corvette', name: '초계함', icon: '🚀', power: 1, cost: { metal: 400 }, time: 120, strongAgainst: 'pirate_fleet', awarenessNeeded: 0, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 60 },
+    { type: 'corvette', name: '초계함', icon: '🚀', power: 1, cost: { metal: 3000, crystal: 500 }, time: 120, strongAgainst: 'pirate_fleet', awarenessNeeded: 0, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 60 },
     { type: 'fast_boat', name: '고속함', icon: '🎯', power: 5, cost: { metal: 800, crystal: 200 }, time: 180, strongAgainst: 'raider', awarenessNeeded: 500, img: 'img/ship-torpedo.jpg', maxLevel: 10, upgradeTime: 60, requiresBuilding: 'crystal_fac' },
     { type: 'frigate', name: '호위함', icon: '🛡️', power: 25, cost: { metal: 3000, crystal: 800 }, time: 350, strongAgainst: 'marauder', awarenessNeeded: 2000, img: 'img/ship-corvette.jpg', maxLevel: 8, upgradeTime: 120, requiresBuilding: 'drone_hub' },
     { type: 'destroyer', name: '구축함', icon: '⚔️', power: 250, cost: { metal: 8000, crystal: 2000, hydrogen: 800 }, time: 600, strongAgainst: 'juggernaut', awarenessNeeded: 5000, img: 'img/ship-battleship.jpg', maxLevel: 6, upgradeTime: 240, requiresBuilding: 'refinery' },
@@ -713,9 +713,7 @@ const COLONY_FACTORY_TYPES = [
 
       upgradeCost(b) {
         const lv = b.level || 0;
-        if (lv < 20) return Math.floor(b.basePrice * Math.pow(lv + 1, 1.8));
-        const cost20 = Math.floor(b.basePrice * Math.pow(20, 1.8));
-        return Math.floor(cost20 * Math.pow(2, lv - 19));
+        return Math.floor(b.basePrice * Math.pow(2, lv));
       },
       upgradePreview(b) {
         const nextLv = (b.level || 0) + 1;
@@ -732,8 +730,9 @@ const COLONY_FACTORY_TYPES = [
         const cost = this.upgradeCost(b);
         const nextLv = b.level + 1;
         let buildTime;
-        if (nextLv <= 20) { buildTime = b.buildTime * nextLv; }
-        else { buildTime = b.buildTime * 20 * Math.pow(2, nextLv - 20); }
+        if (nextLv <= 5) { buildTime = b.buildTime * Math.pow(2, nextLv - 1); }
+        else if (nextLv <= 10) { buildTime = b.buildTime * Math.pow(2, 4) * Math.pow(1.5, nextLv - 5); }
+        else { buildTime = b.buildTime * Math.pow(2, 4) * Math.pow(1.5, 5) * Math.pow(1.2, nextLv - 10); }
         this.money = this.money.sub(cost);
         b.building = true; b.buildTotal = buildTime; b.buildRemaining = buildTime;
         slot.busy = true; slot.buildingId = b.id; slot.action = 'upgrade'; slot.level = nextLv;

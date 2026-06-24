@@ -206,7 +206,7 @@
         <div class="card py-2 px-3" style="border-color:rgba(52,211,153,0.2)">
           <div class="text-[10px] font-bold text-emerald-300 mb-1">🎯 미션</div>
           <div class="space-y-1">
-            <div v-for="m in missions" :key="m.id" class="flex items-center gap-2 text-[9px] bg-slate-900/50 rounded px-2 py-1">
+            <div v-for="m in missions" :key="m.id" v-if="!m.completed" class="flex items-center gap-2 text-[9px] bg-slate-900/50 rounded px-2 py-1">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <span :class="m.completed ? 'text-emerald-400 line-through' : 'text-slate-200'">{{ m.name }}</span>
