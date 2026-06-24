@@ -1327,7 +1327,7 @@ const COLONY_FACTORY_TYPES = [
         this.$set(this.challengeModifiers, 'shipTime', cd.id === 'ch4' ? 2 : 1);
         this.$set(this.challengeModifiers, 'noColony', cd.id === 'ch5');
         this.challengeActive = cd.id;
-        this.cheatReset();
+        this.cheatReset(true);
         this.toast(`🏆 도전: ${cd.name} 시작! (보상: 각성석 ${cd.reward}개)`);
       },
       canStartChallenge(cd) {
@@ -1374,11 +1374,10 @@ const COLONY_FACTORY_TYPES = [
         } catch (e) { this.toast('🚫 잘못된 세이브 코드'); }
       },
 
-      cheatReset() {
-        if (!confirm('정말 초기화? (환생 포인트는 유지)')) return;
+      cheatReset(silent) {
+        if (!silent && !confirm('정말 초기화? (환생 포인트는 유지)')) return;
         const pp = this.prestigePoints;
         const pb = this.prestigeBonus;
-        const ba = { ...this.buildingAwakened };
         const cat = this.colonyAutoTransport;
         const cau = this.colonyAutoUpgrade;
         const ac = this.autoClicker;
@@ -1413,7 +1412,7 @@ const COLONY_FACTORY_TYPES = [
         for (const k in defaults) this[k] = defaults[k];
         this.prestigePoints = pp;
         this.prestigeBonus = pb;
-        this.buildingAwakened = ba;
+        this.buildingAwakened = {};
         this.colonyAutoTransport = cat;
         this.colonyAutoUpgrade = cau;
         this.autoClicker = ac;
@@ -1445,7 +1444,7 @@ const COLONY_FACTORY_TYPES = [
         this.prestigePoints += gain;
         this.prestigeBonus = this.prestigePoints * 0.1;
         this.toast(`✨ 환생! +${gain} 포인트 (총 ${this.prestigePoints}P) 수입 +${Math.round(this.prestigeBonus*100)}% (자원가치 ${this.fmt(resourceValue)} 포함)`);
-        this.cheatReset();
+        this.cheatReset(true);
       },
 
       tickSystems(dt) {
