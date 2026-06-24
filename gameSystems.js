@@ -23,32 +23,32 @@ const BUILDING_TEMPLATES = [
     { id: 'mine', name: '지표 광산', icon: '⛏️', img: 'img/bld-mine.jpg', desc: '소행성 표면에서 금속 광물 채굴',
       basePrice: 8000, income: 30, awarenessNeeded: 0, awarenessGiven: 8, tier: 1, res: 'metal', output: 2.0, buildTime: 3 },
     { id: 'crystal_fac', name: '크리스탈 합성소', icon: '💎', img: 'img/bld-crystal.jpg', desc: '고밀도 에너지 결정 합성',
-      basePrice: 250000, income: 40, awarenessNeeded: 500, awarenessGiven: 12, tier: 2, res: 'crystal', output: 0.8,
-      unlockRequires: { mine: 10 }, buildTime: 10 },
+      basePrice: 250000, income: 40, awarenessNeeded: 200, awarenessGiven: 12, tier: 2, res: 'crystal', output: 0.8,
+      unlockRequires: { mine: 3 }, buildTime: 10 },
     { id: 'drone_hub', name: '드론 허브', icon: '🛸', img: 'img/bld-drone.jpg', desc: '자동 드론으로 자원 수집',
-      basePrice: 750000, income: 60, awarenessNeeded: 2000, awarenessGiven: 16, tier: 3, res: 'metal', output: 1.5,
-      unlockRequires: { mine: 15, crystal_fac: 8 }, buildTime: 20 },
+      basePrice: 750000, income: 60, awarenessNeeded: 500, awarenessGiven: 16, tier: 3, res: 'metal', output: 1.5,
+      unlockRequires: { mine: 5, crystal_fac: 2 }, buildTime: 20 },
     { id: 'refinery', name: '수소 정제소', icon: '⚡', img: 'img/bld-refinery.jpg', desc: '듀테륨 정제로 수소 생산',
-      basePrice: 2000000, income: 90, awarenessNeeded: 5000, awarenessGiven: 22, tier: 4, res: 'hydrogen', output: 0.5,
-      unlockRequires: { drone_hub: 5, crystal_fac: 12 }, buildTime: 45 },
+      basePrice: 2000000, income: 90, awarenessNeeded: 1500, awarenessGiven: 22, tier: 4, res: 'hydrogen', output: 0.5,
+      unlockRequires: { drone_hub: 3, crystal_fac: 5 }, buildTime: 45 },
     { id: 'recycler', name: '자원 재활용소', icon: '♻️', img: 'img/bld-recycler.jpg', desc: '폐자원 재활용',
-      basePrice: 4000000, income: 120, awarenessNeeded: 10000, awarenessGiven: 30, tier: 5, res: 'metal', output: 2.0,
-      unlockRequires: { refinery: 5, drone_hub: 10 }, buildTime: 90 },
+      basePrice: 4000000, income: 120, awarenessNeeded: 4000, awarenessGiven: 30, tier: 5, res: 'metal', output: 2.0,
+      unlockRequires: { refinery: 3, drone_hub: 5 }, buildTime: 90 },
     { id: 'solar_plant', name: '태양열 발전소', icon: '☀️', img: 'img/bld-solar.jpg', desc: '항성 에너지 수집',
-      basePrice: 6000000, income: 160, awarenessNeeded: 20000, awarenessGiven: 40, tier: 6, res: 'solar', output: 1.0,
-      unlockRequires: { recycler: 5, refinery: 10 }, buildTime: 150 },
+      basePrice: 6000000, income: 160, awarenessNeeded: 10000, awarenessGiven: 40, tier: 6, res: 'solar', output: 1.0,
+      unlockRequires: { recycler: 3, refinery: 5 }, buildTime: 150 },
     { id: 'plasma_coil', name: '플라즈마 코일', icon: '🔵', img: 'img/bld-plasma.jpg', desc: '고에너지 플라즈마 안정화',
-      basePrice: 10000000, income: 220, awarenessNeeded: 50000, awarenessGiven: 50, tier: 7, res: 'plasma', output: 0.5,
-      unlockRequires: { solar_plant: 5, recycler: 10 }, buildTime: 240 },
+      basePrice: 10000000, income: 220, awarenessNeeded: 25000, awarenessGiven: 50, tier: 7, res: 'plasma', output: 0.5,
+      unlockRequires: { solar_plant: 4, recycler: 6 }, buildTime: 240 },
     { id: 'fission_reactor', name: '핵분열로', icon: '⚛️', img: 'img/bld-fission.jpg', desc: '원자핵 분열 에너지',
-      basePrice: 15000000, income: 350, awarenessNeeded: 100000, awarenessGiven: 65, tier: 8, res: 'fission', output: 0.4,
-      unlockRequires: { plasma_coil: 5, solar_plant: 10 }, buildTime: 480 },
+      basePrice: 15000000, income: 350, awarenessNeeded: 50000, awarenessGiven: 65, tier: 8, res: 'fission', output: 0.4,
+      unlockRequires: { plasma_coil: 4, solar_plant: 6 }, buildTime: 480 },
     { id: 'fusion_reactor', name: '핵융합로', icon: '🔥', img: 'img/bld-fusion.jpg', desc: '핵융합 반응 에너지',
-      basePrice: 25000000, income: 550, awarenessNeeded: 200000, awarenessGiven: 80, tier: 9, res: 'fusion', output: 0.3,
-      unlockRequires: { fission_reactor: 5, plasma_coil: 10 }, buildTime: 900 },
+      basePrice: 25000000, income: 550, awarenessNeeded: 100000, awarenessGiven: 80, tier: 9, res: 'fusion', output: 0.3,
+      unlockRequires: { fission_reactor: 4, plasma_coil: 6 }, buildTime: 900 },
     { id: 'outpost', name: '전초기지', icon: '🚀', img: 'img/bld-outpost.jpg', desc: '새 행성 자원 탐색',
-      basePrice: 50000000, income: 900, awarenessNeeded: 500000, awarenessGiven: 100, tier: 10, res: 'crystal', output: 1.0,
-      unlockRequires: { fusion_reactor: 5, fission_reactor: 10 }, buildTime: 1800 }
+      basePrice: 50000000, income: 900, awarenessNeeded: 200000, awarenessGiven: 100, tier: 10, res: 'crystal', output: 1.0,
+      unlockRequires: { fusion_reactor: 4, fission_reactor: 6 }, buildTime: 1800 }
   ];
 
   const RESEARCH_LIST = [
@@ -473,16 +473,34 @@ const COLONY_FACTORY_TYPES = [
         return m;
       },
       visibleBuildings() {
-        return this.buildings.filter(b => {
-          if (b.awarenessNeeded > this.awareness) return false;
-          if (b.unlockRequires) {
-            for (const reqId in b.unlockRequires) {
-              const reqBld = this.buildings.find(bb => bb.id === reqId);
-              if (!reqBld || reqBld.level < b.unlockRequires[reqId]) return false;
-            }
+        return this.buildings;
+      },
+      buildingLockReason(b) {
+        if (b.level > 0 || b.building) return '';
+        if (b.awarenessNeeded > this.awareness)
+          return '📡 인지도 ' + this.fmt(b.awarenessNeeded) + ' 필요 (현재 ' + this.fmt(this.awareness) + ')';
+        if (b.unlockRequires) {
+          const parts = [];
+          for (const reqId in b.unlockRequires) {
+            const reqBld = this.buildings.find(bb => bb.id === reqId);
+            const need = b.unlockRequires[reqId];
+            const cur = reqBld ? reqBld.level : 0;
+            parts.push((reqBld?.name || reqId) + ' LV ' + need + (cur >= need ? '' : ' (현재 ' + cur + ')'));
           }
-          return true;
-        });
+          return '🔒 필요: ' + parts.join(' / ');
+        }
+        return '';
+      },
+      buildingLocked(b) {
+        if (b.level > 0 || b.building) return false;
+        if (b.awarenessNeeded > this.awareness) return true;
+        if (b.unlockRequires) {
+          for (const reqId in b.unlockRequires) {
+            const reqBld = this.buildings.find(bb => bb.id === reqId);
+            if (!reqBld || reqBld.level < b.unlockRequires[reqId]) return true;
+          }
+        }
+        return false;
       },
       visibleShips() {
         return this.shipTypes.filter(s => {
@@ -526,7 +544,7 @@ const COLONY_FACTORY_TYPES = [
         const progress = next.awarenessNeeded > this.awareness
           ? Math.min(100, Math.round(this.awareness / next.awarenessNeeded * 100))
           : 0;
-        return { name: next.name, need: needStr, progress: progress };
+        return { name: next.name, icon: next.icon, need: needStr, progress: progress };
       },
       nextShipUnlock() {
         const next = this.shipTypes.find(s => {
@@ -1873,7 +1891,7 @@ const COLONY_FACTORY_TYPES = [
         tradeLocation: 0, trading: false, tradeRemaining: 0, tradeTotal: 0,
         tradeCargo: { metal: 0, crystal: 0, hydrogen: 0 }, totalTradeProfit: 0, tradeLog: [],
         tradeQty: { metal: 1, crystal: 1, hydrogen: 1 },
-          ships: Object.fromEntries(SHIP_TEMPLATES.map(s => [s.type, { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, level: 1, upgrading: false, upgradeElapsed: 0, upgradeTotalTime: 0 }])),
+        ships: Object.fromEntries(SHIP_TEMPLATES.map(s => [s.type, { count: s.type === 'scout' ? 2 : s.type === 'corvette' ? 1 : 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, level: 1, upgrading: false, upgradeElapsed: 0, upgradeTotalTime: 0 }])),
         colonizer: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, colonizerQty: 1 },
           planets: PLANETS.map(p => ({ ...p, explorationLevel: 0 })),
           pirateWave: 1, pirateAttackTimer: 300, pirateLog: [], combatCooldown: 0,

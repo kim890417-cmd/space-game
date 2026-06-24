@@ -154,6 +154,19 @@
           <div class="text-[8px] text-amber-400/70 mt-1" v-if="fameBonusDisplay">🏅 명성 보너스: 수입 {{ fameBonusDisplay }}</div>
         </div>
 
+        <div class="card py-2 px-3" v-if="nextUnlock" style="border-color:rgba(56,189,248,0.15)">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] font-bold text-sky-300">📋 다음 잠금해제</span>
+          </div>
+          <div class="flex items-center gap-1 text-[9px]">
+            <span class="text-sky-400">{{ nextUnlock.icon }} {{ nextUnlock.name }}</span>
+            <span class="text-slate-500">· {{ nextUnlock.need }}</span>
+          </div>
+          <div class="progress-bar mt-1" v-if="nextUnlock.progress > 0 && nextUnlock.progress < 100">
+            <div class="progress-fill bg-sky-400" :style="{width: nextUnlock.progress+'%'}"></div>
+          </div>
+        </div>
+
         <div class="card py-2 px-3" v-if="eventMessage">
           <div class="flex items-center justify-between">
             <span class="text-[11px] text-yellow-300">{{ eventMessage }}</span>
@@ -185,6 +198,22 @@
               <div class="flex gap-0.5">
                 <button class="btn btn-sm btn-success" style="font-size:7px;padding:1px 4px" @click="sellResource(k,Math.min(100,(resources[k]||0).toNumber()))" :disabled="!(resources[k]||0).gte(1)">📤</button>
                 <button class="btn btn-sm btn-primary" style="font-size:7px;padding:1px 4px" @click="buyResource(k,10)" :disabled="money.lt(Math.floor(exchangeSellRate[k]*effectiveExchangeBuyRate)*10)">📥</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card py-2 px-3" style="border-color:rgba(52,211,153,0.2)">
+          <div class="text-[10px] font-bold text-emerald-300 mb-1">🎯 미션</div>
+          <div class="space-y-1">
+            <div v-for="m in missions" :key="m.id" class="flex items-center gap-2 text-[9px] bg-slate-900/50 rounded px-2 py-1">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span :class="m.completed ? 'text-emerald-400 line-through' : 'text-slate-200'">{{ m.name }}</span>
+                  <span class="text-slate-500" v-if="!m.completed">{{ fmt(m.progress) }}/{{ fmt(m.goal) }}</span>
+                  <span class="text-emerald-400" v-else>✅</span>
+                </div>
+                <div class="text-[8px] text-slate-600">{{ m.desc }}</div>
               </div>
             </div>
           </div>
@@ -255,6 +284,10 @@
                 </div>
                 <div class="text-[7px] text-slate-600 mt-px" v-if="b.cooldown>0">⏳ {{ fmtTime(b.cooldown) }}</div>
               </div>
+            </div>
+            <div class="locked-overlay" v-if="buildingLocked(b) && b.level===0 && !b.building">
+              <div class="text-[11px] text-slate-400 mb-1">🔒</div>
+              <div class="text-[9px] text-slate-500 text-center px-2 leading-relaxed">{{ buildingLockReason(b) }}</div>
             </div>
           </div>
         </div>
