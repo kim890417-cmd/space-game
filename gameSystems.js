@@ -52,26 +52,26 @@ const BUILDING_TEMPLATES = [
   ];
 
   const RESEARCH_LIST = [
-    { id: 'r1', name: '광산 효율 I', desc: '메탈 생산 +30%', icon: '⛏️', cost: { metal: 8000 }, time: 30, effect: g => { g.resMultipliers.metal *= 1.3; } },
-    { id: 'r2', name: '합성 기술 I', desc: '크리스탈 생산 +30%', icon: '💎', cost: { metal: 20000 }, time: 45, effect: g => { g.resMultipliers.crystal *= 1.3; } },
-    { id: 'r3', name: '정제 기술 I', desc: '수소 생산 +30%', icon: '⚡', cost: { metal: 50000, crystal: 10000 }, time: 60, effect: g => { g.resMultipliers.hydrogen *= 1.3; } },
-    { id: 'r4', name: '에너지 저장 I', desc: '모든 저장고 +50%', icon: '📦', cost: { metal: 30000 }, time: 40, effect: g => { g.storageMult *= 1.5; } },
-    { id: 'r5', name: '건물 관리 I', desc: '모든 건물 월세 +25%', icon: '🏗️', cost: { metal: 50000, crystal: 15000 }, time: 50, effect: g => { g.incomeMult += 0.25; } },
-    { id: 'r6', name: '인지도 확산', desc: '인지도 획득량 +50%', icon: '📡', cost: { metal: 100000, crystal: 25000 }, time: 70, effect: g => { g.awarenessMult *= 1.5; } },
-    { id: 'r7', name: '광산 효율 II', desc: '메탈 생산 +60%', icon: '⛏️', cost: { metal: 120000, crystal: 30000 }, time: 90, effect: g => { g.resMultipliers.metal *= 1.6; }, requires: 'r1' },
-    { id: 'r8', name: '건물 관리 II', desc: '모든 건물 월세 +50%', icon: '🏗️', cost: { metal: 250000, crystal: 60000, hydrogen: 10000 }, time: 120, effect: g => { g.incomeMult += 0.5; }, requires: 'r5' },
-    { id: 'r9', name: '핵융합 안정화', desc: '핵융합 생산 +100%', icon: '🔥', cost: { metal: 500000, crystal: 100000, hydrogen: 50000 }, time: 300, effect: g => { g.resMultipliers.fusion *= 2.0; }, requires: 'r3' },
-    { id: 'r10', name: '우주 무역', desc: '소득 +40%', icon: '📈', cost: { metal: 800000, crystal: 200000, plasma: 50000 }, time: 400, effect: g => { g.incomeMult += 0.4; }, requires: 'r6' },
-    { id: 'r11', name: '함선 생산 I', desc: '함선 건조 시간 -20%', icon: '🚀', cost: { metal: 300000, crystal: 80000 }, time: 150, effect: g => { g.shipBuildSpeedMult *= 0.8; }, requires: 'r4' },
-    { id: 'r12', name: '전투 교리', desc: '함대 전투력 +30%', icon: '⚔️', cost: { metal: 600000, crystal: 150000, solar: 30000 }, time: 200, effect: g => { g.fleetPowerMult *= 1.3; }, requires: 'r5' },
-    { id: 'r13', name: '식민지 자동 운송', desc: '식민지 자원 자동 수송', icon: '📦', cost: { metal: 400000, crystal: 100000, hydrogen: 20000 }, time: 180, effect: g => { g.colonyAutoTransport = true; }, requires: 'r6' },
-    { id: 'r14', name: '식민지 자동화', desc: '식민지 공장 자동 업그레이드', icon: '🏭', cost: { metal: 800000, crystal: 250000, hydrogen: 80000, plasma: 15000 }, time: 350, effect: g => { g.colonyAutoUpgrade = true; }, requires: 'r13' },
-    { id: 'r15', name: '자동 채굴 드론', desc: '5초마다 자동 클릭', icon: '🤖', cost: { metal: 1500000, crystal: 500000, hydrogen: 100000, solar: 50000 }, time: 450, effect: g => { g.autoClicker = true; }, requires: 'r11' },
-    { id: 'r16', name: '건물 관리 AI', desc: '가장 저렴한 건물 자동 구매', icon: '🧠', cost: { metal: 3000000, crystal: 1000000, hydrogen: 300000, plasma: 100000 }, time: 600, effect: g => { g.autoBuilder = true; }, requires: 'r15' },
-    { id: 'r17', name: '우주 무역 II', desc: '소득 +60%', icon: '📈', cost: { metal: 5000000, crystal: 2000000, hydrogen: 500000, plasma: 200000 }, time: 900, effect: g => { g.incomeMult += 0.6; }, requires: 'r10' },
-    { id: 'r18', name: '함선 생산 II', desc: '함선 건조 시간 -30%', icon: '🚀', cost: { metal: 4000000, crystal: 1500000, solar: 200000 }, time: 600, effect: g => { g.shipBuildSpeedMult *= 0.7; }, requires: 'r11' },
-    { id: 'r19', name: '전투 교리 II', desc: '함대 전투력 +50%', icon: '⚔️', cost: { metal: 8000000, crystal: 3000000, hydrogen: 800000, solar: 300000 }, time: 800, effect: g => { g.fleetPowerMult *= 1.5; }, requires: 'r12' },
-    { id: 'r20', name: '에너지 저장 II', desc: '모든 저장고 +100%', icon: '📦', cost: { metal: 6000000, crystal: 2500000, plasma: 500000 }, time: 700, effect: g => { g.storageMult *= 2.0; }, requires: 'r4' }
+    { id: 'r1', name: '광산 효율 I', desc: '메탈 생산 +30%', icon: '⛏️', cost: { metal: 8000 }, time: 3600, effect: g => { g.resMultipliers.metal *= 1.3; } },
+    { id: 'r2', name: '합성 기술 I', desc: '크리스탈 생산 +30%', icon: '💎', cost: { metal: 20000 }, time: 7200, effect: g => { g.resMultipliers.crystal *= 1.3; } },
+    { id: 'r3', name: '정제 기술 I', desc: '수소 생산 +30%', icon: '⚡', cost: { metal: 50000, crystal: 10000 }, time: 10800, effect: g => { g.resMultipliers.hydrogen *= 1.3; } },
+    { id: 'r4', name: '에너지 저장 I', desc: '모든 저장고 +50%', icon: '📦', cost: { metal: 30000 }, time: 5400, effect: g => { g.storageMult *= 1.5; } },
+    { id: 'r5', name: '건물 관리 I', desc: '모든 건물 월세 +25%', icon: '🏗️', cost: { metal: 50000, crystal: 15000 }, time: 7200, effect: g => { g.incomeMult += 0.25; } },
+    { id: 'r6', name: '인지도 확산', desc: '인지도 획득량 +50%', icon: '📡', cost: { metal: 100000, crystal: 25000 }, time: 14400, effect: g => { g.awarenessMult *= 1.5; } },
+    { id: 'r7', name: '광산 효율 II', desc: '메탈 생산 +60%', icon: '⛏️', cost: { metal: 120000, crystal: 30000 }, time: 18000, effect: g => { g.resMultipliers.metal *= 1.6; }, requires: 'r1' },
+    { id: 'r8', name: '건물 관리 II', desc: '모든 건물 월세 +50%', icon: '🏗️', cost: { metal: 250000, crystal: 60000, hydrogen: 10000 }, time: 28800, effect: g => { g.incomeMult += 0.5; }, requires: 'r5' },
+    { id: 'r9', name: '핵융합 안정화', desc: '핵융합 생산 +100%', icon: '🔥', cost: { metal: 500000, crystal: 100000, hydrogen: 50000 }, time: 43200, effect: g => { g.resMultipliers.fusion *= 2.0; }, requires: 'r3' },
+    { id: 'r10', name: '우주 무역', desc: '소득 +40%', icon: '📈', cost: { metal: 800000, crystal: 200000, plasma: 50000 }, time: 57600, effect: g => { g.incomeMult += 0.4; }, requires: 'r6' },
+    { id: 'r11', name: '함선 생산 I', desc: '함선 건조 시간 -20%', icon: '🚀', cost: { metal: 300000, crystal: 80000 }, time: 21600, effect: g => { g.shipBuildSpeedMult *= 0.8; }, requires: 'r4' },
+    { id: 'r12', name: '전투 교리', desc: '함대 전투력 +30%', icon: '⚔️', cost: { metal: 600000, crystal: 150000, solar: 30000 }, time: 36000, effect: g => { g.fleetPowerMult *= 1.3; }, requires: 'r5' },
+    { id: 'r13', name: '식민지 자동 운송', desc: '식민지 자원 자동 수송', icon: '📦', cost: { metal: 400000, crystal: 100000, hydrogen: 20000 }, time: 25200, effect: g => { g.colonyAutoTransport = true; }, requires: 'r6' },
+    { id: 'r14', name: '식민지 자동화', desc: '식민지 공장 자동 업그레이드', icon: '🏭', cost: { metal: 800000, crystal: 250000, hydrogen: 80000, plasma: 15000 }, time: 43200, effect: g => { g.colonyAutoUpgrade = true; }, requires: 'r13' },
+    { id: 'r15', name: '자동 채굴 드론', desc: '5초마다 자동 클릭', icon: '🤖', cost: { metal: 1500000, crystal: 500000, hydrogen: 100000, solar: 50000 }, time: 72000, effect: g => { g.autoClicker = true; }, requires: 'r11' },
+    { id: 'r16', name: '건물 관리 AI', desc: '가장 저렴한 건물 자동 구매', icon: '🧠', cost: { metal: 3000000, crystal: 1000000, hydrogen: 300000, plasma: 100000 }, time: 86400, effect: g => { g.autoBuilder = true; }, requires: 'r15' },
+    { id: 'r17', name: '우주 무역 II', desc: '소득 +60%', icon: '📈', cost: { metal: 5000000, crystal: 2000000, hydrogen: 500000, plasma: 200000 }, time: 129600, effect: g => { g.incomeMult += 0.6; }, requires: 'r10' },
+    { id: 'r18', name: '함선 생산 II', desc: '함선 건조 시간 -30%', icon: '🚀', cost: { metal: 4000000, crystal: 1500000, solar: 200000 }, time: 86400, effect: g => { g.shipBuildSpeedMult *= 0.7; }, requires: 'r11' },
+    { id: 'r19', name: '전투 교리 II', desc: '함대 전투력 +50%', icon: '⚔️', cost: { metal: 8000000, crystal: 3000000, hydrogen: 800000, solar: 300000 }, time: 108000, effect: g => { g.fleetPowerMult *= 1.5; }, requires: 'r12' },
+    { id: 'r20', name: '에너지 저장 II', desc: '모든 저장고 +100%', icon: '📦', cost: { metal: 6000000, crystal: 2500000, plasma: 500000 }, time: 86400, effect: g => { g.storageMult *= 2.0; }, requires: 'r4' }
   ];
 
   const SHIP_TEMPLATES = [
@@ -363,6 +363,7 @@ const COLONY_FACTORY_TYPES = [
           outpost: { name: '심우주 기지', desc: '함대 전투력 +30%', fleetMult: 0.3 }
         },
         fleetActiveTab: 'fleet_build',
+        infoSubTab: 'stats',
         previewImage: null,
         exploreTravelOverlay: false,
         exploreTravelTimer: 0,
@@ -975,6 +976,7 @@ const COLONY_FACTORY_TYPES = [
 
       canResearch(r) {
         if (r.completed || r.inProgress) return false;
+        if (this.research.some(x => x.inProgress)) return false;
         if (r.requires) { const pre = this.research.find(x => x.id === r.requires); if (!pre || !pre.completed) return false; }
         for (const k in r.cost) { if (!this.resources[k] || this.resources[k].lt(r.cost[k])) return false; }
         return true;
