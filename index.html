@@ -528,6 +528,159 @@
         </div>
       </div>
 
+      <!-- TAB: GUIDE -->
+      <div v-if="activeTab==='guide'" class="space-y-2">
+
+        <!-- 세계관 -->
+        <div class="card py-2 px-3" style="border-color:rgba(56,189,248,0.3);background:linear-gradient(135deg,rgba(15,23,42,0.9),rgba(30,41,59,0.5))">
+          <div class="text-sm font-bold text-sky-300 mb-2">🌌 스페이스 컴퍼니: 우주 건물주</div>
+          <div class="text-[9.5px] text-slate-300 leading-relaxed">
+            <p class="mb-1">서기 2157년, 인류는 태양계 곳곳에 거주지를 건설하고 자원을 채굴하며 우주로 진출했습니다. 당신은 신생 기업 <span class="text-amber-300 font-bold">'스페이스 컴퍼니'</span>의 CEO가 되어, 소행성 지대에 첫 기지를 세우고 우주 제국을 건설해야 합니다.</p>
+            <p class="mb-1">작은 광산에서 시작하여 드론 허브, 정제소, 발전소를 거쳐 전초기지까지 — 각 건물은 월세 수익과 자원을 생산합니다. 수익을 재투자하여 건물을 업그레이드하고, 인지도를 높여 더 발전된 기술과 건물을 잠금해제하세요.</p>
+            <p class="mb-1">함대를 건조하여 해적을 토벌하고, 행성을 탐험하여 식민지를 세우며, 연구를 통해 기술을 발전시켜 궁극적으로 <span class="text-yellow-300 font-bold">우주 억만장자</span>가 되는 것이 목표입니다.</p>
+          </div>
+        </div>
+
+        <!-- 게임 목표 -->
+        <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.3)">
+          <div class="text-xs font-bold text-amber-300 mb-2">🎯 게임 목표</div>
+          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1">
+            <div><span class="text-emerald-400 font-bold">1차 목표:</span> 총 자산 <span class="text-yellow-300">1,000,000,000 (10억)</span> 달성 → 엔딩</div>
+            <div><span class="text-purple-400 font-bold">심화 목표:</span> 환생(프레스티지)으로 영구 보너스 획득, 각종 업적 달성, 도전 모드 클리어, 외계 종족과 교류</div>
+            <div><span class="text-rose-400 font-bold">최종 목표:</span> 모든 건물 각성, 모든 연구 완료, 최고 레벨 함대, 초월 달성</div>
+          </div>
+        </div>
+
+        <!-- 진행 가이드 -->
+        <div class="card py-2 px-3" style="border-color:rgba(52,211,153,0.3)">
+          <div class="text-xs font-bold text-emerald-300 mb-2">📋 처음 시작 가이드</div>
+          <div class="space-y-2 text-[9px] text-slate-400 leading-relaxed">
+            <div class="bg-slate-900/50 rounded p-2">
+              <div class="text-emerald-400 font-bold mb-1">1️⃣ 기지 건설 (💰 돈 벌기)</div>
+              <div>💸 클릭하여 돈을 버세요. 돈이 모이면 <span class="text-sky-300">지표 광산</span>을 건설하세요. 건물은 초당 수익을 자동으로 생성합니다. 수익으로 더 많은 건물을 짓고 업그레이드하세요.</div>
+              <div class="text-amber-400/70 mt-1">💡 건물 가격은 수시로 변동합니다. 할인 타이밍(초급매/할인)에 구매하세요!</div>
+            </div>
+            <div class="bg-slate-900/50 rounded p-2">
+              <div class="text-emerald-400 font-bold mb-1">2️⃣ 인지도 올리기 (📡 명성)</div>
+              <div>건물을 건설/업그레이드하면 <span class="text-purple-300">인지도(명성)</span>가 쌓입니다. 인지도가 일정 수준에 도달하면 새 건물과 함선이 잠금해제됩니다.</div>
+              <div class="text-amber-400/70 mt-1">💡 인지도는 '연구 → 인지도 확산'으로 획득량을 늘릴 수 있습니다.</div>
+            </div>
+            <div class="bg-slate-900/50 rounded p-2">
+              <div class="text-emerald-400 font-bold mb-1">3️⃣ 함대 건조 (🚀 함선)</div>
+              <div>인지도가 15 이상이면 <span class="text-sky-300">초계함</span>을 건조할 수 있습니다. 함선을 모아 해적을 토벌하고 전리품을 획득하세요. <span class="text-rose-400">상성 시스템</span>이 있어 약점 함선으로 공략하는 것이 중요합니다.</div>
+              <div class="text-amber-400/70 mt-1">💡 정찰기는 인지도를 추가로 생성합니다. 초반에 여러 척 보유하세요!</div>
+            </div>
+            <div class="bg-slate-900/50 rounded p-2">
+              <div class="text-emerald-400 font-bold mb-1">4️⃣ 연구 (🔬 기술)</div>
+              <div>연구를 통해 건물 효율, 인지도, 전투력 등 다양한 영구 효과를 얻으세요. 일부 연구는 선행 연구가 필요합니다.</div>
+            </div>
+            <div class="bg-slate-900/50 rounded p-2">
+              <div class="text-emerald-400 font-bold mb-1">5️⃣ 행성 탐험 & 식민지 (🌍 개척)</div>
+              <div><span class="text-amber-300">식민 함선</span>을 건조하여 행성을 탐험하세요. 개척에 성공하면 식민지를 세울 수 있고, 각 행성은 고유한 특성과 보너스를 제공합니다. 식민지에 공장을 건설하여 자원을 생산하고 본진으로 운송하세요.</div>
+            </div>
+            <div class="bg-slate-900/50 rounded p-2">
+              <div class="text-emerald-400 font-bold mb-1">6️⃣ 환생 & 초월 (✨ 프레스티지)</div>
+              <div>충분히 성장했다면 <span class="text-amber-300">환생</span>하여 영구 수입 보너스를 획득하세요. 모든 건물을 각성한 후 <span class="text-purple-300">초월</span>하여 더 높은 차원으로 도약할 수 있습니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 건물 시스템 -->
+        <div class="card py-2 px-3" style="border-color:rgba(99,102,241,0.3)">
+          <div class="text-xs font-bold text-indigo-300 mb-2">🏗️ 건물 시스템</div>
+          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1">
+            <div>• 총 10종의 건물이 있으며, 각 건물은 특정 자원을 생산하고 월세 수익을 제공합니다.</div>
+            <div>• 건물 가격은 <span class="text-emerald-400">초급매(×0.5)</span> ~ <span class="text-rose-400">초고가(×2.0)</span>로 실시간 변동합니다.</div>
+            <div>• 업그레이드할수록 수익과 자원 생산량이 크게 증가합니다. (레벨당 +12% 복리)</div>
+            <div>• 최대 레벨(LV20) 도달 후 <span class="text-amber-300">각성</span>하면 건물별 고유的特殊 효과가 활성화됩니다.</div>
+            <div>• 각성 효과: <span class="text-sky-300">대형 채굴(클릭력+50%)</span>, <span class="text-sky-300">드론 함대(월세+20%)</span>, <span class="text-sky-300">다이슨 패널(태양열+50%)</span> 등</div>
+            <div class="text-amber-400/70 mt-1">💡 건물 각성은 초월 레벨이 건물 티어-1 이상일 때 가능합니다.</div>
+          </div>
+        </div>
+
+        <!-- 함선 & 전투 -->
+        <div class="card py-2 px-3" style="border-color:rgba(251,113,133,0.3)">
+          <div class="text-xs font-bold text-rose-300 mb-2">🚀 함선 & 전투 시스템</div>
+          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1">
+            <div>• 11종의 함선(정찰기 ~ 드레드노트)을 건조하여 함대를 구성하세요.</div>
+            <div>• 각 함선은 <span class="text-rose-400">상성</span>이 있어 특정 해적 유형에 강합니다. (예: 정찰기 → 약탈자 강함)</div>
+            <div>• 해적은 웨이브가 올라갈수록 강력해집니다. 전투 전 전력 비교 바를 확인하세요.</div>
+            <div>• <span class="text-amber-300">정찰기</span>는 특수능력으로 인지도를 추가 생성합니다. (1척당 초당 0.3)</div>
+            <div>• <span class="text-sky-300">수리함</span>은 전투 피해를 50% 감소시킵니다.</div>
+            <div>• 함선 업그레이드와 각성으로 전투력을 크게 높일 수 있습니다.</div>
+          </div>
+        </div>
+
+        <!-- 연구 & 자원 -->
+        <div class="card py-2 px-3" style="border-color:rgba(168,139,250,0.3)">
+          <div class="text-xs font-bold text-purple-300 mb-2">🔬 연구 시스템</div>
+          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1">
+            <div>• 20개의 연구 프로젝트가 있으며, 완료 시 영구 효과를 얻습니다.</div>
+            <div>• 연구는 <span class="text-yellow-300">자원</span>을 소비하며 시간이 소요됩니다. (일부 연구는 선행 조건 필요)</div>
+            <div>• 주요 연구 효과: 자원 생산↑, 저장고↑, 건물 수입↑, 함선 건조 속도↑, 전투력↑ 등</div>
+            <div>• 후반부 연구(<span class="text-emerald-300">자동 클릭</span>, <span class="text-emerald-300">자동 건설</span>)는 게임을 크게 자동화해줍니다.</div>
+          </div>
+          <div class="text-xs font-bold text-purple-300 mt-2 mb-1">📦 자원 시스템</div>
+          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1">
+            <div>• 총 7종 자원: <span class="text-emerald-400">⛏️메탈</span> <span class="text-purple-400">💎크리스탈</span> <span class="text-sky-400">⚡수소</span> <span class="text-pink-400">🔵플라즈마</span> <span class="text-yellow-400">☀️태양열</span> <span class="text-rose-400">⚛️핵분열</span> <span class="text-fuchsia-400">🔥핵융합</span></div>
+            <div>• 건물이 자원을 생산하며, 연구와 각성 효과로 생산량을 높일 수 있습니다.</div>
+            <div>• <span class="text-amber-300">자원 거래소</span>에서 자원을 팔거나 살 수 있습니다. (매수 시 50% 수수료)</div>
+            <div>• 외계 종족 '교역 연맹' 평판 1티어 달성 시 매수 수수료가 사라집니다.</div>
+          </div>
+        </div>
+
+        <!-- 탐험 & 식민지 -->
+        <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.3)">
+          <div class="text-xs font-bold text-amber-300 mb-2">🌍 탐험 & 식민지 시스템</div>
+          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1">
+            <div>• <span class="text-amber-300">식민 함선</span>을 건조하여 태양계 행성들을 탐험하세요.</div>
+            <div>• 각 행성은 고유 특성과 보너스를 가집니다. (예: 화성=메탈+50%, 유로파=모든 자원+15%)</div>
+            <div>• 개척한 행성에 <span class="text-sky-300">식민지</span>를 세우고 공장을 건설하여 추가 자원을 생산하세요.</div>
+            <div>• 식민지의 자원은 <span class="text-yellow-300">운송</span>을 통해 본진으로 가져올 수 있습니다.</div>
+            <div>• 연구 '식민지 자동 운송'과 '식민지 자동화'로 관리를 자동화할 수 있습니다.</div>
+          </div>
+        </div>
+
+        <!-- 프레스티지 & 초월 -->
+        <div class="card py-2 px-3" style="border-color:rgba(124,58,237,0.4)">
+          <div class="text-xs font-bold text-purple-300 mb-2">✨ 프레스티지 & 초월</div>
+          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1">
+            <div><span class="text-amber-300 font-bold">환생 (프레스티지):</span> 자산 100k 이상일 때 가능. 모든 것을 초기화하고 영구 수입 보너스(+10%/P)를 얻습니다.</div>
+            <div><span class="text-purple-300 font-bold">초월 (트랜센드):</span> 모든 건물 각성 후 각성석을 소모하여 초월. 수입+200%, 건조/연구/전투/인지도 모두 강화됩니다.</div>
+            <div><span class="text-rose-300 font-bold">도전 모드:</span> 제한 조건 속에서 1B 목표 달성 시 각성석 보상. (광물 부족, 무역 금지, 해적 강화 등)</div>
+            <div class="text-amber-400/70 mt-1">💡 각성석은 도전 모드 클리어와 일부 이벤트로 획득할 수 있습니다.</div>
+          </div>
+        </div>
+
+        <!-- 외계 종족 -->
+        <div class="card py-2 px-3" style="border-color:rgba(34,211,238,0.25)">
+          <div class="text-xs font-bold text-cyan-300 mb-2">👽 외계 종족</div>
+          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1">
+            <div>• 행성 탐험 시 일정 확률로 3가지 외계 종족을 조우합니다.</div>
+            <div>• <span class="text-emerald-300">교역 연맹🤝</span> — 거래소 혜택, 수입↑, 건물 할인</div>
+            <div>• <span class="text-rose-300">전투 종족⚔️</span> — 전투력↑, 함선 건조↑, 각성석 획득</div>
+            <div>• <span class="text-indigo-300">기술 위원회🔮</span> — 연구 시간↓, 저장고↑, 인지도↑</div>
+            <div>• 평판을 쌓을수록 더 높은 티어의 보너스를 얻을 수 있습니다.</div>
+          </div>
+        </div>
+
+        <!-- 팁 -->
+        <div class="card py-2 px-3" style="border-color:rgba(251,191,36,0.3)">
+          <div class="text-xs font-bold text-yellow-300 mb-2">💡 초보자 팁</div>
+          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1">
+            <div>• 🎯 <span class="text-sky-300">광산</span>을 먼저 건설하고 업그레이드하세요. 초반 성장의 기초다.</div>
+            <div>• 🎯 <span class="text-sky-300">정찰기</span>를 3~5척 건조하여 인지도를 꾸준히 확보하세요.</div>
+            <div>• 🎯 건물 가격이 <span class="text-emerald-400">⬇️⬇️ 초급매(×0.5)</span>일 때 구매하는 것이 가장 효율적이다.</div>
+            <div>• 🎯 자원은 필요한 만큼만 <span class="text-amber-300">거래소</span>에서 팔고, 가능하면 모아서 연구/함선에 투자하세요.</div>
+            <div>• 🎯 <span class="text-purple-400">연구</span>는 '건물 관리', '인지도 확산', '에너지 저장'을 우선으로 하세요.</div>
+            <div>• 🎯 함선은 <span class="text-rose-400">상성</span>을 맞춰 건조하는 것이 전투력 효율이 좋습니다.</div>
+            <div>• 🎯 <span class="text-orange-400">환생</span>은 자산 500k~1M 정도에서 첫 환생을 고려하세요. (예상 포인트 확인)</div>
+            <div>• 🎯 <span class="text-fuchsia-400">아이템</span>은 '시간 가속(2시간치 소득)'과 '생산 과부하(30초×5)'를 전략적으로 사용하세요.</div>
+          </div>
+        </div>
+
+      </div>
+
       <!-- TAB: INFO -->
       <div v-if="activeTab==='info'" class="space-y-2">
         <div class="card card-accent py-2 px-3">
@@ -708,6 +861,7 @@
       <div class="nav-item" :class="{active: activeTab==='fleet'}" @click="activeTab='fleet'"><span class="nav-icon">🚀</span><div>함대</div></div>
       <div class="nav-item" :class="{active: activeTab==='colony'}" @click="activeTab='colony'"><span class="nav-icon">🏙️</span><div>식민지</div><span class="nav-badge" v-if="colonyCount">{{ colonyCount }}</span></div>
       <div class="nav-item" :class="{active: activeTab==='research'}" @click="activeTab='research'"><span class="nav-icon">🔬</span><div>연구</div></div>
+      <div class="nav-item" :class="{active: activeTab==='guide'}" @click="activeTab='guide'"><span class="nav-icon">📖</span><div>설명</div></div>
       <div class="nav-item" :class="{active: activeTab==='info'}" @click="activeTab='info'"><span class="nav-icon">👤</span><div>정보</div></div>
     </div>
 
