@@ -68,12 +68,12 @@ const BUILDING_TEMPLATES = [
   const SHIP_TEMPLATES = [
     { type: 'scout', name: '정찰기', icon: '🛰️', power: 2, cost: { metal: 150 }, time: 5, strongAgainst: 'raider', awarenessNeeded: 0, img: 'img/ship-scout.jpg', maxLevel: 15, upgradeTime: 15, special: '정찰' },
     { type: 'corvette', name: '초계함', icon: '🚀', power: 6, cost: { metal: 600 }, time: 25, strongAgainst: 'pirate_fleet', awarenessNeeded: 15, img: 'img/ship-corvette.jpg', maxLevel: 12, upgradeTime: 30 },
-      { type: 'frigate', name: '호위함', icon: '🛡️', power: 14, cost: { metal: 1500, crystal: 400 }, time: 70, strongAgainst: 'marauder', awarenessNeeded: 50, img: 'img/ship-frigate.jpg', maxLevel: 10, upgradeTime: 50 },
+      { type: 'frigate', name: '호위함', icon: '🛡️', power: 14, cost: { metal: 1500, crystal: 400 }, time: 70, strongAgainst: 'marauder', awarenessNeeded: 50, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 50 },
       { type: 'torpedo', name: '어뢰정', icon: '🎯', power: 8, cost: { metal: 800, crystal: 200 }, time: 40, strongAgainst: 'pirate_fleet', awarenessNeeded: 80, img: 'img/ship-torpedo.jpg', maxLevel: 10, upgradeTime: 35 },
-      { type: 'destroyer', name: '구축함', icon: '⚔️', power: 28, cost: { metal: 3200, crystal: 1200 }, time: 150, strongAgainst: 'juggernaut', awarenessNeeded: 120, img: 'img/ship-destroyer.jpg', maxLevel: 8, upgradeTime: 90 },
-      { type: 'cruiser', name: '순양함', icon: '🔱', power: 50, cost: { metal: 7000, crystal: 3500, hydrogen: 1000 }, time: 350, strongAgainst: 'raider', awarenessNeeded: 250, img: 'img/ship-cruiser.jpg', maxLevel: 7, upgradeTime: 180 },
+      { type: 'destroyer', name: '구축함', icon: '⚔️', power: 28, cost: { metal: 3200, crystal: 1200 }, time: 150, strongAgainst: 'juggernaut', awarenessNeeded: 120, img: 'img/ship-battleship.jpg', maxLevel: 8, upgradeTime: 90 },
+      { type: 'cruiser', name: '순양함', icon: '🔱', power: 50, cost: { metal: 7000, crystal: 3500, hydrogen: 1000 }, time: 350, strongAgainst: 'raider', awarenessNeeded: 250, img: 'img/ship-frigate.jpg', maxLevel: 7, upgradeTime: 180 },
       { type: 'repair', name: '수리함', icon: '🔧', power: 5, cost: { metal: 10000, crystal: 4000, hydrogen: 1500 }, time: 500, strongAgainst: null, awarenessNeeded: 350, img: 'img/ship-repair.jpg', maxLevel: 5, upgradeTime: 200, special: '피해 -50%' },
-      { type: 'battleship', name: '전함', icon: '🚢', power: 90, cost: { metal: 18000, crystal: 9000, hydrogen: 3000 }, time: 700, strongAgainst: 'pirate_fleet', awarenessNeeded: 450, img: 'img/ship-battleship.jpg', maxLevel: 6, upgradeTime: 350 },
+      { type: 'battleship', name: '전함', icon: '🚢', power: 90, cost: { metal: 18000, crystal: 9000, hydrogen: 3000 }, time: 700, strongAgainst: 'pirate_fleet', awarenessNeeded: 450, img: 'img/ship-destroyer.jpg', maxLevel: 6, upgradeTime: 350 },
       { type: 'carrier', name: '항공모함', icon: '✈️', power: 170, cost: { metal: 45000, crystal: 22000, hydrogen: 8000, plasma: 2000 }, time: 1600, strongAgainst: 'marauder', awarenessNeeded: 700, img: 'img/ship-carrier.jpg', maxLevel: 5, upgradeTime: 600 },
       { type: 'mothership', name: '모선', icon: '🌌', power: 500, cost: { metal: 200000, crystal: 80000, hydrogen: 30000, plasma: 15000 }, time: 5000, strongAgainst: 'juggernaut', awarenessNeeded: 900, img: 'img/ship-mothership.jpg', maxLevel: 3, upgradeTime: 1500 },
       { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 320, cost: { metal: 110000, crystal: 55000, hydrogen: 20000, plasma: 8000 }, time: 3000, strongAgainst: 'juggernaut', awarenessNeeded: 1100, img: 'img/ship-dreadnought.jpg', maxLevel: 4, upgradeTime: 1000 }
@@ -258,6 +258,11 @@ const COLONY_FACTORY_TYPES = [
         awakeningStones: 0,
         transcendLevel: 0,
         transcendBonus: 0,
+        transcendBuildSpeed: 1,
+        transcendFleetBonus: 0,
+        transcendResearchSpeed: 1,
+        transcendAwareness: 1,
+        shipAwakened: {},
         stats: {
           totalClicks: 0,
           totalMoneyEarned: 0,
@@ -425,6 +430,7 @@ const COLONY_FACTORY_TYPES = [
       effectiveAwarenessMult() {
         let m = this.awarenessMult;
         if (this.alienTier.architech >= 3) m *= 2;
+        m *= (this.transcendAwareness || 1);
         return m;
       },
       effectiveExchangeBuyRate() {
@@ -523,11 +529,16 @@ const COLONY_FACTORY_TYPES = [
         this.boostResourceBump(b.res);
       },
 
-      canAwakenBuilding(b) { return b.level >= b.maxLevel && !this.buildingAwakened[b.id]; },
+      canAwakenBuilding(b) {
+        if (b.level < b.maxLevel) return false;
+        if (this.buildingAwakened[b.id]) return false;
+        const needTranscend = Math.max(0, (b.tier || 1) - 1);
+        if (this.transcendLevel < needTranscend) return false;
+        return true;
+      },
       awakenBuilding(b) {
         if (!this.canAwakenBuilding(b)) return;
         this.$set(this.buildingAwakened, b.id, true);
-        b.level = 1;
         const eff = this.buildingAwakeningEffects[b.id];
         this.toast(`✨ ${b.name} 각성! ${eff.desc}`);
         if (b.res) this.boostResourceBump(b.res);
@@ -539,12 +550,20 @@ const COLONY_FACTORY_TYPES = [
       },
       transcend() {
         if (!this.canTranscend()) return;
-        if (!confirm(`초월하시겠습니까?\n• 모든 건물 각성이 초기화됩니다\n• 각성석 ${5 + this.transcendLevel * 5}개 소모\n• 영구 수입 +50% (총 ${Math.round((this.transcendBonus + 0.5) * 100)}%)\n계속하시겠습니까?`)) return;
+        if (!confirm(`초월하시겠습니까?\n• 모든 건물 각성이 초기화됩니다\n• 각성석 ${5 + this.transcendLevel * 5}개 소모\n• 영구 수입 +200%\n• 함선 건조 시간 ×0.9\n• 함대 전투력 +15%\n• 연구 속도 +15%\n• 인지도 +20%\n계속하시겠습니까?`)) return;
         this.awakeningStones -= 5 + this.transcendLevel * 5;
         this.transcendLevel++;
-        this.transcendBonus += 0.5;
+        this.transcendBonus += 2.0;
+        this.transcendBuildSpeed *= 0.9;
+        this.transcendFleetBonus += 0.15;
+        this.transcendResearchSpeed *= 1.15;
+        this.transcendAwareness *= 1.2;
         this.buildingAwakened = {};
-        for (const b of this.buildings) b.level = 1;
+        for (const r of this.research) {
+          r.completed = false;
+          r.inProgress = false;
+          r.remaining = 0;
+        }
         this.toast(`🌌 초월 LV ${this.transcendLevel}! 수입 +${Math.round(this.transcendBonus * 100)}%`);
         this.spawnFloatText('🌌 초월!', '#fbbf24', window.innerWidth / 2, window.innerHeight / 3);
       },
@@ -609,6 +628,7 @@ const COLONY_FACTORY_TYPES = [
       tickResearch(dt) {
         let rdt = dt / (this.challengeModifiers.researchTime || 1);
         if (this.alienTier.architech >= 1) rdt /= 0.6;
+        rdt *= (this.transcendResearchSpeed || 1);
         for (const r of this.research) {
           if (r.inProgress) {
             r.remaining = Math.max(0, r.remaining - rdt);
@@ -643,7 +663,7 @@ const COLONY_FACTORY_TYPES = [
         if (st.cost.hydrogen) this.resources.hydrogen = this.resources.hydrogen.sub((st.cost.hydrogen || 0) * count);
         if (st.cost.plasma) this.resources.plasma = this.resources.plasma.sub((st.cost.plasma || 0) * count);
         const s = this.ships[st.type];
-        s.building = true; s.buildCount = count; s.totalTime = st.time * count * this.shipBuildSpeedMult; s.elapsed = 0;
+        s.building = true; s.buildCount = count; s.totalTime = st.time * count * this.shipBuildSpeedMult * (this.transcendBuildSpeed || 1); s.elapsed = 0;
         s.buildCost = { metal: (st.cost.metal || 0) * count, crystal: (st.cost.crystal || 0) * count, hydrogen: (st.cost.hydrogen || 0) * count, plasma: (st.cost.plasma || 0) * count };
         this.awareness += Math.max(1, Math.floor(st.power / 10)) * this.effectiveAwarenessMult;
         this.toast(`🚀 ${st.name} ${count}척 건조 시작 (${this.fmtTime(s.totalTime)})`);
@@ -691,7 +711,32 @@ const COLONY_FACTORY_TYPES = [
 
       shipPower(st) {
         const lv = (this.ships[st.type]?.level || 1);
-        return st.power * (1 + (lv - 1) * 0.3);
+        let p = st.power * (1 + (lv - 1) * 0.3);
+        if (this.shipAwakened && this.shipAwakened[st.type]) p *= 1.3;
+        return p;
+      },
+
+      getShipTier(type) {
+        const map = { scout: 1, corvette: 1, frigate: 2, torpedo: 2, destroyer: 2, cruiser: 3, repair: 3, battleship: 3, carrier: 4, mothership: 4, dreadnought: 4 };
+        return map[type] || 1;
+      },
+      shipAwakenCost(st) {
+        return { 1: 1, 2: 2, 3: 3, 4: 5 }[this.getShipTier(st.type)] || 1;
+      },
+      canAwakenShip(st) {
+        const lv = this.ships[st.type]?.level || 0;
+        if (lv < st.maxLevel) return false;
+        if (this.shipAwakened && this.shipAwakened[st.type]) return false;
+        const needTranscend = Math.max(0, this.getShipTier(st.type) - 1);
+        if (this.transcendLevel < needTranscend) return false;
+        if ((this.awakeningStones || 0) < this.shipAwakenCost(st)) return false;
+        return true;
+      },
+      awakenShip(st) {
+        if (!this.canAwakenShip(st)) return;
+        this.awakeningStones -= this.shipAwakenCost(st);
+        this.$set(this.shipAwakened, st.type, true);
+        this.toast(`✨ ${st.name} 각성! 전투력 +30%, 건조 시간 ×0.9`);
       },
 
       shipUpgradeCostText(st) {
@@ -951,6 +996,7 @@ const COLONY_FACTORY_TYPES = [
         let m = this.fleetPowerMult;
         if (this.buildingAwakened.outpost) m *= 1.3;
         if (this.alienTier.warlord >= 1) m *= 1.25;
+        if (this.transcendFleetBonus) m *= 1 + this.transcendFleetBonus;
         return p * m;
       },
       shipTypeName(type) { const s = this.shipTypes.find(x => x.type === type); return s ? s.name : type; },
@@ -1375,6 +1421,11 @@ const COLONY_FACTORY_TYPES = [
         this.awakeningStones = as;
         this.transcendLevel = tl;
         this.transcendBonus = tb;
+        this.shipAwakened = {};
+        this.transcendBuildSpeed = 1;
+        this.transcendFleetBonus = 0;
+        this.transcendResearchSpeed = 1;
+        this.transcendAwareness = 1;
         this.alienRep = ar;
         this.alienTier = at;
         this.incomeMult = 1 + pb;
@@ -1466,6 +1517,11 @@ const COLONY_FACTORY_TYPES = [
             awakeningStones: this.awakeningStones,
             transcendLevel: this.transcendLevel,
             transcendBonus: this.transcendBonus,
+            shipAwakened: this.shipAwakened,
+            transcendBuildSpeed: this.transcendBuildSpeed,
+            transcendFleetBonus: this.transcendFleetBonus,
+            transcendResearchSpeed: this.transcendResearchSpeed,
+            transcendAwareness: this.transcendAwareness,
             stats: this.stats,
             alienRep: this.alienRep,
             alienTier: this.alienTier,
@@ -1564,6 +1620,11 @@ const COLONY_FACTORY_TYPES = [
           if (o.awakeningStones) this.awakeningStones = o.awakeningStones;
           if (o.transcendLevel) this.transcendLevel = o.transcendLevel;
           if (o.transcendBonus) this.transcendBonus = o.transcendBonus;
+          if (o.shipAwakened) this.shipAwakened = o.shipAwakened;
+          if (o.transcendBuildSpeed) this.transcendBuildSpeed = o.transcendBuildSpeed;
+          if (o.transcendFleetBonus) this.transcendFleetBonus = o.transcendFleetBonus;
+          if (o.transcendResearchSpeed) this.transcendResearchSpeed = o.transcendResearchSpeed;
+          if (o.transcendAwareness) this.transcendAwareness = o.transcendAwareness;
           if (o.stats) Object.assign(this.stats, o.stats);
           if (o.alienRep) Object.assign(this.alienRep, o.alienRep);
           if (o.alienTier) Object.assign(this.alienTier, o.alienTier);
