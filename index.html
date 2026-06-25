@@ -781,26 +781,27 @@
             <span class="text-[9px] text-slate-500">{{ guideOpen.research ? '▲' : '▼' }}</span>
           </div>
           <div v-if="guideOpen.research" class="text-[8.5px] text-slate-400 leading-relaxed mt-1 pt-1 border-t border-slate-700/50">
-            🔬 연구는 자원을 소비하며 시간이 소요됩니다. 완료 시 영구 효과를 얻습니다. 일부 연구는 <span class="text-amber-300">선행 연구</span>가 필요합니다. 추천 순서: <span class="text-emerald-400">광산 효율 → 에너지 저장 → 건물 관리 → 인지도 확산</span> — 기초를 탄탄히 하면 후반 성장이 훨씬 빠릅니다.
+            🔬 연구는 자원을 소비하여 <span class="text-amber-300">레벨당 소폭 효과</span>가 누적됩니다. 시간이 걸리지 않고 <span class="text-emerald-400">즉시 완료</span>되며, 같은 연구를 계속 올릴수록 비용이 증가합니다. 선행 연구가 일부 레벨까지 필요합니다.
           </div>
         </div>
-        <div class="text-[9px] text-slate-500 mb-1">🔬 연구하여 영구 효과를 얻으세요 (선행 연구 필요)</div>
-        <div v-for="r in research" :key="r.id" class="card py-2 px-3" :class="{'opacity-30': r.completed, 'border-amber-500/30': r.inProgress, 'border-slate-700': !r.completed && !r.inProgress && researchStatus(r).indexOf('필요')!==-1}">
+        <div class="text-[9px] text-slate-500 mb-1">🔬 자원을 소비하여 연구 레벨을 올리세요 (레벨이 높을수록 비용 증가)</div>
+        <div v-for="r in research" :key="r.id" class="card py-2 px-3" :class="{'border-purple-500/30': canResearch(r), 'border-slate-700': true}">
           <div class="flex items-center justify-between">
             <div>
-              <span class="text-xs font-bold" :class="r.completed ? 'text-emerald-400' : 'text-slate-200'">{{ r.icon }} {{ r.name }}</span>
-              <div class="text-[9px] text-slate-500">{{ r.desc }}</div>
-              <div class="text-[8px] text-slate-600 mt-px" v-if="r.requires && !r.completed">🔗 필요: {{ (research.find(x=>x.id===r.requires)||{}).name }}</div>
+              <div class="text-xs font-bold text-slate-200">{{ r.icon }} {{ r.name }}</div>
+              <div class="text-[9px] text-emerald-400">Lv {{ r.level }} · {{ r.desc(r.level) }}</div>
+              <div class="text-[8px] text-slate-500 mt-px" v-if="r.requires && r.level < r.requires.level">🔒 {{ (research.find(x=>x.id===r.requires.id)||{}).name }} Lv{{ r.requires.level }}+ 필요 (현재 {{ (research.find(x=>x.id===r.requires.id)||{}).level || 0 }})</div>
             </div>
-            <div v-if="r.inProgress" class="text-right flex-shrink-0 ml-2">
-              <div class="text-[10px] text-amber-300">{{ fmtTime(r.remaining) }}</div>
-              <div class="progress-bar w-16 mt-1"><div class="progress-fill bg-amber-400" :style="{width: (100-(r.remaining/r.time*100))+'%'}"></div></div>
+            <div class="text-right flex-shrink-0 ml-2 min-w-[80px]">
+              <div v-if="canResearch(r)">
+                <div class="text-[7px] text-slate-500 whitespace-nowrap">
+                  <span v-for="(v,k) in researchCost(r)" :key="k">{{ $RES_ICO[k]||k }} {{ fmt(v) }} </span>
+                </div>
+                <button class="btn btn-sm btn-primary w-full mt-1 text-[10px]" @click="startResearch(r)">⬆️ 연구</button>
+              </div>
+              <div v-else-if="researchStatus(r).indexOf('필요') !== -1" class="text-[8px] text-rose-400">🔒 선행 필요</div>
+              <div v-else class="text-[8px] text-amber-400">💰 자원 부족</div>
             </div>
-            <div v-else-if="!r.completed">
-              <button class="btn btn-sm" :class="researchStatus(r)==='연구 가능' ? 'btn-primary' : 'btn-ghost'" @click="startResearch(r)" :disabled="!canResearch(r)">{{ researchStatus(r) }}</button>
-              <div class="text-[7px] text-slate-600 text-right mt-px"><span v-for="(v,k) in r.cost">· {{ $RES_ICO[k]||k }} {{ fmt(v) }}</span></div>
-            </div>
-            <div v-else class="text-emerald-400 text-[11px] flex-shrink-0">✅</div>
           </div>
         </div>
       </div>

@@ -3,8 +3,8 @@
   const RES_KR = { metal: '메탈', crystal: '크리스탈', hydrogen: '수소', plasma: '플라즈마', solar: '태양열', fission: '핵분열', fusion: '핵융합' };
   const RES_ICO = { metal: '⛏️', crystal: '💎', hydrogen: '⚡', plasma: '🔵', solar: '☀️', fission: '⚛️', fusion: '🔥' };
   const FAME_MILESTONES = [
-  { id: 'fm1', name: '우주 신인', need: 200, desc: '크리스탈 합성소 개방', unlocks: 'crystal_fac' },
-  { id: 'fm2', name: '우주 개척자', need: 800, desc: '드론 허브 개방', unlocks: 'drone_hub' },
+  { id: 'fm1', name: '우주 신인', need: 100, desc: '크리스탈 합성소 개방', unlocks: 'crystal_fac' },
+  { id: 'fm2', name: '우주 개척자', need: 400, desc: '드론 허브 개방', unlocks: 'drone_hub' },
   { id: 'fm3', name: '행성 정착민', need: 5000, desc: '수소 정제소 개방 + 모든 수입 +10%', unlocks: 'refinery', bonusIncome: 0.1 },
   { id: 'fm4', name: '은하계 상인', need: 10000, desc: '자원 재활용소 개방', unlocks: 'recycler' },
   { id: 'fm5', name: '태양력 개척자', need: 20000, desc: '태양열 발전소 개방', unlocks: 'solar_plant' },
@@ -21,12 +21,12 @@ const RES_COLOR = { metal: '#34d399', crystal: '#a78bfa', hydrogen: '#38bdf8', p
 
 const BUILDING_TEMPLATES = [
     { id: 'mine', name: '지표 광산', icon: '⛏️', img: 'img/bld-mine.jpg', desc: '소행성 표면에서 금속 광물 채굴',
-      basePrice: 8000, income: 30, awarenessNeeded: 0, awarenessGiven: 15, tier: 1, res: 'metal', output: 2.0, buildTime: 5 },
+      basePrice: 4000, income: 50, awarenessNeeded: 0, awarenessGiven: 20, tier: 1, res: 'metal', output: 2.0, buildTime: 5 },
     { id: 'crystal_fac', name: '크리스탈 합성소', icon: '💎', img: 'img/bld-crystal.jpg', desc: '고밀도 에너지 결정 합성',
-      basePrice: 100000, income: 40, awarenessNeeded: 50, awarenessGiven: 15, tier: 2, res: 'crystal', output: 0.8,
+      basePrice: 50000, income: 40, awarenessNeeded: 30, awarenessGiven: 15, tier: 2, res: 'crystal', output: 0.8,
       unlockRequires: { mine: 1 }, buildTime: 15 },
     { id: 'drone_hub', name: '드론 허브', icon: '🛸', img: 'img/bld-drone.jpg', desc: '자동 드론으로 자원 수집',
-      basePrice: 750000, income: 60, awarenessNeeded: 500, awarenessGiven: 16, tier: 3, res: 'metal', output: 1.5,
+      basePrice: 300000, income: 60, awarenessNeeded: 200, awarenessGiven: 16, tier: 3, res: 'metal', output: 1.5,
       unlockRequires: { mine: 5, crystal_fac: 2 }, buildTime: 30 },
     { id: 'refinery', name: '수소 정제소', icon: '⚡', img: 'img/bld-refinery.jpg', desc: '듀테륨 정제로 수소 생산',
       basePrice: 2000000, income: 90, awarenessNeeded: 1500, awarenessGiven: 22, tier: 4, res: 'hydrogen', output: 0.5,
@@ -52,28 +52,60 @@ const BUILDING_TEMPLATES = [
   ];
 
   const RESEARCH_LIST = [
-    { id: 'r1', name: '광산 효율 I', desc: '메탈 생산 +30%', icon: '⛏️', cost: { metal: 8000 }, time: 3600, effect: g => { g.resMultipliers.metal *= 1.3; } },
-    { id: 'r2', name: '합성 기술 I', desc: '크리스탈 생산 +30%', icon: '💎', cost: { metal: 20000 }, time: 7200, effect: g => { g.resMultipliers.crystal *= 1.3; } },
-    { id: 'r3', name: '정제 기술 I', desc: '수소 생산 +30%', icon: '⚡', cost: { metal: 50000, crystal: 10000 }, time: 10800, effect: g => { g.resMultipliers.hydrogen *= 1.3; } },
-    { id: 'r4', name: '에너지 저장 I', desc: '모든 저장고 +50%', icon: '📦', cost: { metal: 30000 }, time: 5400, effect: g => { g.storageMult *= 1.5; } },
-    { id: 'r5', name: '건물 관리 I', desc: '모든 건물 월세 +25%', icon: '🏗️', cost: { metal: 50000, crystal: 15000 }, time: 7200, effect: g => { g.incomeMult += 0.25; } },
-    { id: 'r21', name: '클릭력 강화 I', desc: '클릭력 2배', icon: '💪', cost: { metal: 40000, crystal: 8000 }, time: 5400, effect: g => { g.clickPower *= 2; } },
-    { id: 'r6', name: '인지도 확산', desc: '인지도 획득량 +50%', icon: '📡', cost: { metal: 100000, crystal: 25000 }, time: 14400, effect: g => { g.awarenessMult *= 1.5; } },
-    { id: 'r7', name: '광산 효율 II', desc: '메탈 생산 +60%', icon: '⛏️', cost: { metal: 120000, crystal: 30000 }, time: 18000, effect: g => { g.resMultipliers.metal *= 1.6; }, requires: 'r1' },
-    { id: 'r8', name: '건물 관리 II', desc: '모든 건물 월세 +50%', icon: '🏗️', cost: { metal: 250000, crystal: 60000, hydrogen: 10000 }, time: 28800, effect: g => { g.incomeMult += 0.5; }, requires: 'r5' },
-    { id: 'r9', name: '핵융합 안정화', desc: '핵융합 생산 +100%', icon: '🔥', cost: { metal: 500000, crystal: 100000, hydrogen: 50000 }, time: 43200, effect: g => { g.resMultipliers.fusion *= 2.0; }, requires: 'r3' },
-    { id: 'r10', name: '우주 무역', desc: '소득 +40%', icon: '📈', cost: { metal: 800000, crystal: 200000, plasma: 50000 }, time: 57600, effect: g => { g.incomeMult += 0.4; }, requires: 'r6' },
-    { id: 'r11', name: '함선 생산 I', desc: '함선 건조 시간 -20%', icon: '🚀', cost: { metal: 300000, crystal: 80000 }, time: 21600, effect: g => { g.shipBuildSpeedMult *= 0.8; }, requires: 'r4' },
-    { id: 'r12', name: '전투 교리', desc: '함대 전투력 +30%', icon: '⚔️', cost: { metal: 600000, crystal: 150000, solar: 30000 }, time: 36000, effect: g => { g.fleetPowerMult *= 1.3; }, requires: 'r5' },
-    { id: 'r22', name: '클릭력 강화 II', desc: '클릭력 2배', icon: '💪', cost: { metal: 400000, crystal: 100000, hydrogen: 20000 }, time: 28800, effect: g => { g.clickPower *= 2; }, requires: 'r21' },
-    { id: 'r13', name: '식민지 자동 운송', desc: '식민지 자원 자동 수송', icon: '📦', cost: { metal: 400000, crystal: 100000, hydrogen: 20000 }, time: 25200, effect: g => { g.colonyAutoTransport = true; }, requires: 'r6' },
-    { id: 'r14', name: '식민지 자동화', desc: '식민지 공장 자동 업그레이드', icon: '🏭', cost: { metal: 800000, crystal: 250000, hydrogen: 80000, plasma: 15000 }, time: 43200, effect: g => { g.colonyAutoUpgrade = true; }, requires: 'r13' },
-    { id: 'r15', name: '자동 채굴 드론', desc: '5초마다 자동 클릭', icon: '🤖', cost: { metal: 1500000, crystal: 500000, hydrogen: 100000, solar: 50000 }, time: 72000, effect: g => { g.autoClicker = true; }, requires: 'r11' },
-    { id: 'r16', name: '건물 관리 AI', desc: '가장 저렴한 건물 자동 구매', icon: '🧠', cost: { metal: 3000000, crystal: 1000000, hydrogen: 300000, plasma: 100000 }, time: 86400, effect: g => { g.autoBuilder = true; }, requires: 'r15' },
-    { id: 'r17', name: '우주 무역 II', desc: '소득 +60%', icon: '📈', cost: { metal: 5000000, crystal: 2000000, hydrogen: 500000, plasma: 200000 }, time: 129600, effect: g => { g.incomeMult += 0.6; }, requires: 'r10' },
-    { id: 'r18', name: '함선 생산 II', desc: '함선 건조 시간 -30%', icon: '🚀', cost: { metal: 4000000, crystal: 1500000, solar: 200000 }, time: 86400, effect: g => { g.shipBuildSpeedMult *= 0.7; }, requires: 'r11' },
-    { id: 'r19', name: '전투 교리 II', desc: '함대 전투력 +50%', icon: '⚔️', cost: { metal: 8000000, crystal: 3000000, hydrogen: 800000, solar: 300000 }, time: 108000, effect: g => { g.fleetPowerMult *= 1.5; }, requires: 'r12' },
-    { id: 'r20', name: '에너지 저장 II', desc: '모든 저장고 +100%', icon: '📦', cost: { metal: 6000000, crystal: 2500000, plasma: 500000 }, time: 86400, effect: g => { g.storageMult *= 2.0; }, requires: 'r4' }
+    { id: 'r1', name: '광산 효율', icon: '⛏️', baseCost: { metal: 5000 }, costScale: 1.15,
+      desc: l => `메탈 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.metal = 1 + l * 0.02; } },
+    { id: 'r2', name: '합성 기술', icon: '💎', baseCost: { metal: 12000, crystal: 3000 }, costScale: 1.18,
+      desc: l => `크리스탈 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.crystal = 1 + l * 0.02; } },
+    { id: 'r3', name: '정제 기술', icon: '⚡', baseCost: { metal: 30000, crystal: 8000 }, costScale: 1.20,
+      desc: l => `수소 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.hydrogen = 1 + l * 0.02; },
+      requires: { id: 'r2', level: 3 } },
+    { id: 'r4', name: '에너지 저장', icon: '📦', baseCost: { metal: 15000 }, costScale: 1.15,
+      desc: l => `모든 저장고 +${l*5}%`, effect: (g, l) => { g.storageMult = 1 + l * 0.05; } },
+    { id: 'r5', name: '건물 관리', icon: '🏗️', baseCost: { metal: 25000, crystal: 8000 }, costScale: 1.18,
+      desc: l => `건물 월세 +${l*2}%`, effect: (g, l) => { g.incomeMult = 1 + l * 0.02; } },
+    { id: 'r6', name: '인지도 확산', icon: '📡', baseCost: { metal: 50000, crystal: 15000 }, costScale: 1.20,
+      desc: l => `인지도 획득량 +${l*3}%`, effect: (g, l) => { g.awarenessMult = 1 + l * 0.03; } },
+    { id: 'r7', name: '클릭 강화', icon: '👆', baseCost: { metal: 20000, crystal: 5000 }, costScale: 1.20,
+      desc: l => `클릭력 +${l*5}%`, effect: (g, l) => { g.clickPowerMult = 1 + l * 0.05; } },
+    { id: 'r8', name: '건물 관리 II', icon: '🏗️', baseCost: { metal: 150000, crystal: 40000, hydrogen: 8000 }, costScale: 1.22,
+      desc: l => `월세 +${l*3}%`, effect: (g, l) => { g.incomeMult2 = 1 + l * 0.03; },
+      requires: { id: 'r5', level: 10 } },
+    { id: 'r9', name: '핵융합 안정화', icon: '🔥', baseCost: { metal: 300000, crystal: 80000, hydrogen: 30000 }, costScale: 1.25,
+      desc: l => `핵융합 생산 +${l*4}%`, effect: (g, l) => { g.resMultipliers.fusion = 1 + l * 0.04; },
+      requires: { id: 'r3', level: 8 } },
+    { id: 'r10', name: '우주 무역', icon: '📈', baseCost: { metal: 400000, crystal: 150000, plasma: 30000 }, costScale: 1.25,
+      desc: l => `소득 +${l*4}%`, effect: (g, l) => { g.incomeMult3 = 1 + l * 0.04; },
+      requires: { id: 'r6', level: 8 } },
+    { id: 'r11', name: '함선 생산', icon: '🚀', baseCost: { metal: 200000, crystal: 50000 }, costScale: 1.22,
+      desc: l => `함선 건조 시간 -${Math.min(90, l*2)}%`, effect: (g, l) => { g.shipBuildSpeedMult = Math.max(0.1, 1 - l * 0.02); },
+      requires: { id: 'r4', level: 5 } },
+    { id: 'r12', name: '전투 교리', icon: '⚔️', baseCost: { metal: 400000, crystal: 100000, solar: 20000 }, costScale: 1.25,
+      desc: l => `함대 전투력 +${l*3}%`, effect: (g, l) => { g.fleetPowerMult = 1 + l * 0.03; },
+      requires: { id: 'r5', level: 8 } },
+    { id: 'r13', name: '식민지 자동 운송', icon: '📦', baseCost: { metal: 300000, crystal: 80000, hydrogen: 15000 }, costScale: 1.22,
+      desc: l => `자동 운송 ${Math.min(100, l*20)}%`, effect: (g, l) => { g.colonyAutoTransport = l >= 1; },
+      requires: { id: 'r6', level: 5 } },
+    { id: 'r14', name: '식민지 자동화', icon: '🏭', baseCost: { metal: 600000, crystal: 200000, hydrogen: 60000, plasma: 10000 }, costScale: 1.25,
+      desc: l => `자동 업글 ${Math.min(100, l*20)}%`, effect: (g, l) => { g.colonyAutoUpgrade = l >= 1; },
+      requires: { id: 'r13', level: 5 } },
+    { id: 'r15', name: '자동 채굴 드론', icon: '🤖', baseCost: { metal: 1000000, crystal: 300000, hydrogen: 80000, solar: 30000 }, costScale: 1.28,
+      desc: l => `자동클릭 간격 ${Math.max(1, 5 - l + 1)}초`, effect: (g, l) => { g.autoClicker = l >= 1; g.autoClickerInterval = Math.max(1, 5 - l + 1); },
+      requires: { id: 'r11', level: 8 } },
+    { id: 'r16', name: '건물 관리 AI', icon: '🧠', baseCost: { metal: 2000000, crystal: 800000, hydrogen: 200000, plasma: 80000 }, costScale: 1.30,
+      desc: l => `자동건설 ${Math.min(100, l*20)}%`, effect: (g, l) => { g.autoBuilder = l >= 1; },
+      requires: { id: 'r15', level: 5 } },
+    { id: 'r17', name: '우주 무역 II', icon: '📈', baseCost: { metal: 3000000, crystal: 1500000, hydrogen: 400000, plasma: 150000 }, costScale: 1.30,
+      desc: l => `소득 +${l*5}%`, effect: (g, l) => { g.incomeMult4 = 1 + l * 0.05; },
+      requires: { id: 'r10', level: 10 } },
+    { id: 'r18', name: '함선 생산 II', icon: '🚀', baseCost: { metal: 2500000, crystal: 1000000, solar: 150000 }, costScale: 1.28,
+      desc: l => `건조 시간 -${Math.min(95, l*3)}%`, effect: (g, l) => { g.shipBuildSpeedMult = Math.max(0.05, 1 - l * 0.03); },
+      requires: { id: 'r11', level: 10 } },
+    { id: 'r19', name: '전투 교리 II', icon: '⚔️', baseCost: { metal: 5000000, crystal: 2000000, hydrogen: 600000, solar: 200000 }, costScale: 1.30,
+      desc: l => `전투력 +${l*5}%`, effect: (g, l) => { g.fleetPowerMult2 = 1 + l * 0.05; },
+      requires: { id: 'r12', level: 10 } },
+    { id: 'r20', name: '에너지 저장 II', icon: '📦', baseCost: { metal: 4000000, crystal: 2000000, plasma: 300000 }, costScale: 1.28,
+      desc: l => `저장고 +${l*10}%`, effect: (g, l) => { g.storageMult2 = 1 + l * 0.10; },
+      requires: { id: 'r4', level: 10 } }
   ];
 
   const SHIP_TEMPLATES = [
@@ -240,8 +272,15 @@ const COLONY_FACTORY_TYPES = [
   window.GameSystemsMixin = {
     data() {
       return {
-        money: new Decimal(2000),
-        clickPower: 200,
+        money: new Decimal(10000),
+        clickPower: 300,
+        clickPowerMult: 1,
+        incomeMult2: 1,
+        incomeMult3: 1,
+        incomeMult4: 1,
+        fleetPowerMult2: 1,
+        storageMult2: 1,
+        autoClickerInterval: 5,
 
         resources: {
           metal: new Decimal(100), metalMax: new Decimal(500),
@@ -264,7 +303,7 @@ const COLONY_FACTORY_TYPES = [
 
         awareness: 0,
         fameMilestones: FAME_MILESTONES.map(m => ({ ...m, reached: false })),
-        research: RESEARCH_LIST.map(r => ({ ...r, completed: false, inProgress: false, remaining: 0 })),
+        research: RESEARCH_LIST.map(r => ({ ...r, level: 0 })),
 
         ships: Object.fromEntries(SHIP_TEMPLATES.map(s => [s.type, { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, level: 1, upgrading: false, upgradeElapsed: 0, upgradeTotalTime: 0 }])),
         shipTypes: SHIP_TEMPLATES,
@@ -289,7 +328,7 @@ const COLONY_FACTORY_TYPES = [
           { id: 'mogul', name: '우주 재벌', desc: '총 자산 1M', bonus: 0.15, cond: g => g.totalWealth.gte(1e6) },
           { id: 'aware100', name: '인지도 상승', desc: '인지도 100', bonus: 0.10, cond: g => g.awareness >= 100 },
           { id: 'collector', name: '건물 수집가', desc: '모든 건물 종류 보유', bonus: 0.20, cond: g => g.buildings.filter(b => b.level > 0).length >= g.buildings.length },
-          { id: 'researcher', name: '연구자', desc: '연구 5개 완료', bonus: 0.15, cond: g => g.research.filter(r => r.completed).length >= 5 },
+          { id: 'researcher', name: '연구자', desc: '연구 5레벨 달성', bonus: 0.15, cond: g => g.research.reduce((s, r) => s + r.level, 0) >= 5 },
           { id: 'fleet5', name: '소함대', desc: '함선 5척', bonus: 0.10, cond: g => g.totalShips >= 5 },
           { id: 'fleet20', name: '대함대', desc: '함선 20척', bonus: 0.20, cond: g => g.totalShips >= 20 },
           { id: 'wave5', name: '해적 사냥', desc: '5웨이브 도달', bonus: 0.10, cond: g => g.pirateWave > 5 },
@@ -417,7 +456,7 @@ const COLONY_FACTORY_TYPES = [
     computed: {
       totalShips() { let n = 0; for (const t in this.ships) n += this.ships[t].count || 0; return n; },
       effectiveClickPower() {
-        let cp = this.clickPower;
+        let cp = this.clickPower * (this.clickPowerMult || 1);
         if (this.buildingAwakened.mine) cp *= 1.5;
         return cp;
       },
@@ -456,7 +495,7 @@ const COLONY_FACTORY_TYPES = [
         return rates;
       },
       effectiveIncomeMult() {
-        let m = this.incomeMult * (1 + this.fameIncomeBonus) * (1 + this.prestigeBonus);
+        let m = (this.incomeMult || 1) * (this.incomeMult2 || 1) * (this.incomeMult3 || 1) * (this.incomeMult4 || 1) * (1 + this.fameIncomeBonus) * (1 + this.prestigeBonus);
         if (this.challengeModifiers.incomeMult) m *= this.challengeModifiers.incomeMult;
         if (this.alienTier.merchanter >= 2) m *= 1.2;
         if (this.transcendBonus > 0) m *= 1 + this.transcendBonus;
@@ -543,7 +582,7 @@ const COLONY_FACTORY_TYPES = [
           const cnt = this.ships[s.type]?.count || 0;
           p += cnt * this.shipPower(s);
         }
-        let mult = this.fleetPowerMult;
+        let mult = this.fleetPowerMult * (this.fleetPowerMult2 || 1);
         if (this.buildingAwakened.outpost) mult *= 1.3;
         if (this.alienTier.warlord >= 1) mult *= 1.25;
         return p * mult;
@@ -772,9 +811,8 @@ const COLONY_FACTORY_TYPES = [
         this.transcendAwareness *= 1.2;
         this.buildingAwakened = {};
         for (const r of this.research) {
-          r.completed = false;
-          r.inProgress = false;
-          r.remaining = 0;
+          r.level = 0;
+          r.effect(this, 0);
         }
         this.toast(`🌌 초월 LV ${this.transcendLevel}! 수입 +${Math.round(this.transcendBonus * 100)}%`);
         this.spawnFloatText('🌌 초월!', '#fbbf24', window.innerWidth / 2, window.innerHeight / 3);
@@ -977,35 +1015,40 @@ const COLONY_FACTORY_TYPES = [
         this.auctionActive = false; this.auctionBuilding = null;
       },
 
+      researchCost(r) {
+        const cost = {};
+        for (const k in r.baseCost) {
+          cost[k] = Math.floor(r.baseCost[k] * Math.pow(r.costScale, r.level));
+        }
+        return cost;
+      },
       canResearch(r) {
-        if (r.completed || r.inProgress) return false;
-        if (this.research.some(x => x.inProgress)) return false;
-        if (r.requires) { const pre = this.research.find(x => x.id === r.requires); if (!pre || !pre.completed) return false; }
-        for (const k in r.cost) { if (!this.resources[k] || this.resources[k].lt(r.cost[k])) return false; }
+        if (r.requires) {
+          const pre = this.research.find(x => x.id === r.requires.id);
+          if (!pre || pre.level < r.requires.level) return false;
+        }
+        const cost = this.researchCost(r);
+        for (const k in cost) { if (!this.resources[k] || this.resources[k].lt(cost[k])) return false; }
         return true;
       },
       researchStatus(r) {
-        if (r.completed) return '완료';
-        if (r.inProgress) return '진행중';
-        if (r.requires) { const pre = this.research.find(x => x.id === r.requires); if (!pre || !pre.completed) return `🔒 ${pre.name} 필요`; }
-        for (const k in r.cost) { if (!this.resources[k] || this.resources[k].lt(r.cost[k])) return '💰 자원 부족'; }
+        if (r.requires) {
+          const pre = this.research.find(x => x.id === r.requires.id);
+          if (!pre || pre.level < r.requires.level) return `🔒 ${pre ? pre.name : r.requires.id} Lv${r.requires.level} 필요`;
+        }
+        const cost = this.researchCost(r);
+        for (const k in cost) { if (!this.resources[k] || this.resources[k].lt(cost[k])) return '💰 자원 부족'; }
         return '연구 가능';
       },
       startResearch(r) {
         if (!this.canResearch(r)) return;
-        for (const k in r.cost) this.resources[k] = this.resources[k].sub(r.cost[k]);
-        r.inProgress = true; r.remaining = r.time;
-      },
-      tickResearch(dt) {
-        let rdt = dt / (this.challengeModifiers.researchTime || 1);
-        if (this.alienTier.architech >= 1) rdt /= 0.6;
-        rdt *= (this.transcendResearchSpeed || 1);
-        for (const r of this.research) {
-          if (r.inProgress) {
-            r.remaining = Math.max(0, r.remaining - rdt);
-            if (r.remaining <= 0) { r.inProgress = false; r.completed = true; this.stats.totalResearchDone++; r.effect(this); this.toast(`🔬 ${r.name}`); this.checkAchievements(); this.recalcMaxes(); }
-          }
-        }
+        const cost = this.researchCost(r);
+        for (const k in cost) this.resources[k] = this.resources[k].sub(cost[k]);
+        r.level++;
+        r.effect(this, r.level);
+        this.stats.totalResearchDone++;
+        this.toast(`🔬 ${r.name} Lv${r.level} (${r.desc(r.level)})`);
+        this.checkAchievements(); this.recalcMaxes();
       },
 
       maxAffordable(st) {
@@ -1361,7 +1404,7 @@ const COLONY_FACTORY_TYPES = [
           if (s.strongAgainst === pirateType) mult = 1.6;
           p += cnt * this.shipPower(s) * mult;
         }
-        let m = this.fleetPowerMult;
+        let m = this.fleetPowerMult * (this.fleetPowerMult2 || 1);
         if (this.buildingAwakened.outpost) m *= 1.3;
         if (this.alienTier.warlord >= 1) m *= 1.25;
         if (this.transcendFleetBonus) m *= 1 + this.transcendFleetBonus;
@@ -1796,7 +1839,7 @@ const COLONY_FACTORY_TYPES = [
             if (f.level > 0) colonyBonus += f.level * 0.5;
           }
         }
-        const sm = this.storageMult * (1 + buildingBonus / 1000) * (1 + exploreBonus) * (1 + colonyBonus / 100);
+        const sm = this.storageMult * (this.storageMult2 || 1) * (1 + buildingBonus / 1000) * (1 + exploreBonus) * (1 + colonyBonus / 100);
         if (this.alienTier.architech >= 2) sm *= 2;
         const bases = { metal: 50000, crystal: 30000, hydrogen: 15000, plasma: 10000, solar: 10000, fission: 8000, fusion: 8000 };
         for (const k of RES) this.resources[k + 'Max'] = new Decimal(Math.floor((bases[k] || 10000) * sm));
@@ -1874,14 +1917,16 @@ const COLONY_FACTORY_TYPES = [
         const ar = { ...this.alienRep };
         const at = { ...this.alienTier };
         const defaults = {
-          money: new Decimal(2000), clickPower: 200,
+          money: new Decimal(10000), clickPower: 300, clickPowerMult: 1,
+          incomeMult2: 1, incomeMult3: 1, incomeMult4: 1, fleetPowerMult2: 1, storageMult2: 1,
+          autoClickerInterval: 5,
           resources: { metal: new Decimal(100), metalMax: new Decimal(500), crystal: new Decimal(10), crystalMax: new Decimal(300), hydrogen: new Decimal(0), hydrogenMax: new Decimal(200), plasma: new Decimal(0), plasmaMax: new Decimal(200), solar: new Decimal(0), solarMax: new Decimal(200), fission: new Decimal(0), fissionMax: new Decimal(200), fusion: new Decimal(0), fusionMax: new Decimal(200) },
           resUnlocked: { metal: true, crystal: false, hydrogen: false, plasma: false, solar: false, fission: false, fusion: false },
           resMultipliers: { metal: 1, crystal: 1, hydrogen: 1, plasma: 1, solar: 1, fission: 1, fusion: 1 },
           storageMult: 1, incomeMult: 1, fameIncomeBonus: 0, awarenessMult: 1, shipBuildSpeedMult: 1, fleetPowerMult: 1,
           buildings: BUILDING_TEMPLATES.map(b => ({ ...b, currentPrice: b.basePrice, priceTier: 2, cooldown: 0, priceTimer: Math.random() * 120, owned: 0, level: 0, maxLevel: 20 })),
           awareness: 0, fameMilestones: FAME_MILESTONES.map(m => ({ ...m, reached: false })),
-        research: RESEARCH_LIST.map(r => ({ ...r, completed: false, inProgress: false, remaining: 0 })),
+        research: RESEARCH_LIST.map(r => ({ ...r, level: 0 })),
         constructionSlots: [
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 },
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 }
@@ -1953,7 +1998,6 @@ const COLONY_FACTORY_TYPES = [
         const sdt = dt * this.speedMult;
         this.tickPrices(sdt);
         this.tickIncome(sdt);
-        this.tickResearch(sdt);
         this.tickConstruction(sdt);
         this.tickTrade(sdt);
         this.tickShips(sdt);
@@ -1968,7 +2012,7 @@ const COLONY_FACTORY_TYPES = [
         if (this.autoClicker) {
           this.autoClickerTimer -= sdt;
           if (this.autoClickerTimer <= 0) {
-            this.autoClickerTimer = 5;
+            this.autoClickerTimer = this.autoClickerInterval || 5;
             this.money = this.money.add(this.effectiveClickPower * (this.boostTimer > 0 ? this.boostMultItem : 1));
           }
         }
@@ -1997,8 +2041,10 @@ const COLONY_FACTORY_TYPES = [
             resources: {}, resUnlocked: this.resUnlocked, resMultipliers: this.resMultipliers,
             storageMult: this.storageMult, incomeMult: this.incomeMult, awarenessMult: this.awarenessMult,
             shipBuildSpeedMult: this.shipBuildSpeedMult, fleetPowerMult: this.fleetPowerMult,
+            incomeMult2: this.incomeMult2, incomeMult3: this.incomeMult3, incomeMult4: this.incomeMult4,
+            fleetPowerMult2: this.fleetPowerMult2, storageMult2: this.storageMult2, clickPowerMult: this.clickPowerMult,
             buildings: this.buildings.map(b => ({ id: b.id, owned: b.owned, priceTier: b.priceTier, currentPrice: b.currentPrice, priceTimer: b.priceTimer, level: b.level })),
-            research: this.research.map(r => ({ id: r.id, completed: r.completed, inProgress: r.inProgress, remaining: r.remaining })),
+            research: this.research.map(r => ({ id: r.id, level: r.level })),
             missions: [],
             ships: Object.fromEntries(Object.entries(this.ships).map(([k, v]) => [k, { count: v.count, building: v.building, buildCount: v.buildCount, totalTime: v.totalTime, elapsed: v.elapsed, level: v.level, upgrading: v.upgrading || false, upgradeElapsed: v.upgradeElapsed || 0, upgradeTotalTime: v.upgradeTotalTime || 0 }])),
             colonizer: { count: this.colonizer.count, building: this.colonizer.building, buildCount: this.colonizer.buildCount, totalTime: this.colonizer.totalTime, elapsed: this.colonizer.elapsed },
@@ -2071,6 +2117,12 @@ const COLONY_FACTORY_TYPES = [
           if (o.awarenessMult) this.awarenessMult = o.awarenessMult;
           if (o.shipBuildSpeedMult) this.shipBuildSpeedMult = o.shipBuildSpeedMult;
           if (o.fleetPowerMult) this.fleetPowerMult = o.fleetPowerMult;
+          if (o.incomeMult2) this.incomeMult2 = o.incomeMult2;
+          if (o.incomeMult3) this.incomeMult3 = o.incomeMult3;
+          if (o.incomeMult4) this.incomeMult4 = o.incomeMult4;
+          if (o.fleetPowerMult2) this.fleetPowerMult2 = o.fleetPowerMult2;
+          if (o.storageMult2) this.storageMult2 = o.storageMult2;
+          if (o.clickPowerMult) this.clickPowerMult = o.clickPowerMult;
           if (o.buildings) {
             for (const saved of o.buildings) {
               const b = this.buildings.find(x => x.id === saved.id); if (b) {
@@ -2082,7 +2134,22 @@ const COLONY_FACTORY_TYPES = [
               }
             }
           }
-          if (o.research) { for (const saved of o.research) { const r = this.research.find(x => x.id === saved.id); if (r) { r.completed = saved.completed || false; r.inProgress = saved.inProgress || false; r.remaining = saved.remaining || 0; } } }
+          if (o.research) {
+            const isNewFormat = o.research[0] && o.research[0].level !== undefined;
+            for (const saved of o.research) {
+              const r = this.research.find(x => x.id === saved.id);
+              if (r) {
+                if (isNewFormat) {
+                  r.level = saved.level || 0;
+                } else {
+                  r.level = saved.completed ? Math.max(1, r.level) : 0;
+                }
+              }
+            }
+            for (const r of this.research) {
+              if (r.level > 0) r.effect(this, r.level);
+            }
+          }
           if (o.missions) { /* legacy - no op */ }
           if (o.ships) {
             const SHIP_MIGRATION = { interceptor: 'corvette', fighter: 'frigate', torpedo: 'fast_boat', bomber: 'destroyer', battleship: 'cruiser', carrier: 'battleship', dreadnought: 'carrier' };
