@@ -52,8 +52,10 @@ const BUILDING_TEMPLATES = [
   ];
 
   const RESEARCH_LIST = [
-    { id: 'r7', name: '클릭 강화', icon: '👆', baseCost: { metal: 5000, crystal: 1000 }, costScale: 1.20,
-      desc: l => `클릭력 +${l*5}%`, effect: (g, l) => { g.clickPowerMult = 1 + l * 0.05; } },
+    { id: 'r7', name: '클릭 강화', icon: '👆',
+      baseMoneyCost: 500, costScale: 1.15,
+      extraCost: { metal: 5000, crystal: 2000 }, extraCostAt: 30,
+      desc: l => `클릭력 +${l*10}`, effect: (g, l) => { g.clickPower = 200 + l * 10; } },
     { id: 'r1', name: '광산 효율', icon: '⛏️', baseCost: { metal: 5000 }, costScale: 1.15,
       desc: l => `메탈 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.metal = 1 + l * 0.02; } },
     { id: 'r2', name: '합성 기술', icon: '💎', baseCost: { metal: 12000, crystal: 3000 }, costScale: 1.18,
@@ -273,8 +275,7 @@ const COLONY_FACTORY_TYPES = [
     data() {
       return {
         money: new Decimal(10000),
-        clickPower: 300,
-        clickPowerMult: 1,
+        clickPower: 200,
         incomeMult2: 1,
         incomeMult3: 1,
         incomeMult4: 1,
@@ -456,7 +457,7 @@ const COLONY_FACTORY_TYPES = [
     computed: {
       totalShips() { let n = 0; for (const t in this.ships) n += this.ships[t].count || 0; return n; },
       effectiveClickPower() {
-        let cp = this.clickPower * (this.clickPowerMult || 1);
+        let cp = this.clickPower;
         if (this.buildingAwakened.mine) cp *= 1.5;
         return cp;
       },
@@ -1017,8 +1018,20 @@ const COLONY_FACTORY_TYPES = [
 
       researchCost(r) {
         const cost = {};
-        for (const k in r.baseCost) {
-          cost[k] = Math.floor(r.baseCost[k] * Math.pow(r.costScale, r.level));
+        if (r.baseMoneyCost) {
+          cost.money = Math.floor(r.baseMoneyCost * Math.pow(r.costScale, r.level));
+        }
+        if (r.baseCost) {
+          for (const k in r.baseCost) {
+            if (r.baseCost[k] > 0) cost[k] = Math.floor(r.baseCost[k] * Math.pow(r.costScale, r.level));
+          }
+        }
+        if (r.extraCost && r.level >= (r.extraCostAt || 99)) {
+          const elv = r.level - r.extraCostAt;
+          for (const k in r.extraCost) {
+            const extra = Math.floor(r.extraCost[k] * Math.pow(r.costScale, elv));
+            cost[k] = (cost[k] || 0) + extra;
+          }
         }
         return cost;
       },
@@ -1028,7 +1041,11 @@ const COLONY_FACTORY_TYPES = [
           if (!pre || pre.level < r.requires.level) return false;
         }
         const cost = this.researchCost(r);
-        for (const k in cost) { if (!this.resources[k] || this.resources[k].lt(cost[k])) return false; }
+        if (cost.money && this.money.lt(cost.money)) return false;
+        for (const k in cost) {
+          if (k === 'money') continue;
+          if (!this.resources[k] || this.resources[k].lt(cost[k])) return false;
+        }
         return true;
       },
       researchStatus(r) {
@@ -1038,19 +1055,27 @@ const COLONY_FACTORY_TYPES = [
         }
         const cost = this.researchCost(r);
         const missing = [];
+        if (cost.money && this.money.lt(cost.money)) {
+          missing.push(`💰 ${this.fmt(this.money)}/${this.fmt(cost.money)}`);
+        }
         for (const k in cost) {
+          if (k === 'money') continue;
           if (!this.resources[k] || this.resources[k].lt(cost[k])) {
             const have = this.resources[k] ? this.fmt(this.resources[k]) : '0';
             missing.push(`${this.$RES_ICO[k]||k} ${have}/${this.fmt(cost[k])}`);
           }
         }
-        if (missing.length > 0) return `💰 ${missing.join(' ')}`;
+        if (missing.length > 0) return `💸 ${missing.join(' ')}`;
         return '연구 가능';
       },
       startResearch(r) {
         if (!this.canResearch(r)) return;
         const cost = this.researchCost(r);
-        for (const k in cost) this.resources[k] = this.resources[k].sub(cost[k]);
+        if (cost.money) this.money = this.money.sub(cost.money);
+        for (const k in cost) {
+          if (k === 'money') continue;
+          this.resources[k] = this.resources[k].sub(cost[k]);
+        }
         r.level++;
         r.effect(this, r.level);
         this.stats.totalResearchDone++;
@@ -1924,7 +1949,7 @@ const COLONY_FACTORY_TYPES = [
         const ar = { ...this.alienRep };
         const at = { ...this.alienTier };
         const defaults = {
-          money: new Decimal(10000), clickPower: 300, clickPowerMult: 1,
+          money: new Decimal(10000), clickPower: 200,
           incomeMult2: 1, incomeMult3: 1, incomeMult4: 1, fleetPowerMult2: 1, storageMult2: 1,
           autoClickerInterval: 5,
           resources: { metal: new Decimal(100), metalMax: new Decimal(500), crystal: new Decimal(10), crystalMax: new Decimal(300), hydrogen: new Decimal(0), hydrogenMax: new Decimal(200), plasma: new Decimal(0), plasmaMax: new Decimal(200), solar: new Decimal(0), solarMax: new Decimal(200), fission: new Decimal(0), fissionMax: new Decimal(200), fusion: new Decimal(0), fusionMax: new Decimal(200) },
@@ -2049,7 +2074,7 @@ const COLONY_FACTORY_TYPES = [
             storageMult: this.storageMult, incomeMult: this.incomeMult, awarenessMult: this.awarenessMult,
             shipBuildSpeedMult: this.shipBuildSpeedMult, fleetPowerMult: this.fleetPowerMult,
             incomeMult2: this.incomeMult2, incomeMult3: this.incomeMult3, incomeMult4: this.incomeMult4,
-            fleetPowerMult2: this.fleetPowerMult2, storageMult2: this.storageMult2, clickPowerMult: this.clickPowerMult,
+            fleetPowerMult2: this.fleetPowerMult2, storageMult2: this.storageMult2,
             buildings: this.buildings.map(b => ({ id: b.id, owned: b.owned, priceTier: b.priceTier, currentPrice: b.currentPrice, priceTimer: b.priceTimer, level: b.level })),
             research: this.research.map(r => ({ id: r.id, level: r.level })),
             missions: [],
@@ -2129,7 +2154,6 @@ const COLONY_FACTORY_TYPES = [
           if (o.incomeMult4) this.incomeMult4 = o.incomeMult4;
           if (o.fleetPowerMult2) this.fleetPowerMult2 = o.fleetPowerMult2;
           if (o.storageMult2) this.storageMult2 = o.storageMult2;
-          if (o.clickPowerMult) this.clickPowerMult = o.clickPowerMult;
           if (o.buildings) {
             for (const saved of o.buildings) {
               const b = this.buildings.find(x => x.id === saved.id); if (b) {

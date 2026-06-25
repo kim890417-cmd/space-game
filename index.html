@@ -794,7 +794,7 @@
             </div>
             <div class="text-right flex-shrink-0 ml-2 min-w-[90px]">
               <div class="text-[7px] text-slate-500 whitespace-nowrap">
-                <span v-for="(v,k) in researchCost(r)" :key="k" :class="(!resources[k] || resources[k].lt(v)) ? 'text-rose-400' : ''">{{ $RES_ICO[k]||k }}{{ fmt(v) }} </span>
+                <span v-for="(v,k) in researchCost(r)" :key="k" :class="k==='money' ? (money.lt(v)?'text-rose-400':'') : (!resources[k]||resources[k].lt(v)?'text-rose-400':'')">{{ k==='money' ? '💰' : ($RES_ICO[k]||k) }}{{ fmt(v) }} </span>
               </div>
               <button v-if="canResearch(r)" class="btn btn-sm btn-primary w-full mt-1 text-[10px]" @click="startResearch(r)">⬆️ 연구</button>
               <div v-else class="text-[8px] text-amber-400/80 mt-1">{{ researchStatus(r) }}</div>
