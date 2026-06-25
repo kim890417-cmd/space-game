@@ -148,15 +148,15 @@ const BUILDING_TEMPLATES = [
 
   const RAID_TARGETS = [
     { id: 'raid_1', name: '해적 아지트', icon: '🏴‍☠️', desc: '소규모 해적 근거지. 초보 약탈에 적합.',
-      powerBase: 100, powerScale: 1.2, rewards: { metal: 2000, crystal: 500 }, minWave: 1, cooldown: 120, risk: 0.01 },
+      powerBase: 5, powerScale: 1.2, rewards: { metal: 2000, crystal: 500 }, minWave: 1, cooldown: 120, risk: 0.01 },
     { id: 'raid_2', name: '밀수선단', icon: '🚢', desc: '밀수품을 실은 화물선. 자원이 풍부하다.',
-      powerBase: 500, powerScale: 1.25, rewards: { metal: 5000, crystal: 2000, hydrogen: 1000 }, minWave: 2, cooldown: 180, risk: 0.02 },
+      powerBase: 25, powerScale: 1.25, rewards: { metal: 5000, crystal: 2000, hydrogen: 1000 }, minWave: 2, cooldown: 180, risk: 0.02 },
     { id: 'raid_3', name: '외계 전초기지', icon: '👾', desc: '외계 종족의 전초기지. 기술력이 높다.',
-      powerBase: 2000, powerScale: 1.3, rewards: { crystal: 5000, hydrogen: 3000, plasma: 500 }, minWave: 4, cooldown: 300, risk: 0.03 },
+      powerBase: 120, powerScale: 1.3, rewards: { crystal: 5000, hydrogen: 3000, plasma: 500 }, minWave: 4, cooldown: 300, risk: 0.03 },
     { id: 'raid_4', name: '해적 본부', icon: '☠️', desc: '해적 두목의 본거지. 위험하지만 보상이 막대하다.',
-      powerBase: 10000, powerScale: 1.35, rewards: { metal: 30000, crystal: 15000, hydrogen: 10000 }, minWave: 6, cooldown: 600, risk: 0.04 },
+      powerBase: 600, powerScale: 1.35, rewards: { metal: 30000, crystal: 15000, hydrogen: 10000 }, minWave: 6, cooldown: 600, risk: 0.04 },
     { id: 'raid_5', name: '우주 괴수', icon: '🐉', desc: '우주를 떠도는 거대 생명체. 귀한 재료를 제공한다.',
-      powerBase: 50000, powerScale: 1.4, rewards: { metal: 100000, crystal: 50000, hydrogen: 30000, fusion: 500 }, minWave: 10, cooldown: 900, risk: 0.05 }
+      powerBase: 3000, powerScale: 1.4, rewards: { metal: 100000, crystal: 50000, hydrogen: 30000, fusion: 500 }, minWave: 10, cooldown: 900, risk: 0.05 }
   ];
 
   const EXPEDITION_TARGETS = [
@@ -345,7 +345,7 @@ const COLONY_FACTORY_TYPES = [
         itemDefs: [
           { id: 'timewarp', name: '2시간 가속', icon: '⏩⏩', desc: '2시간치 소득 즉시', effect: g => { g.addOfflineIncome(7200); g.toast('2시간치 수입 획득!'); } },
           { id: 'timewarp_10m', name: '10분 가속', icon: '⏩', desc: '10분치 소득 즉시', effect: g => { g.addOfflineIncome(600); g.toast('10분치 수입 획득!'); } },
-          { id: 'surge', name: '생산 과부하', icon: '⚡', desc: '30초간 소득 ×5', effect: g => { g.boostTimer = 30; g.boostMultItem = 5; g.toast('30초간 ×5!'); } }
+          { id: 'surge', name: '생산 과부하', icon: '⚡', desc: '30초간 소득 ×50', effect: g => { g.boostTimer = 30; g.boostMultItem = 50; g.toast('30초간 ×50!'); } }
         ],
         boostTimer: 0, boostMultItem: 1, freeDispenserCD: 0,
 
@@ -507,6 +507,13 @@ const COLONY_FACTORY_TYPES = [
             if (eff.incomeMult) m *= 1 + eff.incomeMult;
           }
         }
+        let achBonus = 0;
+        if (this.achievements) {
+          for (const a of this.achievements) {
+            if (this.achieved && this.achieved[a.id]) achBonus += a.bonus || 0;
+          }
+        }
+        m *= 1 + achBonus;
         return m;
       },
       visibleBuildings() {
@@ -1477,7 +1484,19 @@ const COLONY_FACTORY_TYPES = [
         let total = 0;
         const repairCount = this.ships.repair?.count || 0;
         const effectiveRatio = repairCount > 0 ? ratio * Math.max(0.05, 1 - repairCount * 0.1) : ratio;
-        for (const s of this.shipTypes) { const cnt = this.ships[s.type]?.count || 0; if (cnt <= 0) continue; const loss = Math.min(cnt, Math.max(1, Math.round(cnt * effectiveRatio))); this.ships[s.type].count -= loss; total += loss; }
+        for (const s of this.shipTypes) {
+          const cnt = this.ships[s.type]?.count || 0;
+          if (cnt <= 0) continue;
+          let loss = Math.round(cnt * effectiveRatio);
+          if (ratio >= 0.2) {
+            loss = Math.max(1, loss);
+          }
+          loss = Math.min(cnt, loss);
+          if (loss > 0) {
+            this.ships[s.type].count -= loss;
+            total += loss;
+          }
+        }
         return total;
       },
       pushLog(text, cls) { this.pirateLog.unshift({ text, cls: cls || 'log-info' }); if (this.pirateLog.length > 30) this.pirateLog.pop(); },
@@ -1876,6 +1895,15 @@ const COLONY_FACTORY_TYPES = [
       startChallenge(cd) {
         if (!this.canStartChallenge(cd)) return;
         if (!confirm(`도전 '${cd.name}'을(를) 시작합니다. 모든 것이 초기화됩니다.\n${cd.desc}\n보상: 각성석 ${cd.reward}개\n계속하시겠습니까?`)) return;
+        
+        if (!this.challengeActive) {
+          this.saveSystems();
+          const mainSave = localStorage.getItem('systemsState');
+          if (mainSave) {
+            localStorage.setItem('mainSaveBeforeChallenge', mainSave);
+          }
+        }
+
         this.$set(this.challengeModifiers, 'metalProd', cd.id === 'ch1' ? 0.2 : 1);
         this.$set(this.challengeModifiers, 'incomeMult', cd.id === 'ch2' ? 0.4 : 1);
         this.$set(this.challengeModifiers, 'piratePow', cd.id === 'ch3' ? 3 : 1);
@@ -1884,6 +1912,7 @@ const COLONY_FACTORY_TYPES = [
         this.$set(this.challengeModifiers, 'noColony', cd.id === 'ch5');
         this.challengeActive = cd.id;
         this.cheatReset(true);
+        this.saveSystems();
         this.toast(`🏆 도전: ${cd.name} 시작! (보상: 각성석 ${cd.reward}개)`);
       },
       canStartChallenge(cd) {
@@ -1897,6 +1926,44 @@ const COLONY_FACTORY_TYPES = [
         this.challengeModifiers = {};
         this.toast(`🎉 도전 완료! ${cd.name} +${cd.reward} 각성석 (총 ${this.awakeningStones}개)`);
         this.spawnFloatText('🎉 완료!', '#fbbf24', window.innerWidth / 2, window.innerHeight / 2);
+        
+        const backupRaw = localStorage.getItem('mainSaveBeforeChallenge');
+        if (backupRaw) {
+          try {
+            const backup = JSON.parse(backupRaw);
+            backup.challengesCompleted = backup.challengesCompleted || {};
+            backup.challengesCompleted[cd.id] = true;
+            backup.awakeningStones = (backup.awakeningStones || 0) + cd.reward;
+            localStorage.setItem('systemsState', JSON.stringify(backup));
+            localStorage.removeItem('mainSaveBeforeChallenge');
+            this.loadSystems();
+            this.toast(`💾 원래 세이브가 복원되었고 도전 완료 기록이 반영되었습니다.`);
+          } catch(e) {
+            console.error(e);
+          }
+        } else {
+          this.saveSystems();
+        }
+      },
+      abandonChallenge() {
+        if (!this.challengeActive) return;
+        if (!confirm('정말 도전을 포기하시겠습니까? 도전 시작 전의 원래 상태로 복구됩니다.')) return;
+        const backupRaw = localStorage.getItem('mainSaveBeforeChallenge');
+        if (backupRaw) {
+          try {
+            localStorage.setItem('systemsState', backupRaw);
+            localStorage.removeItem('mainSaveBeforeChallenge');
+            this.loadSystems();
+            this.toast(`🔄 도전을 포기하고 원래 세이브로 돌아갔습니다.`);
+          } catch(e) {
+            console.error(e);
+            this.cheatReset(true);
+          }
+        } else {
+          this.challengeActive = null;
+          this.challengeModifiers = {};
+          this.cheatReset(true);
+        }
       },
 
       cheatMoney() { this.money = this.money.mul(100); this.toast('💰 ×100 돈!'); },
@@ -2002,21 +2069,21 @@ const COLONY_FACTORY_TYPES = [
         this.transcendAwareness = 1;
         this.alienRep = ar;
         this.alienTier = at;
-        this.incomeMult = 1 + pb;
+        this.incomeMult = 1;
         this.recalcMaxes();
         this.toast('🔄 초기화 완료');
       },
       prestige() {
         const wealth = this.totalWealthCalc.toNumber();
-        if (wealth < 200000) { this.toast('🚫 환생 조건: 총 자산 200k 이상'); return; }
+        if (wealth < 100000) { this.toast('🚫 환생 조건: 총 자산 100k 이상'); return; }
         let resourceValue = 0;
         for (const k of RES) {
           if (this.resources[k]) resourceValue += this.resources[k].toNumber();
         }
         const totalValue = wealth + resourceValue;
-        const gain = Math.max(1, Math.floor(Math.pow(totalValue / 200000, 0.45)));
+        const gain = Math.max(1, Math.floor(Math.pow(totalValue / 100000, 0.45)));
         this.prestigePoints += gain;
-        this.prestigeBonus = this.prestigePoints * 0.1;
+        this.prestigeBonus = this.prestigePoints * 0.5;
         this.toast(`✨ 환생! +${gain} 포인트 (총 ${this.prestigePoints}P) 수입 +${Math.round(this.prestigeBonus*100)}% (자원가치 ${this.fmt(resourceValue)} 포함)`);
         this.cheatReset(true);
       },
@@ -2046,8 +2113,20 @@ const COLONY_FACTORY_TYPES = [
         }
         if (this.autoBuilder && (this._autoBuilderCD = (this._autoBuilderCD || 0) - sdt) <= 0) {
           this._autoBuilderCD = 10;
-          const avail = this.visibleBuildings.filter(b => this.canBuyBuilding(b));
-          if (avail.length) avail.sort((a, b) => a.currentPrice - b.currentPrice)[0] && this.buyBuilding(avail.sort((a, b) => a.currentPrice - b.currentPrice)[0], null);
+          const slot = this.constructionSlots.find(s => !s.busy);
+          if (slot) {
+            const buyAvail = this.visibleBuildings.filter(b => this.canBuyBuilding(b));
+            if (buyAvail.length) {
+              const target = buyAvail.sort((a, b) => a.currentPrice - b.currentPrice)[0];
+              this.buyBuilding(target, null);
+            } else {
+              const upgradeAvail = this.visibleBuildings.filter(b => this.canUpgradeBuilding(b));
+              if (upgradeAvail.length) {
+                const target = upgradeAvail.sort((a, b) => this.upgradeCost(a) - this.upgradeCost(b))[0];
+                this.upgradeBuilding(target, null);
+              }
+            }
+          }
         }
         if (this.challengeActive && this.totalWealth.gte(this.mainGoal)) {
           const cd = this.challengeDefs.find(c => c.id === this.challengeActive);

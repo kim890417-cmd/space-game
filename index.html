@@ -895,7 +895,7 @@
         <details class="card py-2 px-3 block" style="border-color:rgba(124,58,237,0.4)">
           <summary class="text-xs font-bold text-purple-300 cursor-pointer outline-none select-none">✨ 환생 & 초월</summary>
           <div class="text-[9px] text-slate-400 leading-relaxed space-y-1 mt-2 border-t border-slate-700/50 pt-1.5">
-            <div>• <span class="text-amber-300 font-bold">환생(프레스티지):</span> 총자산 200k 이상일 때 가능. 모든 것이 초기화되는 대신 영구 수입 보너스를 얻습니다.</div>
+            <div>• <span class="text-amber-300 font-bold">환생(프레스티지):</span> 총자산 100k 이상일 때 가능. 모든 것이 초기화되는 대신 영구 수입 보너스를 얻습니다.</div>
             <div>• <span class="text-purple-300 font-bold">초월(트랜센드):</span> 모든 건물 각성 후 각성석을 사용해 초월하며 수입 및 속도를 극대화합니다.</div>
             <div>• 도전 모드를 클리어하면 초월과 각성에 필요한 귀중한 각성석을 획득합니다.</div>
           </div>
@@ -1149,11 +1149,16 @@
                   <span>{{ cd.icon }} <span class="font-bold" :class="challengesCompleted[cd.id] ? 'text-emerald-400' : 'text-slate-200'">{{ cd.name }}</span> 💎×{{ cd.reward }}</span>
                   <div class="text-[7px] text-slate-500">{{ cd.desc }}</div>
                 </div>
-                <button v-if="!challengesCompleted[cd.id] || challengeActive === cd.id"
-                        class="btn btn-sm btn-danger" style="font-size:7px;padding:2px 6px"
-                        @click="startChallenge(cd)" :disabled="challengeActive && challengeActive !== cd.id">
-                  {{ challengeActive === cd.id ? '진행중' : '시작' }}
-                </button>
+                <div class="flex flex-col gap-1" v-if="!challengesCompleted[cd.id] || challengeActive === cd.id">
+                  <button class="btn btn-sm btn-danger" style="font-size:7px;padding:2px 6px"
+                          @click="startChallenge(cd)" :disabled="challengeActive && challengeActive !== cd.id">
+                    {{ challengeActive === cd.id ? '진행중' : '시작' }}
+                  </button>
+                  <button v-if="challengeActive === cd.id" class="btn btn-sm btn-warning bg-amber-600 hover:bg-amber-700 text-white" style="font-size:7px;padding:2px 6px"
+                          @click="abandonChallenge">
+                    포기
+                  </button>
+                </div>
                 <span v-else class="text-emerald-400 text-[10px]">✅</span>
               </div>
             </div>
