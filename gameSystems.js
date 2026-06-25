@@ -52,6 +52,8 @@ const BUILDING_TEMPLATES = [
   ];
 
   const RESEARCH_LIST = [
+    { id: 'r7', name: '클릭 강화', icon: '👆', baseCost: { metal: 5000, crystal: 1000 }, costScale: 1.20,
+      desc: l => `클릭력 +${l*5}%`, effect: (g, l) => { g.clickPowerMult = 1 + l * 0.05; } },
     { id: 'r1', name: '광산 효율', icon: '⛏️', baseCost: { metal: 5000 }, costScale: 1.15,
       desc: l => `메탈 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.metal = 1 + l * 0.02; } },
     { id: 'r2', name: '합성 기술', icon: '💎', baseCost: { metal: 12000, crystal: 3000 }, costScale: 1.18,
@@ -65,8 +67,6 @@ const BUILDING_TEMPLATES = [
       desc: l => `건물 월세 +${l*2}%`, effect: (g, l) => { g.incomeMult = 1 + l * 0.02; } },
     { id: 'r6', name: '인지도 확산', icon: '📡', baseCost: { metal: 50000, crystal: 15000 }, costScale: 1.20,
       desc: l => `인지도 획득량 +${l*3}%`, effect: (g, l) => { g.awarenessMult = 1 + l * 0.03; } },
-    { id: 'r7', name: '클릭 강화', icon: '👆', baseCost: { metal: 20000, crystal: 5000 }, costScale: 1.20,
-      desc: l => `클릭력 +${l*5}%`, effect: (g, l) => { g.clickPowerMult = 1 + l * 0.05; } },
     { id: 'r8', name: '건물 관리 II', icon: '🏗️', baseCost: { metal: 150000, crystal: 40000, hydrogen: 8000 }, costScale: 1.22,
       desc: l => `월세 +${l*3}%`, effect: (g, l) => { g.incomeMult2 = 1 + l * 0.03; },
       requires: { id: 'r5', level: 10 } },
@@ -1037,7 +1037,14 @@ const COLONY_FACTORY_TYPES = [
           if (!pre || pre.level < r.requires.level) return `🔒 ${pre ? pre.name : r.requires.id} Lv${r.requires.level} 필요`;
         }
         const cost = this.researchCost(r);
-        for (const k in cost) { if (!this.resources[k] || this.resources[k].lt(cost[k])) return '💰 자원 부족'; }
+        const missing = [];
+        for (const k in cost) {
+          if (!this.resources[k] || this.resources[k].lt(cost[k])) {
+            const have = this.resources[k] ? this.fmt(this.resources[k]) : '0';
+            missing.push(`${this.$RES_ICO[k]||k} ${have}/${this.fmt(cost[k])}`);
+          }
+        }
+        if (missing.length > 0) return `💰 ${missing.join(' ')}`;
         return '연구 가능';
       },
       startResearch(r) {
