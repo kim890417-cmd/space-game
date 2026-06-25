@@ -53,8 +53,7 @@ const BUILDING_TEMPLATES = [
 
   const RESEARCH_LIST = [
     { id: 'r7', name: '클릭 강화', icon: '👆',
-      baseMoneyCost: 500, costScale: 1.15,
-      extraCost: { metal: 5000, crystal: 2000 }, extraCostAt: 30,
+      baseMoneyCost: 1000, costScale: 1.16,
       desc: l => `클릭력 +${l*10}`, effect: (g, l) => { g.clickPower = 200 + l * 10; } },
     { id: 'r1', name: '광산 효율', icon: '⛏️', baseCost: { metal: 5000 }, costScale: 1.15,
       desc: l => `메탈 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.metal = 1 + l * 0.02; } },
