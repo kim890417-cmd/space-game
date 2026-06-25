@@ -57,6 +57,7 @@ const BUILDING_TEMPLATES = [
     { id: 'r3', name: '정제 기술 I', desc: '수소 생산 +30%', icon: '⚡', cost: { metal: 50000, crystal: 10000 }, time: 10800, effect: g => { g.resMultipliers.hydrogen *= 1.3; } },
     { id: 'r4', name: '에너지 저장 I', desc: '모든 저장고 +50%', icon: '📦', cost: { metal: 30000 }, time: 5400, effect: g => { g.storageMult *= 1.5; } },
     { id: 'r5', name: '건물 관리 I', desc: '모든 건물 월세 +25%', icon: '🏗️', cost: { metal: 50000, crystal: 15000 }, time: 7200, effect: g => { g.incomeMult += 0.25; } },
+    { id: 'r21', name: '클릭력 강화 I', desc: '클릭력 2배', icon: '💪', cost: { metal: 40000, crystal: 8000 }, time: 5400, effect: g => { g.clickPower *= 2; } },
     { id: 'r6', name: '인지도 확산', desc: '인지도 획득량 +50%', icon: '📡', cost: { metal: 100000, crystal: 25000 }, time: 14400, effect: g => { g.awarenessMult *= 1.5; } },
     { id: 'r7', name: '광산 효율 II', desc: '메탈 생산 +60%', icon: '⛏️', cost: { metal: 120000, crystal: 30000 }, time: 18000, effect: g => { g.resMultipliers.metal *= 1.6; }, requires: 'r1' },
     { id: 'r8', name: '건물 관리 II', desc: '모든 건물 월세 +50%', icon: '🏗️', cost: { metal: 250000, crystal: 60000, hydrogen: 10000 }, time: 28800, effect: g => { g.incomeMult += 0.5; }, requires: 'r5' },
@@ -64,6 +65,7 @@ const BUILDING_TEMPLATES = [
     { id: 'r10', name: '우주 무역', desc: '소득 +40%', icon: '📈', cost: { metal: 800000, crystal: 200000, plasma: 50000 }, time: 57600, effect: g => { g.incomeMult += 0.4; }, requires: 'r6' },
     { id: 'r11', name: '함선 생산 I', desc: '함선 건조 시간 -20%', icon: '🚀', cost: { metal: 300000, crystal: 80000 }, time: 21600, effect: g => { g.shipBuildSpeedMult *= 0.8; }, requires: 'r4' },
     { id: 'r12', name: '전투 교리', desc: '함대 전투력 +30%', icon: '⚔️', cost: { metal: 600000, crystal: 150000, solar: 30000 }, time: 36000, effect: g => { g.fleetPowerMult *= 1.3; }, requires: 'r5' },
+    { id: 'r22', name: '클릭력 강화 II', desc: '클릭력 2배', icon: '💪', cost: { metal: 400000, crystal: 100000, hydrogen: 20000 }, time: 28800, effect: g => { g.clickPower *= 2; }, requires: 'r21' },
     { id: 'r13', name: '식민지 자동 운송', desc: '식민지 자원 자동 수송', icon: '📦', cost: { metal: 400000, crystal: 100000, hydrogen: 20000 }, time: 25200, effect: g => { g.colonyAutoTransport = true; }, requires: 'r6' },
     { id: 'r14', name: '식민지 자동화', desc: '식민지 공장 자동 업그레이드', icon: '🏭', cost: { metal: 800000, crystal: 250000, hydrogen: 80000, plasma: 15000 }, time: 43200, effect: g => { g.colonyAutoUpgrade = true; }, requires: 'r13' },
     { id: 'r15', name: '자동 채굴 드론', desc: '5초마다 자동 클릭', icon: '🤖', cost: { metal: 1500000, crystal: 500000, hydrogen: 100000, solar: 50000 }, time: 72000, effect: g => { g.autoClicker = true; }, requires: 'r11' },
@@ -75,7 +77,7 @@ const BUILDING_TEMPLATES = [
   ];
 
   const SHIP_TEMPLATES = [
-    { type: 'scout', name: '정찰기', icon: '🛰️', power: 0.1, cost: { metal: 100 }, time: 30, strongAgainst: null, awarenessNeeded: 0, img: 'img/ship-scout.svg', maxLevel: 5, upgradeTime: 30, special: '탐사' },
+    { type: 'scout', name: '정찰기', icon: '🛰️', power: 0.1, cost: { metal: 100 }, time: 30, strongAgainst: null, awarenessNeeded: 0, img: 'img/정찰기.jpg', maxLevel: 5, upgradeTime: 30, special: '탐사' },
     { type: 'corvette', name: '초계함', icon: '🚀', power: 1, cost: { metal: 3000, crystal: 500 }, time: 120, strongAgainst: 'pirate_fleet', awarenessNeeded: 0, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 60 },
     { type: 'fast_boat', name: '고속함', icon: '🎯', power: 5, cost: { metal: 8000, crystal: 1500 }, time: 180, strongAgainst: 'raider', awarenessNeeded: 500, img: 'img/ship-torpedo.jpg', maxLevel: 10, upgradeTime: 60, requiresBuilding: 'crystal_fac' },
     { type: 'frigate', name: '호위함', icon: '🛡️', power: 25, cost: { metal: 15000, crystal: 4000 }, time: 350, strongAgainst: 'marauder', awarenessNeeded: 2000, img: 'img/ship-corvette.jpg', maxLevel: 8, upgradeTime: 120, requiresBuilding: 'drone_hub' },
