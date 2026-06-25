@@ -127,20 +127,6 @@
             💰 클릭 또는 건물 월세로 돈을 버세요. 건물을 건설/업그레이드하면 <span class="text-purple-300">인지도(📡)</span>가 올라 새 건물이 잠금해제됩니다. 건물 가격은 <span class="text-emerald-400">⬇️ 초급매</span> ~ <span class="text-rose-400">⬆️ 초고가</span>로 실시간 변동하니 할인 타이밍에 구매하세요! LV20 도달 시 <span class="text-amber-300">각성</span>으로 특별 보너스를 얻을 수 있습니다.
           </div>
         </div>
-        <div class="flex items-center gap-3 justify-center py-1">
-          <button class="click-btn" ref="clickBtn" @click="doClick($event)" :class="{glow: boostTimer>0}" :style="boostTimer>0?{boxShadow:'0 0 30px rgba(251,191,36,0.5)'}:{}">💸</button>
-          <div class="text-[10px] text-slate-500">
-            <div>클릭당</div>
-            <div class="text-sm font-bold text-slate-200">+{{ fmt(effectiveClickPower * (boostTimer>0?boostMultItem:1)) }}</div>
-          </div>
-          <div class="text-[9px] text-amber-400 ml-1" v-if="boostTimer>0">⚡ ×{{ boostMultItem }} {{ fmtTime(boostTimer) }}</div>
-        </div>
-
-        <div class="flex items-center gap-2 justify-center text-[8px] py-0.5" v-if="autoClicker || autoBuilder">
-          <span v-if="autoClicker" class="text-sky-400">🤖 자동클릭 {{ fmtTime(autoClickerTimer) }}</span>
-          <span v-if="autoBuilder" class="text-emerald-400">🧠 자동건설</span>
-        </div>
-
         <div class="card card-accent py-2 px-3">
           <div class="flex items-center justify-between mb-1">
             <span class="text-[11px] font-bold text-purple-400">📡 명성 <span class="text-[9px] text-slate-500 font-normal">(인지도)</span></span>
@@ -203,22 +189,6 @@
           </div>
         </div>
 
-        <div class="card py-2 px-3" style="border-color:rgba(52,211,153,0.2)">
-          <div class="text-[10px] font-bold text-emerald-300 mb-1">🎯 미션</div>
-          <div class="space-y-1">
-            <div v-for="m in missions" :key="m.id" v-if="!m.completed" class="flex items-center gap-2 text-[9px] bg-slate-900/50 rounded px-2 py-1">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
-                  <span :class="m.completed ? 'text-emerald-400 line-through' : 'text-slate-200'">{{ m.name }}</span>
-                  <span class="text-slate-500" v-if="!m.completed">{{ fmt(m.progress) }}/{{ fmt(m.goal) }}</span>
-                  <span class="text-emerald-400" v-else>✅</span>
-                </div>
-                <div class="text-[8px] text-slate-600">{{ m.desc }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.2)">
           <div class="flex items-center justify-between mb-1">
             <span class="text-[10px] font-bold text-amber-300">🏗️ 건설 슬롯 ({{ constructionSlots.filter(s=>s.busy).length }}/{{ maxConstructionSlots }})</span>
@@ -238,6 +208,21 @@
           </div>
         </div>
 
+        <div class="card py-2 px-3 mb-2" style="border-color:rgba(250,204,21,0.2)">
+          <div class="flex items-center gap-3 justify-center py-1">
+            <button class="click-btn" ref="clickBtn" @click="doClick($event)" :class="{glow: boostTimer>0}" :style="boostTimer>0?{boxShadow:'0 0 30px rgba(251,191,36,0.5)'}:{}">💸</button>
+            <div class="text-[10px] text-slate-500">
+              <div>클릭당</div>
+              <div class="text-sm font-bold text-slate-200">+{{ fmt(effectiveClickPower * (boostTimer>0?boostMultItem:1)) }}</div>
+            </div>
+            <div class="text-[9px] text-amber-400 ml-1" v-if="boostTimer>0">⚡ ×{{ boostMultItem }} {{ fmtTime(boostTimer) }}</div>
+          </div>
+          <div class="flex items-center gap-2 justify-center text-[8px] py-0.5" v-if="autoClicker || autoBuilder">
+            <span v-if="autoClicker" class="text-sky-400">🤖 자동클릭 {{ fmtTime(autoClickerTimer) }}</span>
+            <span v-if="autoBuilder" class="text-emerald-400">🧠 자동건설</span>
+          </div>
+        </div>
+
         <div class="space-y-2">
           <div v-for="b in visibleBuildings" :key="b.id" class="card relative build-card" :class="{'shake': b.cooldown>0 && b.level>0}">
             <div class="flex gap-2">
@@ -250,6 +235,7 @@
                   <span class="text-[9px] font-bold" :class="b.level>0?'text-purple-300':'text-slate-600'">{{ b.level>0 ? 'LV '+b.level : '미건설' }}</span>
                 </div>
                 <div class="text-[9px] text-slate-500 leading-tight mt-px">{{ b.desc }}</div>
+                <div class="text-[7px] text-purple-400/70 mt-px" v-if="b.level===0 && !b.building">건설 시 📡+{{ b.awarenessGiven }} · 업글 시 📡+{{ b.awarenessGiven }}×LV</div>
 
                 <div v-if="b.building" class="mt-1">
                   <div class="flex justify-between text-[8px]">
@@ -265,8 +251,8 @@
                 </div>
 
                 <div v-if="!b.building && b.level===0" class="flex items-center justify-between mt-1">
-                  <span class="text-[11px] font-bold" :class="'price-tier-'+b.priceTier">{{ fmt(b.currentPrice) }} <span class="text-[8px] font-normal ml-1">{{ tierLabel(b.priceTier) }}</span></span>
-                  <span class="text-[8px] text-slate-500">월수익 {{ fmt(b.income) }}</span>
+                  <span class="text-[11px] font-bold" :class="'price-tier-'+b.priceTier">💰 {{ fmt(b.currentPrice) }} <span class="text-[8px] font-normal ml-1">{{ tierLabel(b.priceTier) }}</span></span>
+                  <span class="text-[8px] text-slate-500">월수익 💰 {{ fmt(b.income) }}</span>
                 </div>
                 <div v-else-if="!b.building" class="flex items-center justify-between mt-1">
                   <span class="text-[8px] text-slate-500">월수익 <span class="text-emerald-300">{{ fmt(b.income * b.level * effectiveIncomeMult * (1 + 0.12*(b.level-1))) }}/s</span></span>
@@ -522,24 +508,32 @@
           <div class="card py-2 px-3" style="border-color:rgba(251,113,133,0.2)">
             <div class="text-[10px] font-bold text-rose-400 mb-1">☠️ 약탈 목표</div>
             <div class="text-[8px] text-slate-600 mb-1">함대를 보내 자원을 약탈하세요.</div>
-            <div v-for="t in raidTargets" :key="t.id" class="bg-slate-900/50 rounded px-2 py-1.5 text-[9px] mt-1">
-              <div class="flex items-center justify-between">
-                <div>
-                  <span :class="t.active ? 'text-rose-300 font-bold' : 'text-slate-600'">{{ t.icon }} {{ t.name }}</span>
-                  <div class="text-[7px] text-slate-500">{{ t.desc }}</div>
+              <div class="text-[9px] text-sky-300 mb-1">⚔️ 내 함대 전투력: {{ fmt(fleetPower) }}</div>
+              <div v-for="t in raidTargets" :key="t.id" class="bg-slate-900/50 rounded px-2 py-1.5 text-[9px] mt-1">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span :class="t.active ? 'text-rose-300 font-bold' : 'text-slate-600'">{{ t.icon }} {{ t.name }}</span>
+                    <div class="text-[7px] text-slate-500">{{ t.desc }}</div>
+                  </div>
+                  <div v-if="t.active && raidTravel.active && raidTravel.target===t" class="text-right">
+                    <div class="text-amber-300">🚀 이동중</div>
+                    <div class="progress-bar w-16 mt-1"><div class="progress-fill bg-amber-400" :style="{width: ((1-raidTravel.remaining/raidTravel.total)*100)+'%'}"></div></div>
+                    <div class="text-[7px] text-slate-400">{{ fmtTime(raidTravel.remaining) }}</div>
+                  </div>
+                  <div v-else-if="t.active" class="text-right">
+                    <div class="text-rose-400">전투력 {{ raidPower(t) }}</div>
+                    <div class="text-emerald-400" v-if="fleetPower>0">승률 {{ raidWinRate(t) }}%</div>
+                    <div class="text-[7px] text-amber-400/80" v-if="pirateWave < t.minWave">🔒 웨이브 {{ t.minWave }} 필요</div>
+                    <button v-else class="btn btn-sm btn-danger mt-1" @click="startRaid(t, $event)" :disabled="!canRaid(t) || raidTravel.active">{{ canRaid(t) ? '☠️ 약탈' : '⏳ 대기' }}</button>
+                  </div>
+                  <div v-else class="text-[8px] text-slate-600">⏳ {{ fmtTime(t.timer) }}</div>
                 </div>
-                <div v-if="t.active" class="text-right">
-                  <div class="text-rose-400">전투력 {{ raidPower(t) }}</div>
-                  <div class="text-[7px] text-amber-400/80" v-if="pirateWave < t.minWave">🔒 웨이브 {{ t.minWave }} 필요</div>
-                  <button v-else class="btn btn-sm btn-danger mt-1" @click="startRaid(t, $event)" :disabled="!canRaid(t)">☠️ 약탈</button>
+                <div v-if="t.active" class="flex gap-2 mt-1 text-[7px] text-slate-500">
+                  <span v-for="(v,k) in t.rewards" :key="k" class="text-emerald-400/70">+{{ k }} {{ Math.floor(v * Math.max(1, pirateWave/2)) }}</span>
+                  <span class="text-rose-400/70">위험 {{ Math.round(t.risk*100) }}%</span>
                 </div>
-                <div v-else class="text-[8px] text-slate-600">⏳ {{ fmtTime(t.timer) }}</div>
               </div>
-              <div v-if="t.active" class="flex gap-2 mt-1 text-[7px] text-slate-500">
-                <span v-for="(v,k) in t.rewards" :key="k" class="text-emerald-400/70">+{{ k }} {{ Math.floor(v * Math.max(1, pirateWave/2)) }}</span>
-                <span class="text-rose-400/70">위험 {{ Math.round(t.risk*100) }}%</span>
-              </div>
-            </div>
+              <div class="text-[9px] text-amber-300 mt-1" v-if="fleetPower>0 && raidTargets.some(t=>t.active)">⚔️ 약탈 버튼 클릭 시 {{ fmtTime(5 + Math.floor(raidTargets[0].cooldown*0.08)) }} 후 전투 시작</div>
           </div>
 
         </div>
@@ -621,17 +615,24 @@
         <!-- 약탈 목표 (식민지 탭) -->
         <div class="card py-2 px-3" v-if="colonizer.count > 0">
           <div class="text-[10px] font-bold text-rose-400 mb-1">☠️ 근방 약탈 목표</div>
-          <div class="text-[8px] text-slate-600 mb-1">식민 함선이 정찰한 약탈 가능 목표들입니다. 함대를 보내 자원을 약탈하세요.</div>
+          <div class="text-[8px] text-slate-600 mb-1">식민 함선이 정찰한 약탈 가능 목표들입니다.</div>
+          <div class="text-[9px] text-sky-300 mb-1">⚔️ 내 함대 전투력: {{ fmt(fleetPower) }}</div>
           <div v-for="t in raidTargets" :key="t.id" class="bg-slate-900/50 rounded px-2 py-1.5 text-[9px] mt-1">
             <div class="flex items-center justify-between">
               <div>
                 <span :class="t.active ? 'text-rose-300 font-bold' : 'text-slate-600'">{{ t.icon }} {{ t.name }}</span>
                 <div class="text-[7px] text-slate-500">{{ t.desc }}</div>
               </div>
-              <div v-if="t.active" class="text-right">
+              <div v-if="t.active && raidTravel.active && raidTravel.target===t" class="text-right">
+                <div class="text-amber-300">🚀 이동중</div>
+                <div class="progress-bar w-16 mt-1"><div class="progress-fill bg-amber-400" :style="{width: ((1-raidTravel.remaining/raidTravel.total)*100)+'%'}"></div></div>
+                <div class="text-[7px] text-slate-400">{{ fmtTime(raidTravel.remaining) }}</div>
+              </div>
+              <div v-else-if="t.active" class="text-right">
                 <div class="text-rose-400">전투력 {{ raidPower(t) }}</div>
+                <div class="text-emerald-400" v-if="fleetPower>0">승률 {{ raidWinRate(t) }}%</div>
                 <div class="text-[7px] text-amber-400/80" v-if="pirateWave < t.minWave">🔒 웨이브 {{ t.minWave }} 필요</div>
-                <button v-else class="btn btn-sm btn-danger mt-1" @click="startRaid(t, $event)" :disabled="!canRaid(t)">☠️ 약탈</button>
+                <button v-else class="btn btn-sm btn-danger mt-1" @click="startRaid(t, $event)" :disabled="!canRaid(t) || raidTravel.active">{{ canRaid(t) ? '☠️ 약탈' : '⏳ 대기' }}</button>
               </div>
               <div v-else class="text-[8px] text-slate-600">⏳ {{ fmtTime(t.timer) }}</div>
             </div>
@@ -640,6 +641,7 @@
               <span class="text-rose-400/70">위험 {{ Math.round(t.risk*100) }}%</span>
             </div>
           </div>
+          <div class="text-[9px] text-amber-300 mt-1" v-if="fleetPower>0 && raidTargets.some(t=>t.active)">⚔️ 약탈 버튼 클릭 시 {{ fmtTime(5 + Math.floor(raidTargets[0].cooldown*0.08)) }} 후 전투 시작</div>
         </div>
 
         <!-- 원정/탐사 -->

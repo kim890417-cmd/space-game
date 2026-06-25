@@ -3,8 +3,8 @@
   const RES_KR = { metal: '메탈', crystal: '크리스탈', hydrogen: '수소', plasma: '플라즈마', solar: '태양열', fission: '핵분열', fusion: '핵융합' };
   const RES_ICO = { metal: '⛏️', crystal: '💎', hydrogen: '⚡', plasma: '🔵', solar: '☀️', fission: '⚛️', fusion: '🔥' };
   const FAME_MILESTONES = [
-  { id: 'fm1', name: '우주 신인', need: 500, desc: '크리스탈 합성소 개방', unlocks: 'crystal_fac' },
-  { id: 'fm2', name: '우주 개척자', need: 2000, desc: '드론 허브 개방', unlocks: 'drone_hub' },
+  { id: 'fm1', name: '우주 신인', need: 200, desc: '크리스탈 합성소 개방', unlocks: 'crystal_fac' },
+  { id: 'fm2', name: '우주 개척자', need: 800, desc: '드론 허브 개방', unlocks: 'drone_hub' },
   { id: 'fm3', name: '행성 정착민', need: 5000, desc: '수소 정제소 개방 + 모든 수입 +10%', unlocks: 'refinery', bonusIncome: 0.1 },
   { id: 'fm4', name: '은하계 상인', need: 10000, desc: '자원 재활용소 개방', unlocks: 'recycler' },
   { id: 'fm5', name: '태양력 개척자', need: 20000, desc: '태양열 발전소 개방', unlocks: 'solar_plant' },
@@ -21,10 +21,10 @@ const RES_COLOR = { metal: '#34d399', crystal: '#a78bfa', hydrogen: '#38bdf8', p
 
 const BUILDING_TEMPLATES = [
     { id: 'mine', name: '지표 광산', icon: '⛏️', img: 'img/bld-mine.jpg', desc: '소행성 표면에서 금속 광물 채굴',
-      basePrice: 8000, income: 30, awarenessNeeded: 0, awarenessGiven: 8, tier: 1, res: 'metal', output: 2.0, buildTime: 5 },
+      basePrice: 8000, income: 30, awarenessNeeded: 0, awarenessGiven: 15, tier: 1, res: 'metal', output: 2.0, buildTime: 5 },
     { id: 'crystal_fac', name: '크리스탈 합성소', icon: '💎', img: 'img/bld-crystal.jpg', desc: '고밀도 에너지 결정 합성',
-      basePrice: 250000, income: 40, awarenessNeeded: 200, awarenessGiven: 12, tier: 2, res: 'crystal', output: 0.8,
-      unlockRequires: { mine: 3 }, buildTime: 15 },
+      basePrice: 100000, income: 40, awarenessNeeded: 50, awarenessGiven: 15, tier: 2, res: 'crystal', output: 0.8,
+      unlockRequires: { mine: 1 }, buildTime: 15 },
     { id: 'drone_hub', name: '드론 허브', icon: '🛸', img: 'img/bld-drone.jpg', desc: '자동 드론으로 자원 수집',
       basePrice: 750000, income: 60, awarenessNeeded: 500, awarenessGiven: 16, tier: 3, res: 'metal', output: 1.5,
       unlockRequires: { mine: 5, crystal_fac: 2 }, buildTime: 30 },
@@ -75,7 +75,7 @@ const BUILDING_TEMPLATES = [
   ];
 
   const SHIP_TEMPLATES = [
-    { type: 'scout', name: '정찰기', icon: '🛰️', power: 0.1, cost: { metal: 100 }, time: 30, strongAgainst: null, awarenessNeeded: 0, img: 'img/ship-scout.jpg', maxLevel: 5, upgradeTime: 30, special: '탐사' },
+    { type: 'scout', name: '정찰기', icon: '🛰️', power: 0.1, cost: { metal: 100 }, time: 30, strongAgainst: null, awarenessNeeded: 0, img: 'img/ship-scout.svg', maxLevel: 5, upgradeTime: 30, special: '탐사' },
     { type: 'corvette', name: '초계함', icon: '🚀', power: 1, cost: { metal: 3000, crystal: 500 }, time: 120, strongAgainst: 'pirate_fleet', awarenessNeeded: 0, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 60 },
     { type: 'fast_boat', name: '고속함', icon: '🎯', power: 5, cost: { metal: 8000, crystal: 1500 }, time: 180, strongAgainst: 'raider', awarenessNeeded: 500, img: 'img/ship-torpedo.jpg', maxLevel: 10, upgradeTime: 60, requiresBuilding: 'crystal_fac' },
     { type: 'frigate', name: '호위함', icon: '🛡️', power: 25, cost: { metal: 15000, crystal: 4000 }, time: 350, strongAgainst: 'marauder', awarenessNeeded: 2000, img: 'img/ship-corvette.jpg', maxLevel: 8, upgradeTime: 120, requiresBuilding: 'drone_hub' },
@@ -89,10 +89,10 @@ const BUILDING_TEMPLATES = [
   ];
 
   const PIRATE_TYPES = [
-    { type: 'raider', name: '약탈자', icon: '🦹', weakTo: 'fast_boat', powerBase: 1 },
-    { type: 'pirate_fleet', name: '해적단', icon: '🏴‍☠️', weakTo: 'corvette', powerBase: 3 },
-    { type: 'marauder', name: '침투선', icon: '🪓', weakTo: 'frigate', powerBase: 8 },
-    { type: 'juggernaut', name: '거함', icon: '👹', weakTo: 'destroyer', powerBase: 30 }
+    { type: 'raider', name: '약탈자', icon: '🦹', weakTo: 'fast_boat', powerBase: 0.3 },
+    { type: 'pirate_fleet', name: '해적단', icon: '🏴‍☠️', weakTo: 'corvette', powerBase: 1.5 },
+    { type: 'marauder', name: '침투선', icon: '🪓', weakTo: 'frigate', powerBase: 5 },
+    { type: 'juggernaut', name: '거함', icon: '👹', weakTo: 'destroyer', powerBase: 20 }
   ];
 
   const TRADE_POSTS = [
@@ -279,6 +279,7 @@ const COLONY_FACTORY_TYPES = [
         pirateWave: 1, pirateLog: [], combatCooldown: 0,
         raidAlert: '', raidAlertTimer: 0,
         raidTargets: RAID_TARGETS.map(t => ({ ...t, active: true, timer: t.cooldown + Math.random() * 60 })),
+        raidTravel: { active: false, target: null, remaining: 0, total: 0 },
 
         achievements: [
           { id: 'first_buy', name: '첫 구매', desc: '건물 첫 구매', bonus: 0.05, cond: g => g.totalBuys >= 1 },
@@ -294,13 +295,7 @@ const COLONY_FACTORY_TYPES = [
           { id: 'conqueror', name: '정복자', desc: '3개 행성 개척', bonus: 0.25, cond: g => g.planets.filter(p => p.explorationLevel > 0).length >= 3 },
           { id: 'billion', name: '우주 억만장자', desc: '자산 1B', bonus: 0.50, cond: g => g.totalWealth.gte(1e9) }
         ],
-        missions: [
-          { id: 'm1', name: '첫 발자국', desc: '건물 1회 구매', type: 'buys', goal: 1, progress: 0, reward: { money: 5000 }, completed: false },
-          { id: 'm2', name: '자원 수집가', desc: '메탈 500 보유', type: 'res_metal', goal: 500, progress: 0, reward: { crystal: 50 }, completed: false },
-          { id: 'm3', name: '해적 사냥꾼', desc: '해적 3웨이브 처치', type: 'pirate_wave', goal: 3, progress: 0, reward: { item: 'timewarp', count: 1 }, completed: false },
-          { id: 'm4', name: '건물주', desc: '건물 5개 보유', type: 'owned_total', goal: 5, progress: 0, reward: { money: 50000 }, completed: false },
-          { id: 'm5', name: '신흥 자산가', desc: '총 자산 100k', type: 'wealth', goal: 100000, progress: 0, reward: { permMult: 0.1 }, completed: false }
-        ],
+        missions: [],
         mainGoal: 1e9,
         achieved: {}, achievementToast: '',
         totalBuys: 0, totalTrades: 0, totalWealth: new Decimal(0), bestProfit: 0,
@@ -553,8 +548,10 @@ const COLONY_FACTORY_TYPES = [
       },
       currentPirate() {
         const pt = this.pirateTypes[(this.pirateWave - 1) % this.pirateTypes.length];
-        const scale = Math.pow(1.25, this.pirateWave - 1);
-        return { type: pt.type, name: pt.name, icon: pt.icon, weakTo: pt.weakTo, power: Math.floor(pt.powerBase * scale) };
+        const scale = Math.pow(1.20, this.pirateWave - 1);
+        const wavePower = Math.floor(pt.powerBase * scale);
+        const earlyBonus = this.pirateWave <= 3 ? 0.8 : 1;
+        return { type: pt.type, name: pt.name, icon: pt.icon, weakTo: pt.weakTo, power: Math.max(1, Math.floor(wavePower * earlyBonus)) };
       },
       piratePower() {
         let p = this.currentPirate ? this.currentPirate.power : 0;
@@ -830,16 +827,20 @@ const COLONY_FACTORY_TYPES = [
             if (slot.remaining <= 0) {
               if (slot.action === 'buy') {
                 b.level = 1;
-                this.awareness += b.awarenessGiven * this.effectiveAwarenessMult;
+                const awGain = Math.floor(b.awarenessGiven * this.effectiveAwarenessMult);
+                this.awareness += awGain;
                 this.stats.totalBuildingsBuilt++;
-                this.checkAchievements(); this.recalcMaxes(); this.checkMissions(); this.checkFameMilestones();
-                this.toast(`✅ ${b.name} 건설 완료!`);
+                this.checkAchievements(); this.recalcMaxes(); this.checkFameMilestones();
+                this.toast(`✅ ${b.name} 건설 완료! 📡+${awGain}`);
+                this.spawnFloatText(`📡+${awGain}`, '#a78bfa', window.innerWidth/2, window.innerHeight/2);
                 const res = b.res;
                 if (res && this.resources[res] !== undefined) { this.boostResourceBump(res); }
               } else if (slot.action === 'upgrade') {
                 b.level = slot.level;
-                this.awareness += b.awarenessGiven * b.level * this.effectiveAwarenessMult;
-                this.toast(`⬆️ ${b.name} LV ${b.level} 업그레이드 완료!`);
+                const awGain = Math.floor(b.awarenessGiven * b.level * this.effectiveAwarenessMult);
+                this.awareness += awGain;
+                this.toast(`⬆️ ${b.name} LV ${b.level} 업그레이드 완료! 📡+${awGain}`);
+                this.spawnFloatText(`📡+${awGain}`, '#a78bfa', window.innerWidth/2, window.innerHeight/2);
                 this.boostResourceBump(b.res);
               }
               b.building = false; b.buildRemaining = 0; b.buildTotal = 0;
@@ -1409,9 +1410,29 @@ const COLONY_FACTORY_TYPES = [
       pushLog(text, cls) { this.pirateLog.unshift({ text, cls: cls || 'log-info' }); if (this.pirateLog.length > 30) this.pirateLog.pop(); },
 
       raidPower(target) { return Math.floor(target.powerBase * Math.pow(target.powerScale, this.pirateWave - 1)); },
-      canRaid(target) { return this.fleetPower > 0 && this.combatCooldown <= 0 && target.active && this.pirateWave >= target.minWave; },
+      canRaid(target) { return this.fleetPower > 0 && this.combatCooldown <= 0 && target.active && this.pirateWave >= target.minWave && !this.raidTravel.active; },
+      raidWinRate(target) {
+        const eff = this.fleetPower;
+        const enemyPower = this.raidPower(target);
+        if (eff <= 0 || enemyPower <= 0) return 0;
+        const minRoll = eff * 0.8;
+        const maxRoll = eff * 1.2;
+        const winAt = enemyPower;
+        if (minRoll >= winAt) return 100;
+        if (maxRoll < winAt) return 0;
+        return Math.round(((maxRoll - winAt) / (maxRoll - minRoll)) * 100);
+      },
       startRaid(target, e) {
         if (!this.canRaid(target)) return;
+        const travelTime = 5 + Math.floor(target.cooldown * 0.08);
+        this.raidTravel = { active: true, target: target, remaining: travelTime, total: travelTime };
+        this.pushLog(`🚀 ${target.icon} ${target.name} (으)로 이동 중... (${travelTime}초)`, 'log-info');
+        this.toast(`🚀 ${target.name} 공략 시작! 도착까지 ${this.fmtTime(travelTime)}`);
+      },
+      resolveRaid() {
+        const travel = this.raidTravel;
+        if (!travel.active || !travel.target) return;
+        const target = travel.target;
         const eff = this.fleetPower;
         const enemyPower = this.raidPower(target);
         const roll = eff * (0.8 + Math.random() * 0.4);
@@ -1429,21 +1450,28 @@ const COLONY_FACTORY_TYPES = [
           }
           const lost = this.applyLosses(target.risk);
           this.pushLog(`✅ 약탈 성공!${lootStr}${lost ? ` (손실 ${lost}척)` : ''}`, 'log-win');
-          if (e) this.spawnFloatText('✅ 약탈 성공', '#34d399', e.clientX, e.clientY - 8);
+          this.spawnFloatText('✅ 약탈 성공', '#34d399', window.innerWidth/2, window.innerHeight/2);
         } else {
           const lost = this.applyLosses(target.risk * 2);
           this.pushLog(`❌ 약탈 실패 ${lost}척 손실`, 'log-lose');
-          if (e) this.spawnFloatText('❌ 실패', '#fb7185', e.clientX, e.clientY - 8);
+          this.spawnFloatText('❌ 실패', '#fb7185', window.innerWidth/2, window.innerHeight/2);
         }
         target.timer = target.cooldown;
         target.active = false;
         this.combatCooldown = 10;
+        this.raidTravel = { active: false, target: null, remaining: 0, total: 0 };
       },
       tickRaids(dt) {
         for (const t of this.raidTargets) {
           if (!t.active) {
             t.timer -= dt;
             if (t.timer <= 0) { t.active = true; t.timer = t.cooldown + Math.random() * 60; }
+          }
+        }
+        if (this.raidTravel.active) {
+          this.raidTravel.remaining -= dt;
+          if (this.raidTravel.remaining <= 0) {
+            this.resolveRaid();
           }
         }
       },
@@ -1737,30 +1765,6 @@ const COLONY_FACTORY_TYPES = [
         }
       },
 
-      checkMissions() {
-        for (const m of this.missions) {
-          if (m.completed) continue;
-          let p = 0;
-          if (m.type === 'buys') p = this.totalBuys;
-          else if (m.type.indexOf('res_') === 0) { const k = m.type.slice(4); p = this.resources[k] ? this.resources[k].toNumber() : 0; }
-          else if (m.type === 'pirate_wave') p = Math.max(0, this.pirateWave - 1);
-          else if (m.type === 'owned_total') p = this.buildings.reduce((s, b) => s + (b.level > 0 ? 1 : 0), 0);
-          else if (m.type === 'wealth') p = this.totalWealth.toNumber();
-          m.progress = Math.min(p, m.goal);
-          if (m.progress >= m.goal) {
-            m.completed = true;
-            const r = m.reward;
-            if (r.money) this.money = this.money.add(r.money);
-            if (r.crystal) this.resources.crystal = this.resources.crystal.add(r.crystal);
-            if (r.item) this.$set(this.items, r.item, (this.items[r.item] || 0) + (r.count || 1));
-            if (r.permMult) this.incomeMult += r.permMult;
-            this.toast(`🎯 미션 클리어! ${m.name}`);
-            this.spawnFloatText('🎯 ' + m.name, '#34d399', window.innerWidth / 2, window.innerHeight / 3);
-            this.checkAchievements();
-          }
-        }
-      },
-
       itemCount(id) { return this.items[id] || 0; },
       useItem(id) {
         if ((this.items[id] || 0) <= 0) return;
@@ -1897,7 +1901,7 @@ const COLONY_FACTORY_TYPES = [
           planets: PLANETS.map(p => ({ ...p, explorationLevel: 0 })),
           pirateWave: 1, pirateAttackTimer: 300, pirateLog: [], combatCooldown: 0,
           achievements: this.achievements.map(a => ({ ...a })), achieved: {}, achievementToast: '',
-          missions: this.missions.map(m => ({ ...m, progress: 0, completed: false })),
+          missions: [],
           totalBuys: 0, totalTrades: 0, totalWealth: new Decimal(0), bestProfit: 0,
           items: { timewarp: 1, timewarp_10m: 1, surge: 1 }, boostTimer: 0, boostMultItem: 1, freeDispenserCD: 0,
           colonies: [], colonyDetailPlanet: null, exploring: false, explorePlanet: null, exploreChance: 0, exploreTimer: 0, exploreFlavor: '', exploreFlavorTimer: 0,
@@ -1976,7 +1980,6 @@ const COLONY_FACTORY_TYPES = [
           if (cd) this.completeChallenge(cd);
         }
         this.checkAchievements();
-        this.checkMissions();
         this.checkFameMilestones();
       },
       toast(text) {
@@ -1994,7 +1997,7 @@ const COLONY_FACTORY_TYPES = [
             shipBuildSpeedMult: this.shipBuildSpeedMult, fleetPowerMult: this.fleetPowerMult,
             buildings: this.buildings.map(b => ({ id: b.id, owned: b.owned, priceTier: b.priceTier, currentPrice: b.currentPrice, priceTimer: b.priceTimer, level: b.level })),
             research: this.research.map(r => ({ id: r.id, completed: r.completed, inProgress: r.inProgress, remaining: r.remaining })),
-            missions: this.missions.map(m => ({ id: m.id, progress: m.progress, completed: m.completed })),
+            missions: [],
             ships: Object.fromEntries(Object.entries(this.ships).map(([k, v]) => [k, { count: v.count, building: v.building, buildCount: v.buildCount, totalTime: v.totalTime, elapsed: v.elapsed, level: v.level, upgrading: v.upgrading || false, upgradeElapsed: v.upgradeElapsed || 0, upgradeTotalTime: v.upgradeTotalTime || 0 }])),
             colonizer: { count: this.colonizer.count, building: this.colonizer.building, buildCount: this.colonizer.buildCount, totalTime: this.colonizer.totalTime, elapsed: this.colonizer.elapsed },
             planets: this.planets.map(p => ({ id: p.id, explorationLevel: p.explorationLevel })),
@@ -2044,6 +2047,7 @@ const COLONY_FACTORY_TYPES = [
             tradeCargo: { ...this.tradeCargo }, totalTradeProfit: this.totalTradeProfit,
             tradeLog: this.tradeLog.slice(-20),
             raidTargets: this.raidTargets.map(t => ({ id: t.id, active: t.active, timer: t.timer })),
+            raidTravel: { active: this.raidTravel.active, targetId: this.raidTravel.target?.id || null, remaining: this.raidTravel.remaining, total: this.raidTravel.total },
             expedition: { inProgress: this.expedition.inProgress, targetId: this.expedition.targetId, remaining: this.expedition.remaining, total: this.expedition.total, eventId: this.expedition.eventId }
           };
           for (const k of RES) data.resources[k] = this.resources[k].toFixed(3);
@@ -2077,7 +2081,7 @@ const COLONY_FACTORY_TYPES = [
             }
           }
           if (o.research) { for (const saved of o.research) { const r = this.research.find(x => x.id === saved.id); if (r) { r.completed = saved.completed || false; r.inProgress = saved.inProgress || false; r.remaining = saved.remaining || 0; } } }
-          if (o.missions) { for (const saved of o.missions) { const m = this.missions.find(x => x.id === saved.id); if (m) { m.progress = saved.progress || 0; m.completed = saved.completed || false; } } }
+          if (o.missions) { /* legacy - no op */ }
           if (o.ships) {
             const SHIP_MIGRATION = { interceptor: 'corvette', fighter: 'frigate', torpedo: 'fast_boat', bomber: 'destroyer', battleship: 'cruiser', carrier: 'battleship', dreadnought: 'carrier' };
             let needsMigrate = false;
@@ -2210,6 +2214,14 @@ const COLONY_FACTORY_TYPES = [
               const t = this.raidTargets.find(x => x.id === saved.id);
               if (t) { t.active = saved.active; t.timer = saved.timer; }
             }
+          }
+          if (o.raidTravel) {
+            this.raidTravel.active = o.raidTravel.active || false;
+            if (o.raidTravel.targetId) {
+              this.raidTravel.target = this.raidTargets.find(t => t.id === o.raidTravel.targetId) || null;
+            }
+            this.raidTravel.remaining = o.raidTravel.remaining || 0;
+            this.raidTravel.total = o.raidTravel.total || 0;
           }
           if (o.expedition) {
             this.expedition.inProgress = o.expedition.inProgress || false;
