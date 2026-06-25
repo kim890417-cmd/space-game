@@ -21,106 +21,106 @@ const RES_COLOR = { metal: '#34d399', crystal: '#a78bfa', hydrogen: '#38bdf8', p
 
 const BUILDING_TEMPLATES = [
     { id: 'mine', name: '지표 광산', icon: '⛏️', img: 'img/bld-mine.jpg', desc: '소행성 표면에서 금속 광물 채굴',
-      basePrice: 4000, income: 50, awarenessNeeded: 0, awarenessGiven: 20, tier: 1, res: 'metal', output: 2.0, buildTime: 5 },
+      basePrice: 4000, income: 50, awarenessNeeded: 0, awarenessGiven: 20, tier: 1, res: 'metal', output: 5.0, buildTime: 5 },
     { id: 'crystal_fac', name: '크리스탈 합성소', icon: '💎', img: 'img/bld-crystal.jpg', desc: '고밀도 에너지 결정 합성',
-      basePrice: 50000, income: 40, awarenessNeeded: 30, awarenessGiven: 15, tier: 2, res: 'crystal', output: 0.8,
+      basePrice: 50000, income: 40, awarenessNeeded: 30, awarenessGiven: 15, tier: 2, res: 'crystal', output: 2.5,
       unlockRequires: { mine: 1 }, buildTime: 15 },
     { id: 'drone_hub', name: '드론 허브', icon: '🛸', img: 'img/bld-drone.jpg', desc: '자동 드론으로 자원 수집',
-      basePrice: 300000, income: 60, awarenessNeeded: 200, awarenessGiven: 16, tier: 3, res: 'metal', output: 1.5,
+      basePrice: 300000, income: 60, awarenessNeeded: 200, awarenessGiven: 16, tier: 3, res: 'metal', output: 4.0,
       unlockRequires: { mine: 5, crystal_fac: 2 }, buildTime: 30 },
     { id: 'refinery', name: '수소 정제소', icon: '⚡', img: 'img/bld-refinery.jpg', desc: '듀테륨 정제로 수소 생산',
-      basePrice: 2000000, income: 90, awarenessNeeded: 1500, awarenessGiven: 22, tier: 4, res: 'hydrogen', output: 0.5,
+      basePrice: 2000000, income: 90, awarenessNeeded: 1500, awarenessGiven: 22, tier: 4, res: 'hydrogen', output: 2.0,
       unlockRequires: { drone_hub: 3, crystal_fac: 5 }, buildTime: 60 },
     { id: 'recycler', name: '자원 재활용소', icon: '♻️', img: 'img/bld-recycler.jpg', desc: '폐자원 재활용',
-      basePrice: 4000000, income: 120, awarenessNeeded: 4000, awarenessGiven: 30, tier: 5, res: 'metal', output: 2.0,
+      basePrice: 4000000, income: 120, awarenessNeeded: 4000, awarenessGiven: 30, tier: 5, res: 'metal', output: 6.0,
       unlockRequires: { refinery: 3, drone_hub: 5 }, buildTime: 120 },
     { id: 'solar_plant', name: '태양열 발전소', icon: '☀️', img: 'img/bld-solar.jpg', desc: '항성 에너지 수집',
-      basePrice: 6000000, income: 160, awarenessNeeded: 10000, awarenessGiven: 40, tier: 6, res: 'solar', output: 1.0,
+      basePrice: 6000000, income: 160, awarenessNeeded: 10000, awarenessGiven: 40, tier: 6, res: 'solar', output: 3.5,
       unlockRequires: { recycler: 3, refinery: 5 }, buildTime: 200 },
     { id: 'plasma_coil', name: '플라즈마 코일', icon: '🔵', img: 'img/bld-plasma.jpg', desc: '고에너지 플라즈마 안정화',
-      basePrice: 10000000, income: 220, awarenessNeeded: 25000, awarenessGiven: 50, tier: 7, res: 'plasma', output: 0.5,
+      basePrice: 10000000, income: 220, awarenessNeeded: 25000, awarenessGiven: 50, tier: 7, res: 'plasma', output: 2.0,
       unlockRequires: { solar_plant: 4, recycler: 6 }, buildTime: 300 },
     { id: 'fission_reactor', name: '핵분열로', icon: '⚛️', img: 'img/bld-fission.jpg', desc: '원자핵 분열 에너지',
-      basePrice: 15000000, income: 350, awarenessNeeded: 50000, awarenessGiven: 65, tier: 8, res: 'fission', output: 0.4,
+      basePrice: 15000000, income: 350, awarenessNeeded: 50000, awarenessGiven: 65, tier: 8, res: 'fission', output: 1.5,
       unlockRequires: { plasma_coil: 4, solar_plant: 6 }, buildTime: 600 },
     { id: 'fusion_reactor', name: '핵융합로', icon: '🔥', img: 'img/bld-fusion.jpg', desc: '핵융합 반응 에너지',
-      basePrice: 25000000, income: 550, awarenessNeeded: 100000, awarenessGiven: 80, tier: 9, res: 'fusion', output: 0.3,
+      basePrice: 25000000, income: 550, awarenessNeeded: 100000, awarenessGiven: 80, tier: 9, res: 'fusion', output: 1.2,
       unlockRequires: { fission_reactor: 4, plasma_coil: 6 }, buildTime: 1200 },
     { id: 'outpost', name: '전초기지', icon: '🚀', img: 'img/bld-outpost.jpg', desc: '새 행성 자원 탐색',
-      basePrice: 50000000, income: 900, awarenessNeeded: 200000, awarenessGiven: 100, tier: 10, res: 'crystal', output: 1.0,
+      basePrice: 50000000, income: 900, awarenessNeeded: 200000, awarenessGiven: 100, tier: 10, res: 'crystal', output: 5.0,
       unlockRequires: { fusion_reactor: 4, fission_reactor: 6 }, buildTime: 2400 }
   ];
 
   const RESEARCH_LIST = [
     { id: 'r7', name: '클릭 강화', icon: '👆',
-      baseMoneyCost: 1000, costScale: 1.16,
+      baseMoneyCost: 1000, costScale: 1.12,
       desc: l => `클릭력 +${l*10}`, effect: (g, l) => { g.clickPower = 200 + l * 10; } },
-    { id: 'r1', name: '광산 효율', icon: '⛏️', baseCost: { metal: 5000 }, costScale: 1.15,
+    { id: 'r1', name: '광산 효율', icon: '⛏️', baseCost: { metal: 5000 }, costScale: 1.12,
       desc: l => `메탈 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.metal = 1 + l * 0.02; } },
-    { id: 'r2', name: '합성 기술', icon: '💎', baseCost: { metal: 12000, crystal: 3000 }, costScale: 1.18,
+    { id: 'r2', name: '합성 기술', icon: '💎', baseCost: { metal: 12000, crystal: 3000 }, costScale: 1.13,
       desc: l => `크리스탈 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.crystal = 1 + l * 0.02; } },
-    { id: 'r3', name: '정제 기술', icon: '⚡', baseCost: { metal: 30000, crystal: 8000 }, costScale: 1.20,
+    { id: 'r3', name: '정제 기술', icon: '⚡', baseCost: { metal: 30000, crystal: 8000 }, costScale: 1.14,
       desc: l => `수소 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.hydrogen = 1 + l * 0.02; },
       requires: { id: 'r2', level: 3 } },
-    { id: 'r4', name: '에너지 저장', icon: '📦', baseCost: { metal: 15000 }, costScale: 1.15,
+    { id: 'r4', name: '에너지 저장', icon: '📦', baseCost: { metal: 15000 }, costScale: 1.12,
       desc: l => `모든 저장고 +${l*5}%`, effect: (g, l) => { g.storageMult = 1 + l * 0.05; } },
-    { id: 'r5', name: '건물 관리', icon: '🏗️', baseCost: { metal: 25000, crystal: 8000 }, costScale: 1.18,
+    { id: 'r5', name: '건물 관리', icon: '🏗️', baseCost: { metal: 25000, crystal: 8000 }, costScale: 1.13,
       desc: l => `건물 월세 +${l*2}%`, effect: (g, l) => { g.incomeMult = 1 + l * 0.02; } },
-    { id: 'r6', name: '인지도 확산', icon: '📡', baseCost: { metal: 50000, crystal: 15000 }, costScale: 1.20,
+    { id: 'r6', name: '인지도 확산', icon: '📡', baseCost: { metal: 50000, crystal: 15000 }, costScale: 1.14,
       desc: l => `인지도 획득량 +${l*3}%`, effect: (g, l) => { g.awarenessMult = 1 + l * 0.03; } },
-    { id: 'r8', name: '건물 관리 II', icon: '🏗️', baseCost: { metal: 150000, crystal: 40000, hydrogen: 8000 }, costScale: 1.22,
+    { id: 'r8', name: '건물 관리 II', icon: '🏗️', baseCost: { metal: 150000, crystal: 40000, hydrogen: 8000 }, costScale: 1.15,
       desc: l => `월세 +${l*3}%`, effect: (g, l) => { g.incomeMult2 = 1 + l * 0.03; },
       requires: { id: 'r5', level: 10 } },
-    { id: 'r9', name: '핵융합 안정화', icon: '🔥', baseCost: { metal: 300000, crystal: 80000, hydrogen: 30000 }, costScale: 1.25,
+    { id: 'r9', name: '핵융합 안정화', icon: '🔥', baseCost: { metal: 300000, crystal: 80000, hydrogen: 30000 }, costScale: 1.16,
       desc: l => `핵융합 생산 +${l*4}%`, effect: (g, l) => { g.resMultipliers.fusion = 1 + l * 0.04; },
       requires: { id: 'r3', level: 8 } },
-    { id: 'r10', name: '우주 무역', icon: '📈', baseCost: { metal: 400000, crystal: 150000, plasma: 30000 }, costScale: 1.25,
+    { id: 'r10', name: '우주 무역', icon: '📈', baseCost: { metal: 400000, crystal: 150000, plasma: 30000 }, costScale: 1.16,
       desc: l => `소득 +${l*4}%`, effect: (g, l) => { g.incomeMult3 = 1 + l * 0.04; },
       requires: { id: 'r6', level: 8 } },
-    { id: 'r11', name: '함선 생산', icon: '🚀', baseCost: { metal: 200000, crystal: 50000 }, costScale: 1.22,
+    { id: 'r11', name: '함선 생산', icon: '🚀', baseCost: { metal: 200000, crystal: 50000 }, costScale: 1.15,
       desc: l => `함선 건조 시간 -${Math.min(90, l*2)}%`, effect: (g, l) => { g.shipBuildSpeedMult = Math.max(0.1, 1 - l * 0.02); },
       requires: { id: 'r4', level: 5 } },
-    { id: 'r12', name: '전투 교리', icon: '⚔️', baseCost: { metal: 400000, crystal: 100000, solar: 20000 }, costScale: 1.25,
+    { id: 'r12', name: '전투 교리', icon: '⚔️', baseCost: { metal: 400000, crystal: 100000, solar: 20000 }, costScale: 1.16,
       desc: l => `함대 전투력 +${l*3}%`, effect: (g, l) => { g.fleetPowerMult = 1 + l * 0.03; },
       requires: { id: 'r5', level: 8 } },
-    { id: 'r13', name: '식민지 자동 운송', icon: '📦', baseCost: { metal: 300000, crystal: 80000, hydrogen: 15000 }, costScale: 1.22,
+    { id: 'r13', name: '식민지 자동 운송', icon: '📦', baseCost: { metal: 300000, crystal: 80000, hydrogen: 15000 }, costScale: 1.15,
       desc: l => `자동 운송 ${Math.min(100, l*20)}%`, effect: (g, l) => { g.colonyAutoTransport = l >= 1; },
       requires: { id: 'r6', level: 5 } },
-    { id: 'r14', name: '식민지 자동화', icon: '🏭', baseCost: { metal: 600000, crystal: 200000, hydrogen: 60000, plasma: 10000 }, costScale: 1.25,
+    { id: 'r14', name: '식민지 자동화', icon: '🏭', baseCost: { metal: 600000, crystal: 200000, hydrogen: 60000, plasma: 10000 }, costScale: 1.16,
       desc: l => `자동 업글 ${Math.min(100, l*20)}%`, effect: (g, l) => { g.colonyAutoUpgrade = l >= 1; },
       requires: { id: 'r13', level: 5 } },
-    { id: 'r15', name: '자동 채굴 드론', icon: '🤖', baseCost: { metal: 1000000, crystal: 300000, hydrogen: 80000, solar: 30000 }, costScale: 1.28,
+    { id: 'r15', name: '자동 채굴 드론', icon: '🤖', baseCost: { metal: 1000000, crystal: 300000, hydrogen: 80000, solar: 30000 }, costScale: 1.16,
       desc: l => `자동클릭 간격 ${Math.max(1, 5 - l + 1)}초`, effect: (g, l) => { g.autoClicker = l >= 1; g.autoClickerInterval = Math.max(1, 5 - l + 1); },
       requires: { id: 'r11', level: 8 } },
-    { id: 'r16', name: '건물 관리 AI', icon: '🧠', baseCost: { metal: 2000000, crystal: 800000, hydrogen: 200000, plasma: 80000 }, costScale: 1.30,
+    { id: 'r16', name: '건물 관리 AI', icon: '🧠', baseCost: { metal: 2000000, crystal: 800000, hydrogen: 200000, plasma: 80000 }, costScale: 1.18,
       desc: l => `자동건설 ${Math.min(100, l*20)}%`, effect: (g, l) => { g.autoBuilder = l >= 1; },
       requires: { id: 'r15', level: 5 } },
-    { id: 'r17', name: '우주 무역 II', icon: '📈', baseCost: { metal: 3000000, crystal: 1500000, hydrogen: 400000, plasma: 150000 }, costScale: 1.30,
+    { id: 'r17', name: '우주 무역 II', icon: '📈', baseCost: { metal: 3000000, crystal: 1500000, hydrogen: 400000, plasma: 150000 }, costScale: 1.18,
       desc: l => `소득 +${l*5}%`, effect: (g, l) => { g.incomeMult4 = 1 + l * 0.05; },
       requires: { id: 'r10', level: 10 } },
-    { id: 'r18', name: '함선 생산 II', icon: '🚀', baseCost: { metal: 2500000, crystal: 1000000, solar: 150000 }, costScale: 1.28,
+    { id: 'r18', name: '함선 생산 II', icon: '🚀', baseCost: { metal: 2500000, crystal: 1000000, solar: 150000 }, costScale: 1.16,
       desc: l => `건조 시간 -${Math.min(95, l*3)}%`, effect: (g, l) => { g.shipBuildSpeedMult = Math.max(0.05, 1 - l * 0.03); },
       requires: { id: 'r11', level: 10 } },
-    { id: 'r19', name: '전투 교리 II', icon: '⚔️', baseCost: { metal: 5000000, crystal: 2000000, hydrogen: 600000, solar: 200000 }, costScale: 1.30,
+    { id: 'r19', name: '전투 교리 II', icon: '⚔️', baseCost: { metal: 5000000, crystal: 2000000, hydrogen: 600000, solar: 200000 }, costScale: 1.18,
       desc: l => `전투력 +${l*5}%`, effect: (g, l) => { g.fleetPowerMult2 = 1 + l * 0.05; },
       requires: { id: 'r12', level: 10 } },
-    { id: 'r20', name: '에너지 저장 II', icon: '📦', baseCost: { metal: 4000000, crystal: 2000000, plasma: 300000 }, costScale: 1.28,
+    { id: 'r20', name: '에너지 저장 II', icon: '📦', baseCost: { metal: 4000000, crystal: 2000000, plasma: 300000 }, costScale: 1.16,
       desc: l => `저장고 +${l*10}%`, effect: (g, l) => { g.storageMult2 = 1 + l * 0.10; },
       requires: { id: 'r4', level: 10 } }
   ];
 
   const SHIP_TEMPLATES = [
-    { type: 'scout', name: '정찰기', icon: '🛰️', power: 0.1, cost: { metal: 100 }, time: 30, strongAgainst: null, awarenessNeeded: 0, img: 'img/정찰기.jpg', maxLevel: 5, upgradeTime: 30, special: '탐사' },
-    { type: 'corvette', name: '초계함', icon: '🚀', power: 1, cost: { metal: 3000, crystal: 500 }, time: 120, strongAgainst: 'pirate_fleet', awarenessNeeded: 0, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 60 },
-    { type: 'fast_boat', name: '고속함', icon: '🎯', power: 5, cost: { metal: 8000, crystal: 1500 }, time: 180, strongAgainst: 'raider', awarenessNeeded: 500, img: 'img/ship-torpedo.jpg', maxLevel: 10, upgradeTime: 60, requiresBuilding: 'crystal_fac' },
-    { type: 'frigate', name: '호위함', icon: '🛡️', power: 25, cost: { metal: 15000, crystal: 4000 }, time: 350, strongAgainst: 'marauder', awarenessNeeded: 2000, img: 'img/ship-corvette.jpg', maxLevel: 8, upgradeTime: 120, requiresBuilding: 'drone_hub' },
-    { type: 'destroyer', name: '구축함', icon: '⚔️', power: 250, cost: { metal: 30000, crystal: 8000, hydrogen: 1500 }, time: 600, strongAgainst: 'juggernaut', awarenessNeeded: 5000, img: 'img/ship-battleship.jpg', maxLevel: 6, upgradeTime: 240, requiresBuilding: 'refinery' },
-    { type: 'cruiser', name: '순양함', icon: '🔱', power: 2500, cost: { metal: 60000, crystal: 20000, hydrogen: 5000 }, time: 1200, strongAgainst: 'pirate_fleet', awarenessNeeded: 10000, img: 'img/ship-frigate.jpg', maxLevel: 5, upgradeTime: 480, requiresBuilding: 'recycler' },
-    { type: 'repair', name: '수리함', icon: '🔧', power: 5, cost: { metal: 20000, crystal: 6000, hydrogen: 2000 }, time: 400, strongAgainst: null, awarenessNeeded: 5000, img: 'img/ship-repair.jpg', maxLevel: 5, upgradeTime: 300, special: '피해 -50%', requiresBuilding: 'refinery' },
-    { type: 'battleship', name: '전함', icon: '🚢', power: 25000, cost: { metal: 120000, crystal: 40000, hydrogen: 10000, solar: 2000 }, time: 2000, strongAgainst: 'marauder', awarenessNeeded: 20000, img: 'img/ship-destroyer.jpg', maxLevel: 4, upgradeTime: 600, requiresBuilding: 'solar_plant' },
-    { type: 'carrier', name: '항공모함', icon: '✈️', power: 250000, cost: { metal: 300000, crystal: 100000, hydrogen: 25000, plasma: 3000 }, time: 3600, strongAgainst: 'juggernaut', awarenessNeeded: 50000, img: 'img/ship-carrier.jpg', maxLevel: 3, upgradeTime: 1200, requiresBuilding: 'plasma_coil' },
-    { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 2500000, cost: { metal: 800000, crystal: 250000, hydrogen: 60000, fission: 3000 }, time: 7200, strongAgainst: 'raider', awarenessNeeded: 100000, img: 'img/ship-dreadnought.jpg', maxLevel: 3, upgradeTime: 2400, requiresBuilding: 'fission_reactor' },
-    { type: 'mothership', name: '모선', icon: '🌌', power: 25000000, cost: { metal: 2000000, crystal: 600000, hydrogen: 150000, fusion: 3000 }, time: 14400, strongAgainst: 'juggernaut', awarenessNeeded: 200000, img: 'img/ship-mothership.jpg', maxLevel: 2, upgradeTime: 3600, requiresBuilding: 'fusion_reactor' }
+    { type: 'scout', name: '정찰기', icon: '🛰️', power: 0.1, cost: { metal: 100 }, time: 10, strongAgainst: null, awarenessNeeded: 0, img: 'img/정찰기.jpg', maxLevel: 5, upgradeTime: 30, special: '탐사' },
+    { type: 'corvette', name: '초계함', icon: '🚀', power: 1, cost: { metal: 3000, crystal: 500 }, time: 20, strongAgainst: 'pirate_fleet', awarenessNeeded: 0, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 60 },
+    { type: 'fast_boat', name: '고속함', icon: '🎯', power: 5, cost: { metal: 8000, crystal: 1500 }, time: 30, strongAgainst: 'raider', awarenessNeeded: 500, img: 'img/ship-torpedo.jpg', maxLevel: 10, upgradeTime: 60, requiresBuilding: 'crystal_fac' },
+    { type: 'frigate', name: '호위함', icon: '🛡️', power: 25, cost: { metal: 15000, crystal: 4000 }, time: 60, strongAgainst: 'marauder', awarenessNeeded: 2000, img: 'img/ship-corvette.jpg', maxLevel: 8, upgradeTime: 120, requiresBuilding: 'drone_hub' },
+    { type: 'destroyer', name: '구축함', icon: '⚔️', power: 250, cost: { metal: 30000, crystal: 8000, hydrogen: 1500 }, time: 120, strongAgainst: 'juggernaut', awarenessNeeded: 5000, img: 'img/ship-battleship.jpg', maxLevel: 6, upgradeTime: 240, requiresBuilding: 'refinery' },
+    { type: 'cruiser', name: '순양함', icon: '🔱', power: 2500, cost: { metal: 60000, crystal: 20000, hydrogen: 5000 }, time: 240, strongAgainst: 'pirate_fleet', awarenessNeeded: 10000, img: 'img/ship-frigate.jpg', maxLevel: 5, upgradeTime: 480, requiresBuilding: 'recycler' },
+    { type: 'repair', name: '수리함', icon: '🔧', power: 5, cost: { metal: 20000, crystal: 6000, hydrogen: 2000 }, time: 80, strongAgainst: null, awarenessNeeded: 5000, img: 'img/ship-repair.jpg', maxLevel: 5, upgradeTime: 300, special: '피해 -50%', requiresBuilding: 'refinery' },
+    { type: 'battleship', name: '전함', icon: '🚢', power: 25000, cost: { metal: 120000, crystal: 40000, hydrogen: 10000, solar: 2000 }, time: 400, strongAgainst: 'marauder', awarenessNeeded: 20000, img: 'img/ship-destroyer.jpg', maxLevel: 4, upgradeTime: 600, requiresBuilding: 'solar_plant' },
+    { type: 'carrier', name: '항공모함', icon: '✈️', power: 250000, cost: { metal: 300000, crystal: 100000, hydrogen: 25000, plasma: 3000 }, time: 600, strongAgainst: 'juggernaut', awarenessNeeded: 50000, img: 'img/ship-carrier.jpg', maxLevel: 3, upgradeTime: 1200, requiresBuilding: 'plasma_coil' },
+    { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 2500000, cost: { metal: 800000, crystal: 250000, hydrogen: 60000, fission: 3000 }, time: 1200, strongAgainst: 'raider', awarenessNeeded: 100000, img: 'img/ship-dreadnought.jpg', maxLevel: 3, upgradeTime: 2400, requiresBuilding: 'fission_reactor' },
+    { type: 'mothership', name: '모선', icon: '🌌', power: 25000000, cost: { metal: 2000000, crystal: 600000, hydrogen: 150000, fusion: 3000 }, time: 2400, strongAgainst: 'juggernaut', awarenessNeeded: 200000, img: 'img/ship-mothership.jpg', maxLevel: 2, upgradeTime: 3600, requiresBuilding: 'fusion_reactor' }
   ];
 
   const PIRATE_TYPES = [
@@ -148,15 +148,15 @@ const BUILDING_TEMPLATES = [
 
   const RAID_TARGETS = [
     { id: 'raid_1', name: '해적 아지트', icon: '🏴‍☠️', desc: '소규모 해적 근거지. 초보 약탈에 적합.',
-      powerBase: 100, powerScale: 1.2, rewards: { metal: 2000, crystal: 500 }, minWave: 1, cooldown: 120, risk: 0.05 },
+      powerBase: 100, powerScale: 1.2, rewards: { metal: 2000, crystal: 500 }, minWave: 1, cooldown: 120, risk: 0.01 },
     { id: 'raid_2', name: '밀수선단', icon: '🚢', desc: '밀수품을 실은 화물선. 자원이 풍부하다.',
-      powerBase: 500, powerScale: 1.25, rewards: { metal: 5000, crystal: 2000, hydrogen: 1000 }, minWave: 2, cooldown: 180, risk: 0.08 },
+      powerBase: 500, powerScale: 1.25, rewards: { metal: 5000, crystal: 2000, hydrogen: 1000 }, minWave: 2, cooldown: 180, risk: 0.02 },
     { id: 'raid_3', name: '외계 전초기지', icon: '👾', desc: '외계 종족의 전초기지. 기술력이 높다.',
-      powerBase: 2000, powerScale: 1.3, rewards: { crystal: 5000, hydrogen: 3000, plasma: 500 }, minWave: 4, cooldown: 300, risk: 0.12 },
+      powerBase: 2000, powerScale: 1.3, rewards: { crystal: 5000, hydrogen: 3000, plasma: 500 }, minWave: 4, cooldown: 300, risk: 0.03 },
     { id: 'raid_4', name: '해적 본부', icon: '☠️', desc: '해적 두목의 본거지. 위험하지만 보상이 막대하다.',
-      powerBase: 10000, powerScale: 1.35, rewards: { metal: 30000, crystal: 15000, hydrogen: 10000 }, minWave: 6, cooldown: 600, risk: 0.2 },
+      powerBase: 10000, powerScale: 1.35, rewards: { metal: 30000, crystal: 15000, hydrogen: 10000 }, minWave: 6, cooldown: 600, risk: 0.04 },
     { id: 'raid_5', name: '우주 괴수', icon: '🐉', desc: '우주를 떠도는 거대 생명체. 귀한 재료를 제공한다.',
-      powerBase: 50000, powerScale: 1.4, rewards: { metal: 100000, crystal: 50000, hydrogen: 30000, fusion: 500 }, minWave: 10, cooldown: 900, risk: 0.3 }
+      powerBase: 50000, powerScale: 1.4, rewards: { metal: 100000, crystal: 50000, hydrogen: 30000, fusion: 500 }, minWave: 10, cooldown: 900, risk: 0.05 }
   ];
 
   const EXPEDITION_TARGETS = [
@@ -379,7 +379,7 @@ const COLONY_FACTORY_TYPES = [
         EXPEDITION_TARGETS: EXPEDITION_TARGETS,
 
         cheatOpen: false,
-        guideOpen: { buildings: true, fleet: true, colony: true, research: true, trade: true },
+        guideOpen: { buildings: false, fleet: false, colony: false, research: false, trade: false },
         expedition: { inProgress: false, targetId: null, remaining: 0, total: 0, eventId: null },
         expeditionOverlay: null,
         speedMult: 1,
@@ -741,7 +741,8 @@ const COLONY_FACTORY_TYPES = [
         if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
         this.money = this.money.sub(b.currentPrice);
         b.owned = 1; b.building = true;
-        b.buildTotal = b.buildTime * 1;
+        const buildSpeedMult = this.shipBuildSpeedMult;
+        b.buildTotal = Math.max(1, Math.floor(b.buildTime * buildSpeedMult));
         b.buildRemaining = b.buildTotal;
         slot.busy = true; slot.buildingId = b.id; slot.action = 'buy'; slot.level = 1;
         slot.remaining = b.buildTotal; slot.total = b.buildTotal;
@@ -752,7 +753,7 @@ const COLONY_FACTORY_TYPES = [
 
       upgradeCost(b) {
         const lv = b.level || 0;
-        return Math.floor(b.basePrice * Math.pow(2, lv));
+        return Math.floor(b.basePrice * Math.pow(1.28, lv) * (1 + lv * 0.12));
       },
       upgradePreview(b) {
         const nextLv = (b.level || 0) + 1;
@@ -768,10 +769,8 @@ const COLONY_FACTORY_TYPES = [
         if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
         const cost = this.upgradeCost(b);
         const nextLv = b.level + 1;
-        let buildTime;
-        if (nextLv <= 5) { buildTime = b.buildTime * Math.pow(2, nextLv - 1); }
-        else if (nextLv <= 10) { buildTime = b.buildTime * Math.pow(2, 4) * Math.pow(1.5, nextLv - 5); }
-        else { buildTime = b.buildTime * Math.pow(2, 4) * Math.pow(1.5, 5) * Math.pow(1.2, nextLv - 10); }
+        const buildSpeedMult = this.shipBuildSpeedMult;
+        const buildTime = Math.max(1, Math.floor(b.buildTime * Math.pow(1.15, nextLv - 1) * buildSpeedMult));
         this.money = this.money.sub(cost);
         b.building = true; b.buildTotal = buildTime; b.buildRemaining = buildTime;
         slot.busy = true; slot.buildingId = b.id; slot.action = 'upgrade'; slot.level = nextLv;
@@ -1326,10 +1325,10 @@ const COLONY_FACTORY_TYPES = [
         if (this.colonies.some(c => c.planetId === planetId)) return;
         const tmpl = COLONY_TEMPLATES.find(t => t.planetId === planetId);
         if (!tmpl) return;
-        const factories = COLONY_FACTORY_TYPES.map((ft, i) => ({ id: i, level: 0 }));
+        const factories = COLONY_FACTORY_TYPES.map((ft, i) => ({ id: i, level: 1 }));
         this.colonies.push({
           planetId, name: tmpl.name, prodSpeed: tmpl.prodSpeed,
-          resources: { metal: 0, crystal: 0, hydrogen: 0, plasma: 0, solar: 0, fission: 0, fusion: 0 },
+          resources: { metal: 2000, crystal: 500, hydrogen: 0, plasma: 0, solar: 0, fission: 0, fusion: 0 },
           factories,
           transporting: false, transportProgress: 0, transportTime: 0,
           transportAmounts: {}
@@ -1343,17 +1342,15 @@ const COLONY_FACTORY_TYPES = [
         const f = colony.factories[fi];
         if (!f || f.level >= 20) return false;
         const cost = this.colonyUpgradeCost(f.level);
-        const t = this.colonyFactoryTypes[fi];
-        return colony.resources[t.res] >= cost;
+        return (colony.resources['metal'] || 0) >= cost;
       },
       upgradeColonyFactory(colony, fi) {
         if (!this.canUpgradeColonyFactory(colony, fi)) return;
         const f = colony.factories[fi];
         const cost = this.colonyUpgradeCost(f.level);
-        const t = this.colonyFactoryTypes[fi];
-        colony.resources[t.res] -= cost;
+        colony.resources['metal'] -= cost;
         f.level++;
-        this.toast(`⬆️ ${colony.name} ${t.name} LV ${f.level}`);
+        this.toast(`⬆️ ${colony.name} ${this.colonyFactoryTypes[fi].name} LV ${f.level}`);
       },
       tickColonies(dt) {
         for (const c of this.colonies) {
@@ -1361,7 +1358,7 @@ const COLONY_FACTORY_TYPES = [
             if (f.level <= 0) continue;
             const t = this.colonyFactoryTypes[f.id];
             const rate = t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1) * dt;
-            const cap = 1000 + f.level * 500;
+            const cap = Math.floor(5000 * Math.pow(1.5, f.level));
             c.resources[t.res] = Math.min(cap, (c.resources[t.res] || 0) + rate);
           }
           const totalLv = c.factories.reduce((s, f) => s + f.level, 0);
@@ -1380,7 +1377,7 @@ const COLONY_FACTORY_TYPES = [
             }
           } else if (this.colonyAutoTransport && this.colonizer.count > 0) {
             const totalRes = Object.values(c.resources).reduce((s, v) => (s || 0) + (v || 0), 0);
-            const totalCap = c.factories.reduce((s, f) => s + (1000 + f.level * 500), 0);
+            const totalCap = c.factories.reduce((s, f) => s + Math.floor(5000 * Math.pow(1.5, f.level)), 0);
             if (totalRes > totalCap * 0.7 && this.resources.hydrogen.gte(Math.ceil(totalRes * 0.001))) {
               this.startTransport(c);
             }
@@ -1390,9 +1387,8 @@ const COLONY_FACTORY_TYPES = [
               const f = c.factories[i];
               if (f.level >= 20) continue;
               const cost = this.colonyUpgradeCost(f.level);
-              const t = this.colonyFactoryTypes[i];
-              if (c.resources[t.res] >= cost && Math.random() < 0.02) {
-                c.resources[t.res] -= cost;
+              if ((c.resources['metal'] || 0) >= cost && Math.random() < 0.02) {
+                c.resources['metal'] -= cost;
                 f.level++;
               }
             }
@@ -1451,7 +1447,7 @@ const COLONY_FACTORY_TYPES = [
         const roll = eff * (0.85 + Math.random() * 0.3);
         this.pushLog(`${enemy.icon} ${enemy.name} (전투력 ${enemy.power}) vs 함대 ${eff} (약점→${this.shipTypeName(enemy.weakTo)} ${this.weakShipCount}척)`, 'log-info');
         if (roll >= enemy.power) {
-          const loot = new Decimal(800 * this.pirateWave * (eff >= enemy.power * 1.5 ? 2 : 1));
+          const loot = new Decimal(Math.floor(800 * Math.pow(1.15, this.pirateWave - 1) * (eff >= enemy.power * 1.5 ? 2 : 1)));
           this.money = this.money.add(loot);
           const lost = this.applyLosses(0.05);
           const fameGain = Math.max(1, Math.floor(this.pirateWave * 3));
@@ -1479,7 +1475,8 @@ const COLONY_FACTORY_TYPES = [
 
       applyLosses(ratio) {
         let total = 0;
-        const effectiveRatio = (this.ships.repair?.count || 0) > 0 ? ratio * 0.5 : ratio;
+        const repairCount = this.ships.repair?.count || 0;
+        const effectiveRatio = repairCount > 0 ? ratio * Math.max(0.05, 1 - repairCount * 0.1) : ratio;
         for (const s of this.shipTypes) { const cnt = this.ships[s.type]?.count || 0; if (cnt <= 0) continue; const loss = Math.min(cnt, Math.max(1, Math.round(cnt * effectiveRatio))); this.ships[s.type].count -= loss; total += loss; }
         return total;
       },
