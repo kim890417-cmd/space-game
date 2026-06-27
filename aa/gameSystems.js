@@ -60,14 +60,15 @@ const BUILDING_TEMPLATES = [
 
   const SHIP_TEMPLATES = [
     { type: 'scout', name: '정찰기', icon: '🛰️', power: 0, cost: { metal: 200, crystal: 100 }, time: 10, strongAgainst: null, awarenessNeeded: 0, img: 'img/ship-scout.jpg', maxLevel: 5, upgradeTime: 20, role: 'explore' },
-    { type: 'corvette', name: '초계함', icon: '🛡️', power: 6, cost: { metal: 400 }, time: 30, strongAgainst: 'raider', awarenessNeeded: 0, img: 'img/ship-corvette.jpg', maxLevel: 8, upgradeTime: 40, role: 'combat' },
-    { type: 'frigate', name: '호위함', icon: '🚀', power: 14, cost: { metal: 1200, crystal: 500 }, time: 120, strongAgainst: 'pirate_fleet', awarenessNeeded: 40, img: 'img/ship-cruiser.jpg', maxLevel: 8, upgradeTime: 80, role: 'combat' },
-    { type: 'destroyer', name: '구축함', icon: '💥', power: 50, cost: { metal: 12000, crystal: 6000 }, time: 600, strongAgainst: 'marauder', awarenessNeeded: 120, img: 'img/ship-carrier.jpg', maxLevel: 7, upgradeTime: 300, role: 'combat' },
-    { type: 'cruiser', name: '순양함', icon: '⚡', power: 120, cost: { metal: 35000, crystal: 18000, hydrogen: 5000 }, time: 1500, strongAgainst: 'warship', awarenessNeeded: 220, img: 'img/ship-fighter.jpg', maxLevel: 6, upgradeTime: 600, role: 'combat' },
-    { type: 'battleship', name: '전함', icon: '🚢', power: 250, cost: { metal: 80000, crystal: 40000, hydrogen: 15000 }, time: 3500, strongAgainst: 'battle_group', awarenessNeeded: 450, img: 'img/ship-battleship.jpg', maxLevel: 5, upgradeTime: 1000, role: 'combat' },
-    { type: 'carrier', name: '항공모함', icon: '✈️', power: 500, cost: { metal: 200000, crystal: 100000, hydrogen: 40000, plasma: 12000 }, time: 6000, strongAgainst: 'armada', awarenessNeeded: 700, img: 'img/ship-destroyer.jpg', maxLevel: 4, upgradeTime: 1600, role: 'combat' },
-    { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 1000, cost: { metal: 400000, crystal: 200000, hydrogen: 80000, plasma: 30000 }, time: 10000, strongAgainst: 'dreadnought', awarenessNeeded: 1200, img: 'img/ship-dreadnought.jpg', maxLevel: 3, upgradeTime: 3000, role: 'combat' },
-    { type: 'titan', name: '타이탄', icon: '🗿', power: 2500, cost: { metal: 800000, crystal: 400000, hydrogen: 200000, plasma: 100000 }, time: 20000, strongAgainst: 'dreadnought', awarenessNeeded: 2000, img: 'img/ship-colonizer.jpg', maxLevel: 2, upgradeTime: 6000, role: 'combat', requiredSystem: 'titan_system' }
+    { type: 'scout', name: '정찰기', icon: '🛰️', power: 0, cost: { metal: 200, crystal: 100 }, time: 10, strongAgainst: null, awarenessNeeded: 0, img: 'img/ship-scout.jpg', maxLevel: 5, upgradeTime: 20, role: 'explore' },
+    { type: 'corvette', name: '초계함', icon: '🛡️', power: 6, cost: { metal: 400, crystal: 150 }, time: 30, strongAgainst: 'raider', awarenessNeeded: 0, img: 'img/ship-corvette.jpg', maxLevel: 8, upgradeTime: 40, role: 'combat' },
+    { type: 'frigate', name: '호위함', icon: '🚀', power: 14, cost: { metal: 1200, crystal: 600, hydrogen: 300 }, time: 120, strongAgainst: 'pirate_fleet', awarenessNeeded: 40, img: 'img/ship-cruiser.jpg', maxLevel: 8, upgradeTime: 80, role: 'combat' },
+    { type: 'destroyer', name: '구축함', icon: '💥', power: 50, cost: { metal: 12000, crystal: 8000, hydrogen: 3000, plasma: 1000 }, time: 600, strongAgainst: 'marauder', awarenessNeeded: 120, img: 'img/ship-carrier.jpg', maxLevel: 7, upgradeTime: 300, role: 'combat' },
+    { type: 'cruiser', name: '순양함', icon: '⚡', power: 120, cost: { metal: 35000, crystal: 25000, hydrogen: 12000, plasma: 5000, solar: 2000 }, time: 1500, strongAgainst: 'warship', awarenessNeeded: 220, img: 'img/ship-fighter.jpg', maxLevel: 6, upgradeTime: 600, role: 'combat' },
+    { type: 'battleship', name: '전함', icon: '🚢', power: 250, cost: { metal: 80000, crystal: 60000, hydrogen: 30000, plasma: 15000, fission: 5000 }, time: 3500, strongAgainst: 'battle_group', awarenessNeeded: 450, img: 'img/ship-battleship.jpg', maxLevel: 5, upgradeTime: 1000, role: 'combat' },
+    { type: 'carrier', name: '항공모함', icon: '✈️', power: 500, cost: { metal: 200000, crystal: 150000, hydrogen: 80000, plasma: 35000, fusion: 12000 }, time: 6000, strongAgainst: 'armada', awarenessNeeded: 700, img: 'img/ship-destroyer.jpg', maxLevel: 4, upgradeTime: 1600, role: 'combat' },
+    { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 1000, cost: { metal: 400000, crystal: 300000, hydrogen: 150000, plasma: 70000, fusion: 30000 }, time: 10000, strongAgainst: 'dreadnought', awarenessNeeded: 1200, img: 'img/ship-dreadnought.jpg', maxLevel: 3, upgradeTime: 3000, role: 'combat' },
+    { type: 'titan', name: '타이탄', icon: '🗿', power: 2500, cost: { metal: 800000, crystal: 600000, hydrogen: 300000, plasma: 150000, fusion: 80000 }, time: 20000, strongAgainst: 'dreadnought', awarenessNeeded: 2000, img: 'img/ship-colonizer.jpg', maxLevel: 2, upgradeTime: 6000, role: 'combat', requiredSystem: 'titan_system' }
   ];
 
   const PIRATE_TYPES = [
@@ -216,6 +217,7 @@ const EXPLORE_CHOICES = [
         shipBuildQty: {},
 
         colonizer: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, level: 1 },
+
 
         planets: PLANETS.map(p => ({ ...p, explorationLevel: 0 })),
         exploring: false, explorePlanet: null, exploreChance: 0, exploreTimer: 0,
@@ -652,6 +654,11 @@ const EXPLORE_CHOICES = [
         this.toast(`⬆️ ${st.name} LV${s.level} → LV${s.level+1} 업그레이드 시작 (${this.fmtTime(s.upgradeTotalTime)})`);
       },
 
+      colonizerBuildTime() {
+        const count = this.colonizer.count || 0;
+        const penaltyFactor = 1 + count * 0.25;
+        return 120 * this.shipBuildSpeedMult * penaltyFactor;
+      },
       buildColonizer() {
         if (this.colonizer.building) return;
         const costMetal = 20000;
@@ -660,8 +667,18 @@ const EXPLORE_CHOICES = [
         this.resources.metal = this.resources.metal.sub(costMetal);
         this.resources.crystal = this.resources.crystal.sub(costCrystal);
         this.colonizer.building = true; this.colonizer.buildCount = 1;
-        this.colonizer.totalTime = 120 * this.shipBuildSpeedMult; this.colonizer.elapsed = 0;
+        this.colonizer.totalTime = this.colonizerBuildTime(); this.colonizer.elapsed = 0;
+        this.colonizer.spentMetal = costMetal;
+        this.colonizer.spentCrystal = costCrystal;
         this.toast('🚀 식민 함선 건조 시작');
+      },
+      cancelColonizerBuild() {
+        if (!this.colonizer.building) return;
+        this.resources.metal = this.resources.metal.add(this.colonizer.spentMetal || 0);
+        this.resources.crystal = this.resources.crystal.add(this.colonizer.spentCrystal || 0);
+        this.colonizer.building = false; this.colonizer.buildCount = 0; this.colonizer.totalTime = 0; this.colonizer.elapsed = 0;
+        this.colonizer.spentMetal = 0; this.colonizer.spentCrystal = 0;
+        this.toast('↩️ 식민 함선 건조 취소 (자원 환불)');
       },
       colonizerUpgradeCost() {
         const lv = this.colonizer.level || 1;
@@ -1037,24 +1054,15 @@ const EXPLORE_CHOICES = [
             this.toast(`⬆️ ${colony.name}: ${chosen.text} (${this.colonyFactoryTypes[f.id].name} LV ${f.level})`);
           }
         } else if (chosen.effect === 'res_loss') {
-          const lossPct = (spec && spec.id === 'military') ? (chosen.loss || 0.15) * 0.5 : (chosen.loss || 0.15);
-          for (const k of Object.keys(colony.resources)) {
-            colony.resources[k] = Math.floor((colony.resources[k] || 0) * (1 - lossPct));
-          }
-          this.toast(`⚠️ ${colony.name}: ${chosen.text}`);
+          // Trigger the invasion event system!
+          this.triggerColonyInvasion(colony);
         } else if (chosen.effect === 'aware') {
           const amt = Math.floor(10 + Math.random() * 40);
           this.awareness += amt;
           this.toast(`📡 ${colony.name}: ${chosen.text} (+${amt} 인지도)`);
         } else if (chosen.effect === 'res_gain') {
-          const amt = Math.floor(500 + Math.random() * 1500);
-          const rk = ['metal', 'crystal', 'hydrogen', 'plasma'][Math.floor(Math.random() * 4)];
-          colony.resources[rk] = (colony.resources[rk] || 0) + amt;
-          this.toast(`📦 ${colony.name}: ${chosen.text} (${RES_ICO[rk]} +${this.fmt(amt)})`);
-          if (spec && spec.id === 'resource') {
-            const bonus = Math.floor(amt * 0.3);
-            colony.resources[rk] = (colony.resources[rk] || 0) + bonus;
-          }
+          // Trigger the trade ship event system!
+          this.triggerTradeShip(colony);
         } else if (chosen.effect === 'halt') {
           if (!colony.eventBoost) colony.eventBoost = {};
           colony.eventBoost.haltTimer = chosen.dur || 15;
@@ -1093,6 +1101,42 @@ const EXPLORE_CHOICES = [
         colony.transportTotal = total;
         if (!colony.autoTransport) {
           this.toast(`📦 자원 ${this.fmt(total)} 운송 시작 (수소 -${hydroCost}, ${this.fmtTime(colony.transportTime)})`);
+        }
+      },
+      sendMoneyToColony(colony, amountText) {
+        let amt = parseFloat(amountText);
+        if (isNaN(amt) || amt <= 0) amt = 1000;
+        const decAmt = new Decimal(amt);
+        if (this.money.lt(decAmt)) { this.toast('🚫 본진 자금이 부족합니다.'); return; }
+        this.money = this.money.sub(decAmt);
+        colony.resources.metal = (colony.resources.metal || 0) + amt; // Representing as money support in resource
+        this.toast(`💸 ${colony.name}로 ${this.fmt(decAmt)} 골드(자원환산 메탈) 지원!`);
+      },
+      triggerColonyInvasion(colony) {
+        if (!colony) return;
+        const piratePower = 20 * this.pirateWave + Math.floor(Math.random() * 50);
+        const fleetPower = this.effectiveFleetPower('raider'); // Combat fleet base
+        if (fleetPower >= piratePower) {
+          const reward = 3000 * this.pirateWave;
+          this.money = this.money.add(reward);
+          this.toast(`🛡️ ${colony.name} 침공 방어 성공! 보너스 +${this.fmt(reward)} 골드`);
+        } else {
+          for (const k in colony.resources) {
+            colony.resources[k] = Math.floor((colony.resources[k] || 0) * 0.5);
+          }
+          this.toast(`⚠️ ${colony.name} 방어 실패! 자원 50% 약탈당함`);
+        }
+      },
+      triggerTradeShip(colony) {
+        if (!colony) return;
+        const escortReq = 30 + this.colonies.length * 15;
+        const currPower = this.effectiveFleetPower('raider');
+        if (currPower >= escortReq) {
+          const bonusAmt = 1500 * (colony.prodSpeed || 1);
+          colony.resources.crystal = (colony.resources.crystal || 0) + bonusAmt;
+          this.toast(`🛸 무역 호위 성공: ${colony.name} 💎크리스탈 +${Math.round(bonusAmt)}`);
+        } else {
+          this.toast(`⚠️ 무역선 호위 실패: 함대 전투력 부족 (필요 ${escortReq})`);
         }
       },
 
@@ -1298,6 +1342,7 @@ const EXPLORE_CHOICES = [
       addOfflineIncome(seconds) {
         this.money = this.money.add(this.passiveIncome * seconds * this.effectiveIncomeMult);
         for (const k of RES) { const rate = (this.resourceIncome[k] || 0) * (this.resMultipliers[k] || 1); if (rate > 0) this.resources[k] = Decimal.min(this.resources[k + 'Max'] || new Decimal(999999), this.resources[k].add(rate * seconds)); }
+        this.tickColonies(seconds);
       },
       applyOffline() {
         if (!this.lastSeen) return;
@@ -1305,6 +1350,7 @@ const EXPLORE_CHOICES = [
         if (elapsed < 30) return; elapsed = Math.min(elapsed, 86400);
         const inc = this.passiveIncome * elapsed;
         if (inc > 0) { this.money = this.money.add(inc); this.offlineReport = { seconds: elapsed, gained: inc }; }
+        this.tickColonies(elapsed);
       },
       dismissOffline() { this.offlineReport = null; },
 
