@@ -309,7 +309,7 @@ const COLONY_FACTORY_TYPES = [
         shipTypes: SHIP_TEMPLATES,
         shipBuildQty: {},
 
-          colonizer: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, colonizerQty: 1 },
+          colonizer: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, colonizerQty: 1, level: 1 },
 
         planets: PLANETS.map(p => ({ ...p, explorationLevel: 0 })),
         exploring: false, explorePlanet: null, exploreChance: 0, exploreTimer: 0,
@@ -1287,6 +1287,23 @@ const COLONY_FACTORY_TYPES = [
         }
         this.colonizer.count++;
         this.toast('✨ 고급 자원 소모: 식민함선 즉시 소환!');
+      },
+      canUpgradeColonizer() {
+        const lv = this.colonizer.level || 1;
+        if (lv >= 15) return false;
+        const metalCost = 50000 * Math.pow(lv, 1.8);
+        const crystalCost = 25000 * Math.pow(lv, 1.8);
+        return this.resources.metal.gte(metalCost) && this.resources.crystal.gte(crystalCost);
+      },
+      upgradeColonizer() {
+        if (!this.canUpgradeColonizer()) return;
+        const lv = this.colonizer.level || 1;
+        const metalCost = 50000 * Math.pow(lv, 1.8);
+        const crystalCost = 25000 * Math.pow(lv, 1.8);
+        this.resources.metal = this.resources.metal.sub(metalCost);
+        this.resources.crystal = this.resources.crystal.sub(crystalCost);
+        this.colonizer.level = lv + 1;
+        this.toast(`⬆️ 식민 함선 업그레이드 완료 (LV ${this.colonizer.level})`);
       },
 
       canExplore(p) {
