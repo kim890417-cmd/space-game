@@ -680,6 +680,25 @@ const EXPLORE_CHOICES = [
         this.colonizer.spentMetal = 0; this.colonizer.spentCrystal = 0;
         this.toast('↩️ 식민 함선 건조 취소 (자원 환불)');
       },
+      canInstantBuildColonizer() {
+        const costPlasma = 300;
+        const costFusion = 100;
+        return this.resources.plasma.gte(costPlasma) && this.resources.fusion.gte(costFusion);
+      },
+      instantBuildColonizer() {
+        if (!this.canInstantBuildColonizer()) return;
+        this.resources.plasma = this.resources.plasma.sub(300);
+        this.resources.fusion = this.resources.fusion.sub(100);
+        if (this.colonizer.building) {
+          // If already building, refund the normal build materials
+          this.resources.metal = this.resources.metal.add(this.colonizer.spentMetal || 0);
+          this.resources.crystal = this.resources.crystal.add(this.colonizer.spentCrystal || 0);
+          this.colonizer.building = false; this.colonizer.buildCount = 0; this.colonizer.totalTime = 0; this.colonizer.elapsed = 0;
+          this.colonizer.spentMetal = 0; this.colonizer.spentCrystal = 0;
+        }
+        this.colonizer.count++;
+        this.toast('✨ 고급 자원 소모: 식민함선 즉시 소환!');
+      },
       colonizerUpgradeCost() {
         const lv = this.colonizer.level || 1;
         return { metal: Math.floor(15000 * Math.pow(lv + 1, 1.6)), crystal: Math.floor(8000 * Math.pow(lv + 1, 1.6)) };
