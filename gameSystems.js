@@ -1266,7 +1266,7 @@ const COLONY_FACTORY_TYPES = [
         if (!this.colonizer.building) return;
         this.resources.metal = this.resources.metal.add(this.colonizer.spentMetal || 0);
         this.resources.crystal = this.resources.crystal.add(this.colonizer.spentCrystal || 0);
-        this.colonizer.building = false; this.colonizer.count += 0; this.colonizer.buildCount = 0; this.colonizer.totalTime = 0; this.colonizer.elapsed = 0;
+        this.colonizer.building = false; this.colonizer.buildCount = 0; this.colonizer.totalTime = 0; this.colonizer.elapsed = 0;
         this.colonizer.spentMetal = 0; this.colonizer.spentCrystal = 0;
         this.toast('↩️ 식민 함선 건조 취소 (자원 환불)');
       },
