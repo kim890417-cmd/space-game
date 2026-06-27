@@ -1238,21 +1238,50 @@ const COLONY_FACTORY_TYPES = [
         this.toast(`⬆️ ${st.name} LV${s.level} → LV${s.level+1} 업그레이드 시작 (${this.fmtTime(s.upgradeTotalTime)})`);
       },
 
-      colonizerTime(count) {
-        if (count < 5) return 120; if (count < 10) return 300; if (count < 15) return 600; if (count < 20) return 1200; return 2400;
+      colonizerBuildTime() {
+        const count = this.colonizer.count || 0;
+        const penaltyFactor = 1 + count * 0.25;
+        return 120 * this.shipBuildSpeedMult * penaltyFactor;
       },
       buildColonizer() {
         if (this.colonizer.building) return;
-        const qty = Math.max(1, parseInt(this.colonizer.colonizerQty) || 1);
-        const costMetal = 5000 * qty;
-        const costCrystal = 2500 * qty;
+        const qty = 1;
+        const costMetal = 20000;
+        const costCrystal = 10000;
         if (this.resources.metal.lt(costMetal) || this.resources.crystal.lt(costCrystal)) return;
         this.resources.metal = this.resources.metal.sub(costMetal);
         this.resources.crystal = this.resources.crystal.sub(costCrystal);
-        this.colonizer.building = true; this.colonizer.buildCount = qty;
-        const timePerShip = this.colonizerTime(this.colonizer.count);
-        this.colonizer.totalTime = timePerShip * qty * this.shipBuildSpeedMult; this.colonizer.elapsed = 0;
-        this.toast(`🚀 식민 함선 ${qty}척 건조 시작 (1척당 ${this.fmtTime(timePerShip)})`);
+        this.colonizer.building = true; this.colonizer.buildCount = 1;
+        this.colonizer.totalTime = this.colonizerBuildTime(); this.colonizer.elapsed = 0;
+        this.colonizer.spentMetal = costMetal;
+        this.colonizer.spentCrystal = costCrystal;
+        this.toast('🚀 식민 함선 건조 시작');
+      },
+      cancelColonizerBuild() {
+        if (!this.colonizer.building) return;
+        this.resources.metal = this.resources.metal.add(this.colonizer.spentMetal || 0);
+        this.resources.crystal = this.resources.crystal.add(this.colonizer.spentCrystal || 0);
+        this.colonizer.building = false; this.colonizer.buildCount = 0; this.colonizer.totalTime = 0; this.colonizer.elapsed = 0;
+        this.colonizer.spentMetal = 0; this.colonizer.spentCrystal = 0;
+        this.toast('↩️ 식민 함선 건조 취소 (자원 환불)');
+      },
+      canInstantBuildColonizer() {
+        const costPlasma = 300;
+        const costFusion = 100;
+        return this.resources.plasma.gte(costPlasma) && this.resources.fusion.gte(costFusion);
+      },
+      instantBuildColonizer() {
+        if (!this.canInstantBuildColonizer()) return;
+        this.resources.plasma = this.resources.plasma.sub(300);
+        this.resources.fusion = this.resources.fusion.sub(100);
+        if (this.colonizer.building) {
+          this.resources.metal = this.resources.metal.add(this.colonizer.spentMetal || 0);
+          this.resources.crystal = this.resources.crystal.add(this.colonizer.spentCrystal || 0);
+          this.colonizer.building = false; this.colonizer.buildCount = 0; this.colonizer.totalTime = 0; this.colonizer.elapsed = 0;
+          this.colonizer.spentMetal = 0; this.colonizer.spentCrystal = 0;
+        }
+        this.colonizer.count++;
+        this.toast('✨ 고급 자원 소모: 식민함선 즉시 소환!');
       },
 
       canExplore(p) {
@@ -1400,6 +1429,16 @@ const COLONY_FACTORY_TYPES = [
               }
             }
           }
+          if (c.eventTimer === undefined) c.eventTimer = 60 + Math.random() * 60;
+          c.eventTimer -= dt;
+          if (c.eventTimer <= 0) {
+            c.eventTimer = 90 + Math.random() * 120;
+            if (Math.random() < 0.5) {
+              this.triggerColonyInvasion(c);
+            } else {
+              this.triggerTradeShip(c);
+            }
+          }
         }
       },
       startTransport(colony) {
@@ -1428,6 +1467,42 @@ const COLONY_FACTORY_TYPES = [
         colony.transportTime = 30 + total * 0.01;
         colony.transportAmounts = amounts;
         this.toast(`📦 자원 ${this.fmt(total)} 운송 시작 (수소 -${hydroCost}, ${this.fmtTime(colony.transportTime)})`);
+      },
+      sendMoneyToColony(colony, amountText) {
+        let amt = parseFloat(amountText);
+        if (isNaN(amt) || amt <= 0) amt = 5000;
+        const decAmt = new Decimal(amt);
+        if (this.money.lt(decAmt)) { this.toast('🚫 본진 자금이 부족합니다.'); return; }
+        this.money = this.money.sub(decAmt);
+        colony.resources.metal = (colony.resources.metal || 0) + amt;
+        this.toast(`💸 ${colony.name}로 ${this.fmt(decAmt)} 골드(자원환산 메탈) 지원!`);
+      },
+      triggerColonyInvasion(colony) {
+        if (!colony) return;
+        const piratePower = 20 * this.pirateWave + Math.floor(Math.random() * 50);
+        const fleetPower = this.effectiveFleetPower('raider');
+        if (fleetPower >= piratePower) {
+          const reward = 3000 * this.pirateWave;
+          this.money = this.money.add(reward);
+          this.toast(`🛡️ ${colony.name} 침공 방어 성공! 보너스 +${this.fmt(reward)} 골드`);
+        } else {
+          for (const k in colony.resources) {
+            colony.resources[k] = Math.floor((colony.resources[k] || 0) * 0.5);
+          }
+          this.toast(`⚠️ ${colony.name} 방어 실패! 자원 50% 약탈당함`);
+        }
+      },
+      triggerTradeShip(colony) {
+        if (!colony) return;
+        const escortReq = 30 + this.colonies.length * 15;
+        const currPower = this.effectiveFleetPower('raider');
+        if (currPower >= escortReq) {
+          const bonusAmt = 1500 * (colony.prodSpeed || 1);
+          colony.resources.crystal = (colony.resources.crystal || 0) + bonusAmt;
+          this.toast(`🛸 무역 호위 성공: ${colony.name} 💎크리스탈 +${Math.round(bonusAmt)}`);
+        } else {
+          this.toast(`⚠️ 무역선 호위 실패: 함대 전투력 부족 (필요 ${escortReq})`);
+        }
       },
 
       effectiveFleetPower(pirateType) {
@@ -1836,6 +1911,7 @@ const COLONY_FACTORY_TYPES = [
           const rate = (this.resourceIncome[k] || 0) * (this.resMultipliers[k] || 1);
           if (rate > 0) this.resources[k] = Decimal.min(this.resources[k + 'Max'] || new Decimal(999999), this.resources[k].add(rate * elapsed * mult));
         }
+        this.tickColonies(elapsed * mult);
         if (inc > 0) this.offlineReport = { seconds: elapsed, gained: inc };
       },
       dismissOffline() { this.offlineReport = null; },

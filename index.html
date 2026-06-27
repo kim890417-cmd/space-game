@@ -384,20 +384,27 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <span class="text-xs font-bold text-amber-300">🛸 식민 함선</span>
-                  <span class="text-[9px] text-amber-300">{{ colonizer.count }}척</span>
+                  <span class="text-[9px] text-amber-300">{{ colonizer.count }}척 · LV {{ colonizer.level }}</span>
                 </div>
                 <div class="text-[9px] text-slate-500">행성 탐험 및 점령에 사용 · 탐험력 {{ colonizerPower }}</div>
-                <div class="text-[9px] text-slate-400 mb-1">⛏️5000 💎2500 · 건조 {{ fmtTime(colonizerTime(colonizer.count)) }}/척</div>
+                <div class="text-[9px] text-slate-400 mb-1">⛏️20000 💎10000 · 건조 {{ fmtTime(colonizerBuildTime()) }} <span class="text-rose-400 text-[8px]">(보유 비례 +25% 페널티)</span></div>
                 <div v-if="colonizer.building" class="mb-1">
                   <div class="flex items-center justify-between text-[10px]">
-                    <span class="text-amber-300">건조중 {{ colonizer.buildCount }}척</span>
+                    <span class="text-amber-300">건조중</span>
                     <span class="text-slate-400">{{ fmtTime(colonizer.totalTime - colonizer.elapsed) }}</span>
                   </div>
                   <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" :style="{width: (colonizer.elapsed/colonizer.totalTime*100)+'%'}"></div></div>
+                  <div class="flex gap-1 mt-1">
+                    <button class="btn btn-sm btn-danger flex-1" style="font-size:8px;padding:2px 4px;" @click="cancelColonizerBuild()">건조 취소</button>
+                    <button class="btn btn-sm btn-cheat flex-1" style="font-size:8px;padding:2px 4px;" @click="instantBuildColonizer()" :disabled="!canInstantBuildColonizer()">⚡ 즉시 완료 (🔵300 🔥100)</button>
+                  </div>
                 </div>
-                <div v-else class="flex gap-1">
-                  <input type="number" class="ship-qty" v-model.number="colonizer.colonizerQty" min="1" max="999" style="width:40px">
-                  <button class="btn btn-sm btn-warning" @click="buildColonizer()" :disabled="colonizer.building || resources.metal.lt(5000 * (colonizer.colonizerQty||1)) || resources.crystal.lt(2500 * (colonizer.colonizerQty||1))">건조</button>
+                <div v-else class="flex flex-col gap-1">
+                  <div class="flex gap-1">
+                    <button class="btn btn-sm btn-warning flex-1" @click="buildColonizer()" :disabled="colonizer.building || resources.metal.lt(20000) || resources.crystal.lt(10000)">건조</button>
+                    <button class="btn btn-sm btn-ghost flex-1" @click="upgradeColonizer()" :disabled="!canUpgradeColonizer()">{{ colonizer.level < 15 ? 'Upgrade' : 'MAX' }}</button>
+                  </div>
+                  <button class="btn btn-sm btn-cheat w-full text-[8px] py-1" @click="instantBuildColonizer()" :disabled="!canInstantBuildColonizer()">⚡ 즉시 소환 (🔵300 🔥100)</button>
                 </div>
               </div>
             </div>
@@ -594,6 +601,18 @@
           <div class="grid grid-cols-3 gap-1 text-[8px] mb-1">
             <div v-for="(rate, k) in colonyResourceRate(c)" :key="k" class="text-emerald-400">
               {{ {'metal':'⛏️','crystal':'💎','hydrogen':'⚡','plasma':'🔵','solar':'☀️','fission':'⚛️','fusion':'🔥'}[k] }} +{{ fmt(rate) }}/s
+            </div>
+          </div>
+
+          <!-- 식민지 금고 & 자금 지원 양식 -->
+          <div class="bg-slate-950/60 rounded p-1.5 mb-2 text-[9px] flex items-center justify-between">
+            <div>
+              <span class="text-amber-300 font-bold">💰 식민지 재정:</span>
+              <span class="text-slate-200 ml-1">{{ fmt(c.resources.metal || 0) }} 골드상당</span>
+            </div>
+            <div class="flex gap-1 items-center">
+              <input type="number" value="5000" ref="supportAmt" class="w-16 px-1 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-200 text-center" style="font-size: 8px;">
+              <button class="btn btn-sm btn-success" style="font-size: 8px; padding: 2px 6px;" @click="sendMoneyToColony(c, $refs.supportAmt[0] ? $refs.supportAmt[0].value : 5000)">💸 지원</button>
             </div>
           </div>
 
