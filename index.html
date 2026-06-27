@@ -419,7 +419,7 @@
           <div class="card py-2 px-3">
             <div class="text-xs font-bold text-amber-300 mb-2">🌍 행성 개척</div>
             <div class="text-[9px] text-slate-500 mb-2">식민 함선을 보내 행성을 개척하세요. 반복 개척 시 보너스가 누적됩니다.<br>각 행성은 고유 특성이 있습니다.</div>
-            <div class="text-[9px] text-emerald-300 mb-2">보유 식민 함선: {{ colonizer.count }}척 · 탐험력: {{ colonizerPower }} · 1척당 {{ fmtTime(colonizerTime(colonizer.count)) }}</div>
+            <div class="text-[9px] text-emerald-300 mb-2">보유 식민 함선: {{ colonizer.count }}척 · 탐험력: {{ colonizerPower }} · 1척당 {{ fmtTime(colonizerBuildTime(1)) }}</div>
             <div class="text-[8px] text-slate-600" v-if="fameMilestones.filter(m=>m.reached).length < 4">🔒 새 행성은 명성 업적 달성 시 개방됩니다</div>
           </div>
 
