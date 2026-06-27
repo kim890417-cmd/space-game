@@ -387,10 +387,12 @@
                   <span class="text-[9px] text-amber-300">{{ colonizer.count }}척 · LV {{ colonizer.level }}</span>
                 </div>
                 <div class="text-[9px] text-slate-500">행성 탐험 및 점령에 사용 · 탐험력 {{ colonizerPower }}</div>
-                <div class="text-[9px] text-slate-400 mb-1">⛏️20000 💎10000 · 건조 {{ fmtTime(colonizerBuildTime()) }} <span class="text-rose-400 text-[8px]">(보유 비례 +25% 페널티)</span></div>
+                <div class="text-[9px] text-slate-400 mb-1">
+                  ⛏️{{ fmt(20000 * (colonizer.colonizerQty||1)) }} 💎{{ fmt(10000 * (colonizer.colonizerQty||1)) }} · 건조 {{ fmtTime(colonizerBuildTime(colonizer.colonizerQty||1)) }} <span class="text-rose-400 text-[8px]">(보유 비례 +25% 페널티)</span>
+                </div>
                 <div v-if="colonizer.building" class="mb-1">
                   <div class="flex items-center justify-between text-[10px]">
-                    <span class="text-amber-300">건조중</span>
+                    <span class="text-amber-300">건조중 ({{ colonizer.buildCount }}척)</span>
                     <span class="text-slate-400">{{ fmtTime(colonizer.totalTime - colonizer.elapsed) }}</span>
                   </div>
                   <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" :style="{width: (colonizer.elapsed/colonizer.totalTime*100)+'%'}"></div></div>
@@ -401,7 +403,8 @@
                 </div>
                 <div v-else class="flex flex-col gap-1">
                   <div class="flex gap-1">
-                    <button class="btn btn-sm btn-warning flex-1" @click="buildColonizer()" :disabled="colonizer.building || resources.metal.lt(20000) || resources.crystal.lt(10000)">건조</button>
+                    <input type="number" class="ship-qty" v-model.number="colonizer.colonizerQty" min="1" max="99" style="width:45px">
+                    <button class="btn btn-sm btn-warning flex-1" @click="buildColonizer()" :disabled="colonizer.building || resources.metal.lt(20000 * (colonizer.colonizerQty||1)) || resources.crystal.lt(10000 * (colonizer.colonizerQty||1))">건조</button>
                     <button class="btn btn-sm btn-ghost flex-1" @click="upgradeColonizer()" :disabled="!canUpgradeColonizer()">{{ colonizer.level < 15 ? 'Upgrade' : 'MAX' }}</button>
                   </div>
                   <button class="btn btn-sm btn-cheat w-full text-[8px] py-1" @click="instantBuildColonizer()" :disabled="!canInstantBuildColonizer()">⚡ 즉시 소환 (🔵300 🔥100)</button>

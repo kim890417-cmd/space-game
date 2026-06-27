@@ -1238,30 +1238,35 @@ const COLONY_FACTORY_TYPES = [
         this.toast(`⬆️ ${st.name} LV${s.level} → LV${s.level+1} 업그레이드 시작 (${this.fmtTime(s.upgradeTotalTime)})`);
       },
 
-      colonizerBuildTime() {
-        const count = this.colonizer.count || 0;
-        const penaltyFactor = 1 + count * 0.25;
-        return 120 * this.shipBuildSpeedMult * penaltyFactor;
+      colonizerBuildTime(qty = 1) {
+        let total = 0;
+        const currentCount = this.colonizer.count || 0;
+        for (let i = 0; i < qty; i++) {
+          const countForThisShip = currentCount + i;
+          const penaltyFactor = 1 + countForThisShip * 0.25;
+          total += 120 * this.shipBuildSpeedMult * penaltyFactor;
+        }
+        return total;
       },
       buildColonizer() {
         if (this.colonizer.building) return;
-        const qty = 1;
-        const costMetal = 20000;
-        const costCrystal = 10000;
+        const qty = Math.max(1, parseInt(this.colonizer.colonizerQty) || 1);
+        const costMetal = 20000 * qty;
+        const costCrystal = 10000 * qty;
         if (this.resources.metal.lt(costMetal) || this.resources.crystal.lt(costCrystal)) return;
         this.resources.metal = this.resources.metal.sub(costMetal);
         this.resources.crystal = this.resources.crystal.sub(costCrystal);
-        this.colonizer.building = true; this.colonizer.buildCount = 1;
-        this.colonizer.totalTime = this.colonizerBuildTime(); this.colonizer.elapsed = 0;
+        this.colonizer.building = true; this.colonizer.buildCount = qty;
+        this.colonizer.totalTime = this.colonizerBuildTime(qty); this.colonizer.elapsed = 0;
         this.colonizer.spentMetal = costMetal;
         this.colonizer.spentCrystal = costCrystal;
-        this.toast('🚀 식민 함선 건조 시작');
+        this.toast(`🚀 식민 함선 ${qty}척 건조 시작`);
       },
       cancelColonizerBuild() {
         if (!this.colonizer.building) return;
         this.resources.metal = this.resources.metal.add(this.colonizer.spentMetal || 0);
         this.resources.crystal = this.resources.crystal.add(this.colonizer.spentCrystal || 0);
-        this.colonizer.building = false; this.colonizer.buildCount = 0; this.colonizer.totalTime = 0; this.colonizer.elapsed = 0;
+        this.colonizer.building = false; this.colonizer.count += 0; this.colonizer.buildCount = 0; this.colonizer.totalTime = 0; this.colonizer.elapsed = 0;
         this.colonizer.spentMetal = 0; this.colonizer.spentCrystal = 0;
         this.toast('↩️ 식민 함선 건조 취소 (자원 환불)');
       },
