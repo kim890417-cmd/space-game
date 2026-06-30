@@ -425,6 +425,11 @@ const COLONY_FACTORY_TYPES = [
         autoTrade: false,
         autoTradeRoute: 'earth_mars',
         autoTradeTimer: 0,
+        patrolActive: false,
+        patrolProgress: 0,
+        patrolTime: 30,
+        patrolLogs: [],
+        colonyGuards: {},
 
         constructionSlots: [
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 },
@@ -433,7 +438,7 @@ const COLONY_FACTORY_TYPES = [
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 }
         ],
         maxConstructionSlots: 2,
-        tradeShip: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, cargo: 100, speed: 1, level: 1, tradeQty: 1 },
+        tradeShip: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, cargo: 100, speed: 1.0, level: 1, tradeQty: 1, cargoLevel: 1, speedLevel: 1 },
         tradePosts: TRADE_POSTS.map(p => ({
           ...p, prices: {
             metal: { base: p.prices.metal, current: p.prices.metal },
@@ -1068,6 +1073,48 @@ const COLONY_FACTORY_TYPES = [
         this.tradeShip.elapsed = 0;
         this.toast(`🏗️ 무역선 ${qty}척 건조 시작`);
       },
+      tradeShipCargoUpgradeCost() {
+        const lv = this.tradeShip.cargoLevel || 1;
+        return {
+          metal: new Decimal(Math.floor(50000 * Math.pow(1.3, lv))),
+          crystal: new Decimal(Math.floor(20000 * Math.pow(1.3, lv)))
+        };
+      },
+      tradeShipSpeedUpgradeCost() {
+        const lv = this.tradeShip.speedLevel || 1;
+        return {
+          metal: new Decimal(Math.floor(80000 * Math.pow(1.35, lv))),
+          crystal: new Decimal(Math.floor(35000 * Math.pow(1.35, lv)))
+        };
+      },
+      canUpgradeTradeShipCargo() {
+        const cost = this.tradeShipCargoUpgradeCost();
+        return this.resources.metal.gte(cost.metal) && this.resources.crystal.gte(cost.crystal);
+      },
+      canUpgradeTradeShipSpeed() {
+        const cost = this.tradeShipSpeedUpgradeCost();
+        return this.resources.metal.gte(cost.metal) && this.resources.crystal.gte(cost.crystal);
+      },
+      upgradeTradeShipCargo() {
+        if (!this.canUpgradeTradeShipCargo()) return;
+        const cost = this.tradeShipCargoUpgradeCost();
+        this.resources.metal = this.resources.metal.sub(cost.metal);
+        this.resources.crystal = this.resources.crystal.sub(cost.crystal);
+        this.tradeShip.cargoLevel = (this.tradeShip.cargoLevel || 1) + 1;
+        this.tradeShip.cargo = 100 + (this.tradeShip.cargoLevel - 1) * 50;
+        this.toast(`🛳️ 무역선 화물 확장 완료! (현재 용량: ${this.tradeShip.cargo})`);
+        this.saveSystems();
+      },
+      upgradeTradeShipSpeed() {
+        if (!this.canUpgradeTradeShipSpeed()) return;
+        const cost = this.tradeShipSpeedUpgradeCost();
+        this.resources.metal = this.resources.metal.sub(cost.metal);
+        this.resources.crystal = this.resources.crystal.sub(cost.crystal);
+        this.tradeShip.speedLevel = (this.tradeShip.speedLevel || 1) + 1;
+        this.tradeShip.speed = 1.0 + (this.tradeShip.speedLevel - 1) * 0.1;
+        this.toast(`🛳️ 무역선 엔진 개량 완료! (현재 속도: ×${this.tradeShip.speed.toFixed(1)})`);
+        this.saveSystems();
+      },
       tradePrice(post, res) { return Math.floor(RES_BASE_VALUE[res] * post.prices[res].current); },
       maxTradeBuy(res) {
         const post = this.tradePosts[this.tradeLocation];
@@ -1588,7 +1635,7 @@ const COLONY_FACTORY_TYPES = [
         if (this.colonies.some(c => c.planetId === planetId)) return;
         const tmpl = COLONY_TEMPLATES.find(t => t.planetId === planetId);
         if (!tmpl) return;
-        const factories = COLONY_FACTORY_TYPES.map((ft, i) => ({ id: i, level: 1 }));
+        const factories = COLONY_FACTORY_TYPES.map((ft, i) => ({ id: i, level: 1, upgrading: false, upgradeProgress: 0, upgradeTime: 0 }));
         this.colonies.push({
           planetId, name: tmpl.name, prodSpeed: tmpl.prodSpeed,
           resources: { metal: 2000, crystal: 500, hydrogen: 0, plasma: 0, solar: 0, fission: 0, fusion: 0 },
@@ -1603,7 +1650,7 @@ const COLONY_FACTORY_TYPES = [
       },
       canUpgradeColonyFactory(colony, fi) {
         const f = colony.factories[fi];
-        if (!f || f.level >= 20) return false;
+        if (!f || f.level >= 20 || f.upgrading) return false;
         const cost = this.colonyUpgradeCost(f.level);
         return (colony.resources['metal'] || 0) >= cost;
       },
@@ -1612,12 +1659,26 @@ const COLONY_FACTORY_TYPES = [
         const f = colony.factories[fi];
         const cost = this.colonyUpgradeCost(f.level);
         colony.resources['metal'] -= cost;
-        f.level++;
-        this.toast(`⬆️ ${colony.name} ${this.colonyFactoryTypes[fi].name} LV ${f.level}`);
+        f.upgrading = true;
+        f.upgradeProgress = 0;
+        f.upgradeTime = Math.max(2, 10 * Math.pow(1.1, f.level) * this.getPlanetMultiplier(colony.planetId));
+        this.toast(`🏗️ ${colony.name} ${this.colonyFactoryTypes[fi].name} LV ${f.level + 1} 업그레이드 시작 (${this.fmtTime(f.upgradeTime)})`);
       },
       tickColonies(dt) {
         for (const c of this.colonies) {
           for (const f of c.factories) {
+            // 업그레이드 타이머 갱신
+            if (f.upgrading) {
+              f.upgradeProgress = (f.upgradeProgress || 0) + dt;
+              if (f.upgradeProgress >= f.upgradeTime) {
+                f.upgrading = false;
+                f.upgradeProgress = 0;
+                f.upgradeTime = 0;
+                f.level++;
+                this.toast(`✅ ${c.name} ${this.colonyFactoryTypes[f.id].name} LV ${f.level} 건설 완료!`);
+              }
+            }
+
             if (f.level <= 0) continue;
             const t = this.colonyFactoryTypes[f.id];
             let boost = 1;
@@ -1654,12 +1715,8 @@ const COLONY_FACTORY_TYPES = [
           }
           if (this.colonyAutoUpgrade) {
             for (let i = 0; i < c.factories.length; i++) {
-              const f = c.factories[i];
-              if (f.level >= 20) continue;
-              const cost = this.colonyUpgradeCost(f.level);
-              if ((c.resources['metal'] || 0) >= cost && Math.random() < 0.02) {
-                c.resources['metal'] -= cost;
-                f.level++;
+              if (this.canUpgradeColonyFactory(c, i) && Math.random() < 0.02) {
+                this.upgradeColonyFactory(c, i);
               }
             }
           }
@@ -1675,32 +1732,70 @@ const COLONY_FACTORY_TYPES = [
           }
         }
       },
-      startTransport(colony) {
-        if (colony.transporting || this.colonizer.count <= 0) return;
+      startTransport(colony, selectedAmounts = null) {
+        if (colony.transporting) return;
+        if (this.getAvailableTradeShips() <= 0) {
+          this.toast('⚠️ 가용 무역선이 부족합니다');
+          return;
+        }
+        const maxCapacity = this.tradeShip.cargo || 100;
+        const speedMult = this.tradeShip.speed || 1.0;
         const amounts = {};
         let total = 0;
-        const maxCapacity = this.colonizer.count * 100;
-        const allRes = ['metal','crystal','hydrogen','plasma','solar','fission','fusion'];
-        for (const k of allRes) {
-          const avail = Math.floor(colony.resources[k] || 0);
-          if (avail > 0) {
-            const take = Math.min(avail, Math.max(0, Math.floor(maxCapacity / allRes.length)));
-            if (take > 0) {
-              amounts[k] = take;
-              colony.resources[k] -= take;
-              total += take;
+        const allRes = ['metal', 'crystal', 'hydrogen', 'plasma', 'solar', 'fission', 'fusion'];
+
+        if (selectedAmounts) {
+          // 플레이어가 직접 입력한 양
+          for (const k of allRes) {
+            const requested = Math.floor(selectedAmounts[k] || 0);
+            if (requested > 0) {
+              const avail = Math.floor(colony.resources[k] || 0);
+              const take = Math.min(requested, avail);
+              if (take > 0) {
+                amounts[k] = take;
+                total += take;
+              }
+            }
+          }
+          if (total > maxCapacity) {
+            this.toast(`⚠️ 무역선 용량을 초과했습니다 (최대: ${maxCapacity})`);
+            return;
+          }
+          // 차감
+          for (const k in amounts) {
+            colony.resources[k] -= amounts[k];
+          }
+        } else {
+          // 자동 분배
+          for (const k of allRes) {
+            const avail = Math.floor(colony.resources[k] || 0);
+            if (avail > 0) {
+              const take = Math.min(avail, Math.max(0, Math.floor(maxCapacity / allRes.length)));
+              if (take > 0) {
+                amounts[k] = take;
+                colony.resources[k] -= take;
+                total += take;
+              }
             }
           }
         }
+
         if (total <= 0) { this.toast('🚫 운송할 자원이 없습니다'); return; }
         const hydroCost = Math.ceil(total * 0.001);
-        if (this.resources.hydrogen.lt(hydroCost)) { this.toast(`🚫 수소 부족 (필요: ${hydroCost})`); return; }
+        if (this.resources.hydrogen.lt(hydroCost)) {
+          // 자원 반환(롤백)
+          for (const k in amounts) {
+            colony.resources[k] += amounts[k];
+          }
+          this.toast(`🚫 수소 부족 (필요: ${hydroCost})`);
+          return;
+        }
         this.resources.hydrogen = this.resources.hydrogen.sub(hydroCost);
         colony.transporting = true;
         colony.transportProgress = 0;
-        colony.transportTime = Math.max(2, (30 + total * 0.01) * this.getPlanetMultiplier(colony.planetId));
+        colony.transportTime = Math.max(5, (20 + total * 0.05) / speedMult * this.getPlanetMultiplier(colony.planetId));
         colony.transportAmounts = amounts;
-        this.toast(`📦 자원 ${this.fmt(total)} 운송 시작 (수소 -${hydroCost}, ${this.fmtTime(colony.transportTime)})`);
+        this.toast(`📦 무역선 출항: 자원 ${this.fmt(total)} 본진 운송 (수소 -${hydroCost}, ${this.fmtTime(colony.transportTime)})`);
       },
       sendMoneyToColony(colony, amountText) {
         if (this.getAvailableTradeShips() <= 0) {
@@ -1723,19 +1818,65 @@ const COLONY_FACTORY_TYPES = [
         });
         this.toast(`💸 무역선 출발: ${colony.name} 지원 시작 (${this.fmtTime(duration)})`);
       },
+      initColonyTransportSelections(colony) {
+        if (!colony.transportAmountsSelected) {
+          colony.transportAmountsSelected = { metal: 0, crystal: 0, hydrogen: 0, plasma: 0, solar: 0, fission: 0, fusion: 0 };
+        }
+        return colony.transportAmountsSelected;
+      },
+      getColonyTransportTotal(colony) {
+        const sel = this.initColonyTransportSelections(colony);
+        return Object.values(sel).reduce((s, v) => s + (parseInt(v) || 0), 0);
+      },
+      limitTransportInput(colony, resKey) {
+        const sel = this.initColonyTransportSelections(colony);
+        const maxCapacity = this.tradeShip.cargo || 100;
+        let val = parseInt(sel[resKey]) || 0;
+        if (val < 0) val = 0;
+        const avail = Math.floor(colony.resources[resKey] || 0);
+        if (val > avail) val = avail;
+        sel[resKey] = val;
+        const otherTotal = Object.keys(sel).filter(k => k !== resKey).reduce((s, k) => s + (parseInt(sel[k]) || 0), 0);
+        if (otherTotal + val > maxCapacity) {
+          sel[resKey] = Math.max(0, maxCapacity - otherTotal);
+        }
+      },
+      autoFillColonyTransport(colony) {
+        const sel = this.initColonyTransportSelections(colony);
+        for (const k in sel) sel[k] = 0;
+        const maxCapacity = this.tradeShip.cargo || 100;
+        let remaining = maxCapacity;
+        const priorityOrder = ['metal', 'crystal', 'hydrogen', 'plasma', 'solar', 'fission', 'fusion'];
+        for (const k of priorityOrder) {
+          if (remaining <= 0) break;
+          const avail = Math.floor(colony.resources[k] || 0);
+          if (avail > 0) {
+            const take = Math.min(avail, remaining);
+            sel[k] = take;
+            remaining -= take;
+          }
+        }
+        if (this.$forceUpdate) this.$forceUpdate();
+      },
+      startColonyTransport(colony) {
+        const sel = this.initColonyTransportSelections(colony);
+        this.startTransport(colony, sel);
+        for (const k in sel) sel[k] = 0;
+      },
       triggerColonyInvasion(colony) {
         if (!colony) return;
         const piratePower = 20 * this.pirateWave + Math.floor(Math.random() * 50);
-        const fleetPower = this.effectiveFleetPower('raider');
-        if (fleetPower >= piratePower) {
+        // 해당 식민지에 영구 배치된 함대 전투력으로 판정
+        const assigned = this.colonyGuards[colony.planetId] || 0;
+        if (assigned >= piratePower) {
           const reward = 3000 * this.pirateWave;
           this.money = this.money.add(reward);
-          this.toast(`🛡️ ${colony.name} 침공 방어 성공! 보너스 +${this.fmt(reward)} 골드`);
+          this.toast(`🛡️ ${colony.name} 배치 함대가 침공 방어 성공! 보너스 +${this.fmt(reward)} 골드`);
         } else {
           for (const k in colony.resources) {
             colony.resources[k] = Math.floor((colony.resources[k] || 0) * 0.5);
           }
-          this.toast(`⚠️ ${colony.name} 방어 실패! 자원 50% 약탈당함`);
+          this.toast(`⚠️ ${colony.name} 함대 방어 실패! 자원 50% 약탈당함 (요구 전투력: ${piratePower}, 배치 전투력: ${assigned})`);
         }
       },
       triggerTradeShip(colony) {
@@ -1748,6 +1889,90 @@ const COLONY_FACTORY_TYPES = [
           this.toast(`🛸 무역 호위 성공: ${colony.name} 💎크리스탈 +${Math.round(bonusAmt)}`);
         } else {
           this.toast(`⚠️ 무역선 호위 실패: 함대 전투력 부족 (필요 ${escortReq})`);
+        }
+      },
+      getAvailableFleetPower() {
+        const assigned = Object.values(this.colonyGuards || {}).reduce((s, v) => s + (v || 0), 0);
+        return Math.max(0, this.fleetPower - assigned);
+      },
+      getAssignedGuardsPower() {
+        return Object.values(this.colonyGuards || {}).reduce((s, v) => s + (v || 0), 0);
+      },
+      assignColonyGuard(colonyId, amount) {
+        const currentAssigned = this.getAssignedGuardsPower();
+        const available = Math.max(0, Math.floor(this.fleetPower - currentAssigned));
+        const toAdd = Math.min(amount, available);
+        if (toAdd > 0) {
+          this.colonyGuards[colonyId] = (this.colonyGuards[colonyId] || 0) + toAdd;
+          this.toast(`🛡️ 전투력 ${toAdd} 식민지 방어선 배치 완료!`);
+          this.saveSystems();
+        }
+      },
+      removeColonyGuard(colonyId, amount) {
+        const curr = this.colonyGuards[colonyId] || 0;
+        const toRemove = Math.min(amount, curr);
+        if (toRemove > 0) {
+          this.colonyGuards[colonyId] = curr - toRemove;
+          if (this.colonyGuards[colonyId] <= 0) delete this.colonyGuards[colonyId];
+          this.toast(`🛡️ 전투력 ${toRemove} 식민지 방어선에서 회수함.`);
+          this.saveSystems();
+        }
+      },
+      tickPatrol(dt) {
+        if (!this.patrolActive) return;
+        const availPower = this.getAvailableFleetPower();
+        if (availPower <= 0) {
+          this.patrolActive = false;
+          this.toast('⚠️ 가용 전투 함대가 없어 성계 순찰이 비활성화되었습니다.');
+          return;
+        }
+
+        this.patrolProgress = (this.patrolProgress || 0) + dt;
+        if (this.patrolProgress >= this.patrolTime) {
+          this.patrolProgress = 0;
+
+          // 순찰 전투 정산
+          const enemyPower = Math.floor((15 * this.pirateWave + Math.random() * 30));
+          const victory = availPower >= enemyPower;
+
+          if (victory) {
+            const goldReward = Math.floor(1000 * this.pirateWave * (1 + Math.random()));
+            const crystalReward = Math.floor(200 * this.pirateWave * (1 + Math.random()));
+            
+            // 각성석 획득 확률 (기본 5%, 자화기 연구 등 반영)
+            let stoneChance = 0.05;
+            const magnet = this.research.find(r => r.id === 'crystal_magnet');
+            if (magnet) stoneChance += magnet.level * 0.01;
+            
+            let gotStone = false;
+            if (Math.random() < stoneChance) {
+              this.awakeningStones = (this.awakeningStones || 0) + 1;
+              gotStone = true;
+            }
+
+            this.money = this.money.add(goldReward);
+            this.resources.crystal = this.resources.crystal.add(crystalReward);
+
+            const log = `🛡️ [순찰 성공] 전투력 ${Math.round(availPower)} vs 적 ${enemyPower} | 💰+${this.fmt(goldReward)} 💎+${this.fmt(crystalReward)} ${gotStone ? '💎각성석+1' : ''}`;
+            this.patrolLogs.unshift(log);
+            this.toast(`🛡️ 순찰 교전 승리: 💰+${this.fmt(goldReward)}`);
+          } else {
+            const lossPercent = 0.02; // 교전 패배 시 함선 미량 유실
+            const combatShips = this.shipTypes.filter(s => s.type !== 'scout' && s.type !== 'colony' && s.type !== 'trade');
+            if (combatShips.length > 0) {
+              const targetShip = combatShips[Math.floor(Math.random() * combatShips.length)];
+              const count = this.ships[targetShip.type]?.count || 0;
+              if (count > 0) {
+                const loss = Math.ceil(count * lossPercent);
+                this.ships[targetShip.type].count = Math.max(0, count - loss);
+                this.toast(`⚠️ 순찰 패배: 기습을 당해 ${targetShip.name} ${loss}척 침몰!`);
+              }
+            }
+            const log = `⚠️ [순찰 실패] 전투력 ${Math.round(availPower)} vs 적 ${enemyPower} | 함선 일부 파손 및 자원 획득 실패`;
+            this.patrolLogs.unshift(log);
+          }
+
+          if (this.patrolLogs.length > 20) this.patrolLogs = this.patrolLogs.slice(0, 20);
         }
       },
 
@@ -1770,7 +1995,12 @@ const COLONY_FACTORY_TYPES = [
         const outpostCount = this.buildings.find(b => b.id === 'outpost')?.level || 0;
         m *= (1 + outpostCount * 0.05);
         
-        return p * m;
+        // 상시 가용 전투력 비율 보정 (식민지 배치 수호함대 제외)
+        const total = this.fleetPower;
+        const avail = this.getAvailableFleetPower();
+        const ratio = total > 0 ? avail / total : 1.0;
+        
+        return p * m * ratio;
       },
       shipTypeName(type) { const s = this.shipTypes.find(x => x.type === type); return s ? s.name : type; },
       pirateTypeName(type) { const p = this.pirateTypes.find(x => x.type === type); return p ? p.name : type; },
@@ -2717,7 +2947,7 @@ const COLONY_FACTORY_TYPES = [
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 }
         ],
         maxConstructionSlots: 2,
-        tradeShip: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, cargo: 100, speed: 1, level: 1, tradeQty: 1 },
+        tradeShip: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, cargo: 100, speed: 1.0, level: 1, tradeQty: 1, cargoLevel: 1, speedLevel: 1 },
         tradePosts: TRADE_POSTS.map(p => ({
           ...p, prices: {
             metal: { base: p.prices.metal, current: p.prices.metal },
@@ -2807,6 +3037,7 @@ const COLONY_FACTORY_TYPES = [
         }
         this.tickEvents(sdt);
         this.tickRaids(sdt);
+        this.tickPatrol(sdt);
         this.tickExpedition(sdt);
         if (this.combatCooldown > 0) this.combatCooldown = Math.max(0, this.combatCooldown - sdt);
         if (this.autoCombat && this.combatCooldown <= 0 && this.fleetPower > 0) {
@@ -2904,7 +3135,7 @@ const COLONY_FACTORY_TYPES = [
               transportAmounts: { ...(c.transportAmounts || {}) }
             })),
             constructionSlots: this.constructionSlots.map(s => ({ ...s })),
-            tradeShip: { count: this.tradeShip.count, building: this.tradeShip.building, buildCount: this.tradeShip.buildCount, totalTime: this.tradeShip.totalTime, elapsed: this.tradeShip.elapsed, cargo: this.tradeShip.cargo, speed: this.tradeShip.speed, level: this.tradeShip.level },
+            tradeShip: { count: this.tradeShip.count, building: this.tradeShip.building, buildCount: this.tradeShip.buildCount, totalTime: this.tradeShip.totalTime, elapsed: this.tradeShip.elapsed, cargo: this.tradeShip.cargo, speed: this.tradeShip.speed, level: this.tradeShip.level, cargoLevel: this.tradeShip.cargoLevel || 1, speedLevel: this.tradeShip.speedLevel || 1 },
             tradePosts: this.tradePosts.map(p => ({
               id: p.id, prices: { metal: { base: p.prices.metal.base, current: p.prices.metal.current }, crystal: { base: p.prices.crystal.base, current: p.prices.crystal.current }, hydrogen: { base: p.prices.hydrogen.base, current: p.prices.hydrogen.current } },
               priceTimer: p.priceTimer
@@ -2916,6 +3147,10 @@ const COLONY_FACTORY_TYPES = [
             autoTrade: this.autoTrade,
             autoTradeRoute: this.autoTradeRoute,
             autoTradeTimer: this.autoTradeTimer,
+            patrolActive: this.patrolActive,
+            patrolProgress: this.patrolProgress,
+            patrolLogs: (this.patrolLogs || []).slice(-20),
+            colonyGuards: { ...this.colonyGuards },
             missions: (this.missions || []).map(m => ({ ...m, rewardGold: m.rewardGold ? m.rewardGold.toString() : '0' })),
             raidTargets: this.raidTargets.map(t => ({ id: t.id, active: t.active, timer: t.timer })),
             raidTravel: { active: this.raidTravel.active, targetId: this.raidTravel.target?.id || null, remaining: this.raidTravel.remaining, total: this.raidTravel.total },
@@ -2984,6 +3219,10 @@ const COLONY_FACTORY_TYPES = [
           if (o.autoTrade !== undefined) this.autoTrade = o.autoTrade;
           if (o.autoTradeRoute) this.autoTradeRoute = o.autoTradeRoute;
           if (o.autoTradeTimer) this.autoTradeTimer = o.autoTradeTimer;
+          if (o.patrolActive !== undefined) this.patrolActive = o.patrolActive;
+          if (o.patrolProgress !== undefined) this.patrolProgress = o.patrolProgress;
+          this.patrolLogs = o.patrolLogs || [];
+          this.colonyGuards = o.colonyGuards || {};
           if (o.missions && o.missions.length > 0) {
             this.missions = o.missions.map(m => ({ ...m, rewardGold: new Decimal(m.rewardGold || '0') }));
           } else {
@@ -3100,9 +3339,11 @@ const COLONY_FACTORY_TYPES = [
             this.tradeShip.buildCount = o.tradeShip.buildCount || 0;
             this.tradeShip.totalTime = o.tradeShip.totalTime || 0;
             this.tradeShip.elapsed = o.tradeShip.elapsed || 0;
-            if (o.tradeShip.cargo) this.tradeShip.cargo = o.tradeShip.cargo;
-            if (o.tradeShip.speed) this.tradeShip.speed = o.tradeShip.speed;
-            if (o.tradeShip.level) this.tradeShip.level = o.tradeShip.level;
+            this.tradeShip.level = o.tradeShip.level || 1;
+            this.tradeShip.cargoLevel = o.tradeShip.cargoLevel || 1;
+            this.tradeShip.speedLevel = o.tradeShip.speedLevel || 1;
+            this.tradeShip.cargo = 100 + (this.tradeShip.cargoLevel - 1) * 50;
+            this.tradeShip.speed = 1.0 + (this.tradeShip.speedLevel - 1) * 0.1;
           }
           if (o.tradePosts) {
             for (const saved of o.tradePosts) {

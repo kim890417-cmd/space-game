@@ -448,6 +448,7 @@
           <div class="fleet-subnav-item" :class="{active: fleetActiveTab==='fleet_build'}" @click="fleetActiveTab='fleet_build'">🚀 함선</div>
           <div class="fleet-subnav-item" :class="{active: fleetActiveTab==='fleet_explore'}" @click="fleetActiveTab='fleet_explore'">🌍 탐험</div>
           <div class="fleet-subnav-item" :class="{active: fleetActiveTab==='fleet_combat'}" @click="fleetActiveTab='fleet_combat'">⚔️ 전투</div>
+          <div class="fleet-subnav-item" :class="{active: fleetActiveTab==='fleet_patrol'}" @click="fleetActiveTab='fleet_patrol'">🛡️ 순찰</div>
         </div>
 
         <!-- 함선 건조 -->
@@ -706,6 +707,94 @@
           </div>
 
         </div>
+
+        <!-- 성계 순찰 패널 -->
+        <div v-if="fleetActiveTab==='fleet_patrol'" class="space-y-3">
+          <!-- 전투력 현황 요약 -->
+          <div class="card py-2 px-3" style="border-color:rgba(99,102,241,0.35);background:linear-gradient(160deg,#0f172a,#1e1b4b)">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-indigo-300">⚔️ 함대 전투력 현황</span>
+              <span class="text-[9px] text-slate-400">총 {{ fmt(fleetPower) }} pt</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 text-[9px] text-center mb-1">
+              <div class="bg-slate-900/70 rounded p-1.5">
+                <div class="text-slate-400 text-[8px]">전체 전투력</div>
+                <div class="text-emerald-300 font-bold">{{ fmt(fleetPower) }}</div>
+              </div>
+              <div class="bg-slate-900/70 rounded p-1.5">
+                <div class="text-slate-400 text-[8px]">식민지 배치</div>
+                <div class="text-indigo-300 font-bold">{{ fmt(getAssignedGuardsPower()) }}</div>
+              </div>
+              <div class="bg-slate-900/70 rounded p-1.5">
+                <div class="text-slate-400 text-[8px]">가용(순찰 가능)</div>
+                <div class="text-amber-300 font-bold">{{ fmt(getAvailableFleetPower()) }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 자동 순찰 설정 -->
+          <div class="card py-3 px-3" style="border-color:rgba(251,191,36,0.3)">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <div class="text-[11px] font-bold text-amber-300">🛡️ 성계 상시 순찰 (Auto-Patrol)</div>
+                <div class="text-[8px] text-slate-500 mt-0.5">가용 함대가 30초마다 성계를 순찰하며 해적을 소탕합니다</div>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer ml-2">
+                <input type="checkbox" v-model="patrolActive" class="sr-only peer" :disabled="getAvailableFleetPower()<=0">
+                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+              </label>
+            </div>
+
+            <!-- 순찰 진행 게이지 -->
+            <div v-if="patrolActive" class="mt-1">
+              <div class="flex justify-between text-[8px] text-slate-400 mb-0.5">
+                <span>🛡️ 순찰 중... 가용 전투력 {{ fmt(getAvailableFleetPower()) }}</span>
+                <span>{{ fmtTime(patrolTime - patrolProgress) }} 후 교전</span>
+              </div>
+              <div class="progress-bar" style="height:5px">
+                <div class="progress-fill" style="background:linear-gradient(90deg,#f59e0b,#fbbf24)" :style="{width: (patrolProgress/patrolTime*100)+'%'}"></div>
+              </div>
+            </div>
+            <div v-else class="text-[8.5px] text-slate-600 mt-1">
+              {{ getAvailableFleetPower() <= 0 ? '⚠️ 가용 함대가 없습니다. 함선을 건조하세요.' : '▲ 토글 ON 시 자동 순찰을 시작합니다.' }}
+            </div>
+
+            <!-- 보상 안내 -->
+            <div class="grid grid-cols-3 gap-1 mt-3 text-[8px] text-center">
+              <div class="bg-slate-900/50 rounded p-1">
+                <div class="text-amber-400">💰 골드</div>
+                <div class="text-slate-300">1,000 × 웨이브</div>
+              </div>
+              <div class="bg-slate-900/50 rounded p-1">
+                <div class="text-cyan-400">⛏️ 금속</div>
+                <div class="text-slate-300">500 × 웨이브</div>
+              </div>
+              <div class="bg-slate-900/50 rounded p-1">
+                <div class="text-purple-400">💎 크리스탈</div>
+                <div class="text-slate-300">200 × 웨이브</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 순찰 교전 로그 -->
+          <div class="card py-2 px-3" style="border-color:rgba(99,102,241,0.2)">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-[10px] font-bold text-indigo-300">📋 순찰 교전 기록 (최근 {{ patrolLogs.length }}건)</div>
+              <button v-if="patrolLogs.length > 0" class="text-[8px] text-slate-600 hover:text-slate-400" @click="patrolLogs=[]">지우기</button>
+            </div>
+            <div class="space-y-1 max-h-40 overflow-y-auto">
+              <div v-for="(log, i) in patrolLogs" :key="i"
+                   class="text-[8.5px] px-2 py-1 rounded"
+                   :class="log.startsWith('🛡️') ? 'bg-emerald-900/20 text-emerald-300' : 'bg-rose-900/20 text-rose-300'">
+                {{ log }}
+              </div>
+              <div v-if="patrolLogs.length === 0" class="text-[8.5px] text-slate-600 text-center py-2">
+                순찰을 시작하면 교전 기록이 표시됩니다
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- TAB: COLONY -->
@@ -753,12 +842,18 @@
           </div>
 
           <div class="grid grid-cols-3 gap-1 mb-2">
-            <div v-for="f in c.factories" :key="f.id" class="bg-slate-900/60 rounded p-1.5 text-center text-[9px]">
+            <div v-for="f in c.factories" :key="f.id" class="bg-slate-900/60 rounded p-1.5 text-center text-[9px] relative overflow-hidden">
               <div>{{ colonyFactoryTypes[f.id].icon }} {{ colonyFactoryTypes[f.id].name }}</div>
-              <div class="text-purple-300" v-if="f.level > 0">LV {{ f.level }}</div>
-              <div class="text-slate-600" v-else>미건설</div>
-              <div class="text-[7px] text-emerald-400/60" v-if="f.level > 0">+{{ fmt(colonyFactoryRate(c, f)) }}/s</div>
-              <button class="btn btn-sm mt-1" :class="f.level >= 20 ? 'btn-ghost' : 'btn-primary'" style="font-size:7px;padding:2px 6px" @click="upgradeColonyFactory(c, f.id)" :disabled="!canUpgradeColonyFactory(c, f.id)">{{ f.level >= 20 ? 'MAX' : '⬆️ '+fmt(colonyUpgradeCost(f.level)) }}</button>
+              <template v-if="f.upgrading">
+                <div class="text-amber-400 text-[8.5px] mt-0.5 animate-pulse">🏗️ 건설중 ({{ fmtTime(f.upgradeTime - f.upgradeProgress) }})</div>
+                <div class="progress-bar mt-1" style="height:2px"><div class="progress-fill bg-amber-400" :style="{width: (f.upgradeProgress/f.upgradeTime*100)+'%'}"></div></div>
+              </template>
+              <template v-else>
+                <div class="text-purple-300" v-if="f.level > 0">LV {{ f.level }}</div>
+                <div class="text-slate-600" v-else>미건설</div>
+                <div class="text-[7px] text-emerald-400/60" v-if="f.level > 0">+{{ fmt(colonyFactoryRate(c, f)) }}/s</div>
+                <button class="btn btn-sm mt-1" :class="f.level >= 20 ? 'btn-ghost' : 'btn-primary'" style="font-size:7px;padding:2px 6px" @click="upgradeColonyFactory(c, f.id)" :disabled="!canUpgradeColonyFactory(c, f.id)">{{ f.level >= 20 ? 'MAX' : '⬆️ '+fmt(colonyUpgradeCost(f.level)) }}</button>
+              </template>
             </div>
           </div>
 
@@ -776,7 +871,19 @@
             </div>
             <div class="flex gap-1 items-center">
               <input type="number" value="5000" ref="supportAmt" class="w-16 px-1 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-200 text-center" style="font-size: 8px;">
-              <button class="btn btn-sm btn-success" style="font-size: 8px; padding: 2px 6px;" @click="sendMoneyToColony(c, $refs.supportAmt[0] ? $refs.supportAmt[0].value : 5000)">💸 지원</button>
+              <button class="btn btn-sm btn-success" style="font-size: 8px; padding: 2px 6px;" @click="sendMoneyToColony(c, $refs.supportAmt[0] ? $refs.supportAmt[0].value : 5000)" :disabled="getAvailableTradeShips()<=0">💸 지원</button>
+            </div>
+          </div>
+
+          <!-- 식민지 상시 함대 배치 수호 함대 -->
+          <div class="bg-slate-950/60 rounded p-1.5 mb-2 text-[9px]">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-indigo-300 font-bold">🛡️ 배치 수호함대: {{ fmt(colonyGuards[c.planetId] || 0) }} 전투력</span>
+              <span class="text-slate-500">가용: {{ fmt(getAvailableFleetPower()) }}</span>
+            </div>
+            <div class="flex gap-1">
+              <button class="btn btn-xs flex-1 border-indigo-800/40 text-indigo-300 hover:bg-indigo-900/20" @click="assignColonyGuard(c.planetId, 100)" :disabled="getAvailableFleetPower() < 100">🛡️ +100 배치</button>
+              <button class="btn btn-xs flex-1 border-slate-700 text-slate-400 hover:bg-slate-800/30" @click="removeColonyGuard(c.planetId, 100)" :disabled="!(colonyGuards[c.planetId] >= 100)">🛡️ -100 회수</button>
             </div>
           </div>
 
@@ -786,8 +893,29 @@
             </span>
           </div>
 
+          <!-- 수동 수송 배정 인터페이스 -->
+          <div v-if="!c.transporting" class="bg-slate-950/40 border border-slate-800 rounded p-1.5 mb-2 text-[9px]">
+            <div class="flex justify-between items-center mb-1 text-slate-400">
+              <span>📦 수송물자 선택 배정 (최대 {{ tradeShip.cargo }})</span>
+              <button class="text-indigo-400 hover:text-indigo-300 font-bold" style="font-size:7.5px" @click="autoFillColonyTransport(c)">⚡ 전량 채우기</button>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <div v-for="k in ['metal','crystal','hydrogen','plasma','solar','fission','fusion']" :key="k" v-if="c.resources[k] > 0" class="flex items-center justify-between">
+                <span class="text-[8px] text-slate-400">{{ {'metal':'⛏️ 메탈','crystal':'💎 크리스탈','hydrogen':'⚡ 수소','plasma':'🔵 플라즈마','solar':'☀️ 태양열','fission':'⚛️ 핵분열','fusion':'🔥 핵융합'}[k] }}</span>
+                <div class="flex items-center gap-1">
+                  <input type="number" v-model.number="initColonyTransportSelections(c)[k]" min="0" :max="Math.floor(c.resources[k])" class="w-12 bg-slate-900 border border-slate-700 rounded px-1 text-center text-slate-200" style="font-size:8px" @input="limitTransportInput(c, k)">
+                  <span class="text-[7.5px] text-slate-500">/{{ Math.floor(c.resources[k]) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-between items-center mt-1.5 pt-1.5 border-t border-slate-800/60 text-[8px]">
+              <span class="text-slate-400">총 적재량: <strong class="text-amber-400">{{ getColonyTransportTotal(c) }}</strong> / {{ tradeShip.cargo }}</span>
+              <span class="text-slate-500">수소 연료: {{ Math.ceil(getColonyTransportTotal(c) * 0.001) }}</span>
+            </div>
+          </div>
+
           <div class="flex gap-1">
-            <button class="btn btn-sm btn-warning flex-1 text-[9px]" @click="startTransport(c)" :disabled="c.transporting || colonizer.count <= 0">
+            <button class="btn btn-sm btn-warning flex-1 text-[9px]" @click="startColonyTransport(c)" :disabled="c.transporting || getAvailableTradeShips()<=0">
               {{ c.transporting ? '🚀 운송중...' : '📦 본진으로 운송' }}
             </button>
           </div>
@@ -885,8 +1013,21 @@
             <div class="flex justify-between text-[9px]"><span class="text-amber-300">건조중 {{ tradeShip.buildCount }}척</span><span class="text-slate-400">{{ fmtTime(tradeShip.totalTime - tradeShip.elapsed) }}</span></div>
             <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" :style="{width: (tradeShip.elapsed/tradeShip.totalTime*100)+'%'}"></div></div>
           </div>
-          <div v-if="tradeShip.count > 0 && !trading" class="mt-1">
-            <button class="btn btn-sm btn-primary" @click="tradeShip.cargo = Math.min(999, tradeShip.cargo + 50)" style="font-size:7px">📦 화물 확장 (임시)</button>
+          <div v-if="tradeShip.count > 0" class="mt-2 pt-2 border-t border-slate-700/50 flex flex-col gap-1.5 text-[9px]">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-300">📦 화물 공간 (LV {{ tradeShip.cargoLevel || 1 }}): {{ tradeShip.cargo }}</span>
+              <button class="btn btn-xs btn-ghost border-amber-800/40 text-amber-300 py-0.5 px-2 hover:bg-amber-900/20"
+                      @click="upgradeTradeShipCargo()" :disabled="!canUpgradeTradeShipCargo()">
+                ⬆️ 확장 (⛏️{{ fmt(tradeShipCargoUpgradeCost().metal) }} 💎{{ fmt(tradeShipCargoUpgradeCost().crystal) }})
+              </button>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-300">⚡ 엔진 속도 (LV {{ tradeShip.speedLevel || 1 }}): ×{{ (tradeShip.speed || 1.0).toFixed(1) }}</span>
+              <button class="btn btn-xs btn-ghost border-amber-800/40 text-amber-300 py-0.5 px-2 hover:bg-amber-900/20"
+                      @click="upgradeTradeShipSpeed()" :disabled="!canUpgradeTradeShipSpeed()">
+                ⬆️ 엔진 (⛏️{{ fmt(tradeShipSpeedUpgradeCost().metal) }} 💎{{ fmt(tradeShipSpeedUpgradeCost().crystal) }})
+              </button>
+            </div>
           </div>
         </div>
 
