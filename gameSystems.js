@@ -110,7 +110,7 @@ const BUILDING_TEMPLATES = [
   ];
 
   const SHIP_TEMPLATES = [
-    { type: 'scout', name: '정찰기', icon: '🛰️', power: 0.1, cost: { metal: 100 }, time: 10, strongAgainst: null, awarenessNeeded: 0, img: 'img/정찰기.jpg', maxLevel: 5, upgradeTime: 30, special: '탐사' },
+    { type: 'scout', name: '정찰기', icon: '🛰️', power: 0.1, cost: { metal: 100, crystal: 0 }, time: 10, strongAgainst: null, awarenessNeeded: 0, img: 'img/정찰기.jpg', maxLevel: 5, upgradeTime: 30, special: '탐사' },
     { type: 'corvette', name: '초계함', icon: '🚀', power: 1, cost: { metal: 3000, crystal: 500 }, time: 20, strongAgainst: 'pirate_fleet', awarenessNeeded: 0, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 60 },
     { type: 'fast_boat', name: '고속함', icon: '🎯', power: 5, cost: { metal: 8000, crystal: 1500 }, time: 30, strongAgainst: 'raider', awarenessNeeded: 500, img: 'img/ship-torpedo.jpg', maxLevel: 10, upgradeTime: 60, requiresBuilding: 'crystal_fac' },
     { type: 'frigate', name: '호위함', icon: '🛡️', power: 25, cost: { metal: 15000, crystal: 4000 }, time: 60, strongAgainst: 'marauder', awarenessNeeded: 2000, img: 'img/ship-corvette.jpg', maxLevel: 8, upgradeTime: 120, requiresBuilding: 'drone_hub' },
@@ -155,6 +155,15 @@ const BUILDING_TEMPLATES = [
       prices: { metal: 1.3, crystal: 2.2, hydrogen: 0.4 } }
   ];
   const RES_BASE_VALUE = { metal: 10, crystal: 25, hydrogen: 40 };
+  const PLANET_DIST_MULTIPLIERS = {
+    earth: 1.0,
+    venus: 1.5,
+    europa: 2.0,
+    io: 2.5,
+    titan: 3.0,
+    kepler: 4.0,
+    andromeda: 6.0
+  };
 
   const RAID_TARGETS = [
     { id: 'raid_1', name: '해적 아지트', icon: '🏴‍☠️', desc: '소규모 해적 근거지. 초보 약탈에 적합.',
@@ -382,8 +391,11 @@ const COLONY_FACTORY_TYPES = [
         auctionActive: false, auctionBuilding: null, auctionPrice: 0, auctionDiscount: 0, auctionTimer: 0, auctionChance: 0,
         eventMessage: '', eventTimer: 0,
 
-        activeTab: 'buildings',
-        researchTab: 'science',
+         activeTab: 'buildings',
+         baseActiveSubTab: 'construction',
+         activeBasePlanetId: 'earth',
+         tradeTasks: [],
+         researchTab: 'science',
         _saveTick: 0, _toastT: null,
         lastSeen: 0, offlineReport: null,
         flagship: {
@@ -857,6 +869,9 @@ const COLONY_FACTORY_TYPES = [
         const bonus = Math.round((p.bonusPerLevel || 0) * p.explorationLevel * 100);
         return `${p.bonusDesc.replace(/\(.*?\)/, `(+${bonus}%)`)}`;
       },
+      getPlanetMultiplier(planetId) {
+        return { earth: 1.0, venus: 1.5, europa: 2.0, io: 2.5, titan: 3.0, kepler: 4.0, andromeda: 6.0 }[planetId] || 1.0;
+      },
       fmt(n) {
         try { const d = new Decimal(n); if (!d.isFinite()) return '0'; const abs = d.abs();
           if (abs.gte('1e30')) return d.toExponential(2).replace('e+', 'e');
@@ -882,7 +897,7 @@ const COLONY_FACTORY_TYPES = [
         if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
         this.money = this.money.sub(b.currentPrice);
         b.owned = 1; b.building = true;
-        const buildSpeedMult = this.effectiveShipBuildSpeedMult;
+        const buildSpeedMult = this.effectiveShipBuildSpeedMult * this.getPlanetMultiplier(this.activeBasePlanetId);
         b.buildTotal = Math.max(1, Math.floor(b.buildTime * buildSpeedMult));
         b.buildRemaining = b.buildTotal;
         slot.busy = true; slot.buildingId = b.id; slot.action = 'buy'; slot.level = 1;
@@ -910,7 +925,7 @@ const COLONY_FACTORY_TYPES = [
         if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
         const cost = this.upgradeCost(b);
         const nextLv = b.level + 1;
-        const buildSpeedMult = this.effectiveShipBuildSpeedMult;
+        const buildSpeedMult = this.effectiveShipBuildSpeedMult * this.getPlanetMultiplier(this.activeBasePlanetId);
         const buildTime = Math.max(1, Math.floor(b.buildTime * Math.pow(1.15, nextLv - 1) * buildSpeedMult));
         this.money = this.money.sub(cost);
         b.building = true; b.buildTotal = buildTime; b.buildRemaining = buildTime;
@@ -1140,38 +1155,50 @@ const COLONY_FACTORY_TYPES = [
           }
         }
         
-        // 자동 무역 로직
-        if (this.autoTrade && this.tradeShip.count > 0) {
-          this.autoTradeTimer -= dt;
-          if (this.autoTradeTimer <= 0) {
-            const speed = this.tradeShip.speed || 1;
-            let baseDuration = 30; // seconds
-            let profitPerUnit = 3.2; // Earth-Mars metal
-            let routeName = "지구-화성 메탈 왕복 노선";
-
-            if (this.autoTradeRoute === 'earth_asteroid') {
-              baseDuration = 60;
-              profitPerUnit = 10.0;
-              routeName = "지구-소행성대 크리스탈 왕복 노선";
+        // 무역 태스크 업데이트 (병렬 큐)
+        if (this.tradeTasks && this.tradeTasks.length > 0) {
+          const nextTasks = [];
+          for (const task of this.tradeTasks) {
+            task.elapsed += dt;
+            if (task.elapsed >= task.duration) {
+              if (task.type === 'exchange_sell') {
+                const profit = new Decimal(task.profit);
+                this.money = this.money.add(profit);
+                this.toast(`🔁 무역선 복귀: ${this.$RES_ICO[task.resKey] || ''} 판매 완료! +💰${this.fmt(profit)} 골드`);
+                this.totalTrades++;
+              } else if (task.type === 'exchange_buy') {
+                const actualAmount = task.amount;
+                const maxCap = this.resources[task.resKey + 'Max'] || new Decimal(999999);
+                const current = this.resources[task.resKey] || new Decimal(0);
+                const actual = Decimal.min(maxCap.sub(current), new Decimal(actualAmount));
+                this.resources[task.resKey] = current.add(actual);
+                this.toast(`🔁 무역선 복귀: ${this.$RES_ICO[task.resKey] || ''} 매수 수입! +${this.fmt(actual)} 획득`);
+                this.totalTrades++;
+              } else if (task.type === 'colony_support') {
+                const col = this.colonies.find(c => c.planetId === task.colonyId);
+                if (col) {
+                  col.resources.metal = (col.resources.metal || 0) + task.amount;
+                  this.toast(`💸 무역선 도착: ${col.name} 지원 완료! +${this.fmt(task.amount)} 골드상당 메탈 전달`);
+                }
+              } else if (task.type === 'auto_trade') {
+                const profit = new Decimal(task.profit);
+                this.money = this.money.add(profit);
+                this.toast(`🤖 자동 무역 완료! ${task.routeName} 수송으로 +💰${this.fmt(profit)} 골드 획득!`);
+                this.tradeLog.push(`🤖 [자동 무역] ${task.routeName} 완료 (+${this.fmt(profit)} 골드)`);
+                if (this.tradeLog.length > 20) this.tradeLog.shift();
+                this.totalTradeProfit += profit.toNumber();
+              }
+            } else {
+              nextTasks.push(task);
             }
+          }
+          this.tradeTasks = nextTasks;
+        }
 
-            const tripDuration = Math.max(2, baseDuration / speed);
-            this.autoTradeTimer = tripDuration;
-
-            let boost = 1;
-            if (this.prestigePerks && this.prestigePerks.trade_boost) {
-              boost += this.prestigePerks.trade_boost * 0.2;
-            }
-            const cargoCap = (this.tradeShip.cargo || 100) * this.tradeShip.count;
-            const profit = new Decimal(Math.floor(cargoCap * profitPerUnit * boost));
-
-            this.money = this.money.add(profit);
-            this.toast(`🤖 자동 무역 완료! ${routeName} 수송으로 +💰${this.fmt(profit)} 골드 획득!`);
-            
-            this.tradeLog.push(`🤖 [자동 무역] ${routeName} 완료 (+${this.fmt(profit)} 골드)`);
-            if (this.tradeLog.length > 20) this.tradeLog.shift();
-            
-            this.totalTradeProfit += profit.toNumber();
+        // 가용 무역선 자동 무역 자동 배치
+        if (this.autoTrade) {
+          while (this.getAvailableTradeShips() > 0) {
+            this.spawnAutoTradeTask();
           }
         }
       },
@@ -1500,12 +1527,14 @@ const COLONY_FACTORY_TYPES = [
         this.exploreTravelOverlay = true;
         this.exploreTravelTimer = 2;
         this.exploreFlavor = '🚀 항성계로 워프 중...';
-        this.toast(`🚀 ${p.name} 탐험 시작 (${Math.round(this.exploreChanceFor(p)*100)}%, ${this.fmtTime(Math.max(30, 120 - this.colonizer.count * 5))})`);
+        const rawTime = Math.max(30, 120 - this.colonizer.count * 5);
+        const expTime = Math.max(5, Math.floor(rawTime * this.getPlanetMultiplier(p.id)));
+        this.toast(`🚀 ${p.name} 탐험 시작 (${Math.round(this.exploreChanceFor(p)*100)}%, ${this.fmtTime(expTime)})`);
         setTimeout(() => {
           this.exploreTravelOverlay = false;
           this.exploring = true; this.explorePlanet = p;
           this.exploreChance = this.exploreChanceFor(p);
-          this.exploreTimer = Math.max(30, 120 - this.colonizer.count * 5);
+          this.exploreTimer = expTime;
           this.exploreFlavor = '🚀 항성계로 진입 중...';
           this.exploreFlavorTimer = 3;
         }, 2000);
@@ -1669,18 +1698,30 @@ const COLONY_FACTORY_TYPES = [
         this.resources.hydrogen = this.resources.hydrogen.sub(hydroCost);
         colony.transporting = true;
         colony.transportProgress = 0;
-        colony.transportTime = 30 + total * 0.01;
+        colony.transportTime = Math.max(2, (30 + total * 0.01) * this.getPlanetMultiplier(colony.planetId));
         colony.transportAmounts = amounts;
         this.toast(`📦 자원 ${this.fmt(total)} 운송 시작 (수소 -${hydroCost}, ${this.fmtTime(colony.transportTime)})`);
       },
       sendMoneyToColony(colony, amountText) {
+        if (this.getAvailableTradeShips() <= 0) {
+          this.toast('⚠️ 가용 무역선이 부족합니다');
+          return;
+        }
         let amt = parseFloat(amountText);
         if (isNaN(amt) || amt <= 0) amt = 5000;
         const decAmt = new Decimal(amt);
         if (this.money.lt(decAmt)) { this.toast('🚫 본진 자금이 부족합니다.'); return; }
         this.money = this.money.sub(decAmt);
-        colony.resources.metal = (colony.resources.metal || 0) + amt;
-        this.toast(`💸 ${colony.name}로 ${this.fmt(decAmt)} 골드(자원환산 메탈) 지원!`);
+        const duration = Math.max(2, 15 * this.getPlanetMultiplier(colony.planetId));
+        this.tradeTasks.push({
+          id: Math.random().toString(36).substr(2, 9),
+          type: 'colony_support',
+          colonyId: colony.planetId,
+          amount: amt,
+          duration: duration,
+          elapsed: 0
+        });
+        this.toast(`💸 무역선 출발: ${colony.name} 지원 시작 (${this.fmtTime(duration)})`);
       },
       triggerColonyInvasion(colony) {
         if (!colony) return;
@@ -2209,6 +2250,44 @@ const COLONY_FACTORY_TYPES = [
         }
       },
 
+      getAvailableTradeShips() {
+        let busy = 0;
+        if (this.tradeTasks) busy += this.tradeTasks.length;
+        if (this.colonies) busy += this.colonies.filter(c => c.transporting).length;
+        if (this.trading) busy += 1;
+        return Math.max(0, (this.tradeShip ? this.tradeShip.count : 0) - busy);
+      },
+      spawnAutoTradeTask() {
+        if (!this.tradeShip) return;
+        const speed = this.tradeShip.speed || 1;
+        let baseDuration = 30;
+        let profitPerUnit = 3.2;
+        let routeName = "지구-화성 메탈 왕복 노선";
+
+        if (this.autoTradeRoute === 'earth_asteroid') {
+          baseDuration = 60;
+          profitPerUnit = 10.0;
+          routeName = "지구-소행성대 크리스탈 왕복 노선";
+        }
+
+        const tripDuration = Math.max(2, baseDuration / speed);
+        let boost = 1;
+        if (this.prestigePerks && this.prestigePerks.trade_boost) {
+          boost += this.prestigePerks.trade_boost * 0.2;
+        }
+        const cargoCap = this.tradeShip.cargo || 100;
+        const profit = new Decimal(Math.floor(cargoCap * profitPerUnit * boost));
+
+        this.tradeTasks.push({
+          id: Math.random().toString(36).substr(2, 9),
+          type: 'auto_trade',
+          duration: tripDuration,
+          elapsed: 0,
+          routeName: routeName,
+          profit: profit.toFixed(3)
+        });
+      },
+
       addOfflineIncome(seconds) {
         this.money = this.money.add(this.passiveIncome * seconds * this.effectiveIncomeMult);
         for (const k of RES) { const rate = (this.resourceIncome[k] || 0) * (this.resMultipliers[k] || 1); if (rate > 0) this.resources[k] = Decimal.min(this.resources[k + 'Max'] || new Decimal(999999), this.resources[k].add(rate * seconds)); }
@@ -2216,13 +2295,32 @@ const COLONY_FACTORY_TYPES = [
 
       sellResource(resKey, amount) {
         if (!this.resources[resKey] || this.resources[resKey].lt(amount) || amount <= 0) return;
+        if (this.getAvailableTradeShips() <= 0) {
+          this.toast('⚠️ 가용 무역선이 부족합니다');
+          return;
+        }
         const rate = this.exchangeSellRate[resKey] || 10;
+        const profit = rate * amount;
         this.resources[resKey] = this.resources[resKey].sub(amount);
-        this.money = this.money.add(rate * amount);
-        this.toast(`🔁 ${(window.RES_ICO&&window.RES_ICO[resKey])||''} ${this.fmt(amount)} → 💰 ${this.fmt(rate * amount)}`);
+
+        const duration = Math.max(2, 10 * this.getPlanetMultiplier(this.activeBasePlanetId));
+        this.tradeTasks.push({
+          id: Math.random().toString(36).substr(2, 9),
+          type: 'exchange_sell',
+          resKey: resKey,
+          amount: amount,
+          profit: profit,
+          duration: duration,
+          elapsed: 0
+        });
+        this.toast(`🛳️ 무역선 출발: 자원 수송 시작 (${this.fmtTime(duration)})`);
       },
       buyResource(resKey, amount) {
         if (amount <= 0) return;
+        if (this.getAvailableTradeShips() <= 0) {
+          this.toast('⚠️ 가용 무역선이 부족합니다');
+          return;
+        }
         const rate = Math.floor((this.exchangeSellRate[resKey] || 10) * this.effectiveExchangeBuyRate);
         const cost = rate * amount;
         if (this.money.lt(cost)) return;
@@ -2233,9 +2331,19 @@ const COLONY_FACTORY_TYPES = [
         const actualAmount = Math.min(amount, canBuy.toNumber());
         const actualCost = Math.floor(rate * actualAmount);
         if (this.money.lt(actualCost)) return;
+
         this.money = this.money.sub(actualCost);
-        this.resources[resKey] = current.add(actualAmount);
-        this.toast(`🔁 💰 ${this.fmt(actualCost)} → ${(window.RES_ICO&&window.RES_ICO[resKey])||''} ${this.fmt(actualAmount)}`);
+        const duration = Math.max(2, 10 * this.getPlanetMultiplier(this.activeBasePlanetId));
+        this.tradeTasks.push({
+          id: Math.random().toString(36).substr(2, 9),
+          type: 'exchange_buy',
+          resKey: resKey,
+          amount: actualAmount,
+          cost: actualCost,
+          duration: duration,
+          elapsed: 0
+        });
+        this.toast(`🛳️ 무역선 출발: 자원 수입 시작 (${this.fmtTime(duration)})`);
       },
       applyOffline() {
         if (!this.lastSeen) return;
@@ -2811,7 +2919,9 @@ const COLONY_FACTORY_TYPES = [
             missions: (this.missions || []).map(m => ({ ...m, rewardGold: m.rewardGold ? m.rewardGold.toString() : '0' })),
             raidTargets: this.raidTargets.map(t => ({ id: t.id, active: t.active, timer: t.timer })),
             raidTravel: { active: this.raidTravel.active, targetId: this.raidTravel.target?.id || null, remaining: this.raidTravel.remaining, total: this.raidTravel.total },
-            expedition: { inProgress: this.expedition.inProgress, targetId: this.expedition.targetId, remaining: this.expedition.remaining, total: this.expedition.total, eventId: this.expedition.eventId }
+            expedition: { inProgress: this.expedition.inProgress, targetId: this.expedition.targetId, remaining: this.expedition.remaining, total: this.expedition.total, eventId: this.expedition.eventId },
+            activeBasePlanetId: this.activeBasePlanetId,
+            tradeTasks: this.tradeTasks
           };
           for (const k of RES) data.resources[k] = this.resources[k].toFixed(3);
           localStorage.setItem('systemsState', JSON.stringify(data));
@@ -2825,6 +2935,8 @@ const COLONY_FACTORY_TYPES = [
             return;
           }
           const o = JSON.parse(raw);
+          if (o.activeBasePlanetId) this.activeBasePlanetId = o.activeBasePlanetId;
+          if (o.tradeTasks) this.tradeTasks = o.tradeTasks;
           if (o.money) this.money = new Decimal(o.money);
           if (o.awareness) this.awareness = o.awareness;
           if (o.clickPower) this.clickPower = o.clickPower;

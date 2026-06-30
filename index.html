@@ -118,237 +118,319 @@
 
       <!-- TAB: BASE -->
       <div v-if="activeTab==='buildings'" class="space-y-3">
-        <!-- 행성 기지 돔 비주얼저 -->
-        <div class="card py-3 px-3 relative overflow-hidden border-indigo-500/30 text-center" style="background: linear-gradient(185deg, #0f172a, #1e1b4b); min-height: 120px;">
-          <div class="star-field" style="position:absolute; inset:0; opacity:0.6; pointer-events:none">
-            <div class="star" style="top:10%; left:20%"></div>
-            <div class="star" style="top:30%; left:75%"></div>
-            <div class="star" style="top:70%; left:40%"></div>
-            <div class="star" style="top:50%; left:10%"></div>
-          </div>
-          
-          <div class="relative z-10 flex flex-col justify-between h-full">
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[9px] text-indigo-400 font-bold uppercase tracking-wider">🌌 Planetary Dome Visualizer</span>
-              <span class="text-[9px] bg-indigo-950 text-indigo-300 border border-indigo-800/40 px-2 py-0.5 rounded-full font-bold font-mono">STAGE {{ domeStage }}</span>
-            </div>
-            
-            <div class="my-4 flex items-end justify-center relative min-h-[70px]">
-              <div class="rounded-t-full border-t border-x border-indigo-500/50 bg-indigo-500/5 transition-all duration-700 relative flex items-end justify-center"
-                   :style="{
-                     width: (domeStage === 1 ? '70px' : domeStage === 2 ? '110px' : domeStage === 3 ? '160px' : '220px'),
-                     height: (domeStage === 1 ? '35px' : domeStage === 2 ? '55px' : domeStage === 3 ? '80px' : '100px'),
-                     boxShadow: '0 0 20px rgba(99, 102, 241, ' + (domeStage * 0.15) + ')'
-                   }">
-                <div class="flex items-end gap-1.5 pb-0.5 justify-center z-10 w-full px-2">
-                  <div class="w-2.5 bg-indigo-400/30 rounded-t transition-all duration-500" :style="{ height: domeStage >= 2 ? '25px' : '10px' }"></div>
-                  <div class="w-3.5 bg-indigo-400/50 rounded-t transition-all duration-500" :style="{ height: domeStage >= 3 ? '45px' : '15px' }"></div>
-                  <div class="w-3 bg-cyan-400/60 rounded-t transition-all duration-500" :style="{ height: domeStage >= 4 ? '70px' : '20px' }"></div>
-                  <div class="w-4 bg-indigo-400/40 rounded-t transition-all duration-500" :style="{ height: domeStage >= 3 ? '35px' : '12px' }"></div>
-                </div>
-                <div class="absolute inset-0 rounded-t-full border border-cyan-400/40 animate-pulse pointer-events-none" v-if="domeStage >= 3" style="animation-duration: 3s"></div>
-                <div class="absolute w-px bg-cyan-400 animate-ping" v-if="domeStage >= 4" style="height: 40px; top: -40px;"></div>
-              </div>
-            </div>
-            
-            <div class="text-[9px] text-slate-400">
-              <span v-if="domeStage === 1">🛰️ 미지의 행성에 첫 임시 초소를 구축 중입니다.</span>
-              <span v-else-if="domeStage === 2">🌱 생명유지 돔이 확장되며 소규모 타운이 형성되었습니다.</span>
-              <span v-else-if="domeStage === 3">🛡️ 대형 전자기 방어막 쉴드가 활성화된 중도시 기지입니다.</span>
-              <span v-else-if="domeStage === 4">🌌 차원 도약 안테나가 결합된 ultimate 양자 스타포트 메트로폴리스!</span>
-            </div>
-          </div>
+        <!-- 기지 서브 네비게이션 -->
+        <div class="flex gap-1 p-1 bg-slate-950/60 rounded-lg">
+          <button class="flex-1 py-1 text-[10px] font-bold rounded text-center transition-all cursor-pointer"
+                  :class="baseActiveSubTab==='construction' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'"
+                  @click="baseActiveSubTab='construction'">
+            🏗️ 기지 건설
+          </button>
+          <button class="flex-1 py-1 text-[10px] font-bold rounded text-center transition-all cursor-pointer"
+                  :class="baseActiveSubTab==='info' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'"
+                  @click="baseActiveSubTab='info'">
+            🪐 기지 정보
+          </button>
+          <button class="flex-1 py-1 text-[10px] font-bold rounded text-center transition-all cursor-pointer"
+                  :class="baseActiveSubTab==='missions_trade' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'"
+                  @click="baseActiveSubTab='missions_trade'">
+            📜 임무 & 거래
+          </button>
         </div>
 
-        <!-- 일일/계약 임무 계약판 -->
-        <div class="card py-3 px-3 border-amber-500/20 bg-slate-900/10">
-          <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-700/50">
-            <span class="text-xs font-bold text-amber-400 font-sans">📜 은하계 현상금 & 기부 계약서</span>
-            <span class="text-[9px] text-slate-500">임무를 완수하고 각성석과 골드를 획득하세요</span>
+        <!-- 1. 기지 건설 서브 탭 -->
+        <template v-if="baseActiveSubTab==='construction'">
+          <!-- 건물 가이드 -->
+          <div class="card py-1.5 px-3" style="border-color:rgba(56,189,248,0.2)">
+            <div class="flex items-center justify-between cursor-pointer" @click="guideOpen.buildings = !guideOpen.buildings">
+              <span class="text-[10px] font-bold text-sky-300">📖 건물 가이드</span>
+              <span class="text-[9px] text-slate-500">{{ guideOpen.buildings ? '▲' : '▼' }}</span>
+            </div>
+            <div v-if="guideOpen.buildings" class="text-[8.5px] text-slate-400 leading-relaxed mt-1 pt-1 border-t border-slate-700/50">
+              💰 할인 타이밍(<span class="text-emerald-400">⬇️ 초급매</span>)에 건물을 건설/업그레이드하여 월세를 받고, 인지도(📡)를 올려 새 건물을 해금하세요. LV20 도달 시 각성 보너스를 얻습니다.
+            </div>
           </div>
-          
-          <div class="grid grid-cols-1 gap-2">
-            <div v-for="(mission, idx) in missions" :key="mission.id" class="bg-slate-950/60 p-2 rounded border border-slate-800 flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between mb-0.5">
-                  <span class="text-[10px] font-bold text-amber-300 font-sans">{{ mission.name }}</span>
-                  <span class="text-[8px] font-bold px-1.5 py-px rounded bg-slate-900 font-mono" :class="canCompleteMission(mission) ? 'text-emerald-400' : 'text-slate-500'">
-                    {{ mission.type === 'deliver_metal' ? (fmt(resources.metal) + '/' + fmt(mission.reqAmount)) : (mission.progress + '/' + mission.target) }}
-                  </span>
+
+          <!-- 건설 슬롯 -->
+          <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.2)">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-bold text-amber-300">🏗️ 건설 슬롯 ({{ constructionSlots.filter(s=>s.busy).length }}/{{ maxConstructionSlots }})</span>
+            </div>
+            <div v-for="(slot,i) in constructionSlots" :key="i" class="flex items-center gap-2 text-[9px] py-1 border-b border-slate-800/50 last:border-0">
+              <template v-if="slot.busy">
+                <div class="flex-1">
+                  <div class="flex justify-between">
+                    <span class="text-sky-300">{{ slot.action==='buy'?'🏗️ 건설':'⬆️ 업글' }} {{ (buildings.find(b=>b.id===slot.buildingId)||{}).name }}</span>
+                    <span class="text-amber-300/80">{{ fmtTime(slot.remaining) }}</span>
+                  </div>
+                  <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" :style="{width: ((1-slot.remaining/slot.total)*100)+'%'}"></div></div>
                 </div>
-                <div class="text-[8.5px] text-slate-400 leading-snug">{{ mission.desc }}</div>
+                <button class="btn btn-sm btn-danger" style="font-size:7px" @click="cancelConstruction(i)">✕</button>
+              </template>
+              <span v-else class="text-slate-600 flex-1">🟢 빈 슬롯</span>
+            </div>
+          </div>
+
+          <!-- 클릭 골드 획득 -->
+          <div class="card py-2 px-3 mb-2" style="border-color:rgba(250,204,21,0.2)">
+            <div class="flex items-center gap-3 justify-center py-1">
+              <button class="click-btn" ref="clickBtn" @click="doClick($event)" :class="{glow: boostTimer>0}" :style="boostTimer>0?{boxShadow:'0 0 30px rgba(251,191,36,0.5)'}:{}">💸</button>
+              <div class="text-[10px] text-slate-500">
+                <div>클릭당</div>
+                <div class="text-sm font-bold text-slate-200">+{{ fmt(effectiveClickPower * (boostTimer>0?boostMultItem:1)) }}</div>
+              </div>
+              <div class="text-[9px] text-amber-400 ml-1" v-if="boostTimer>0">⚡ ×{{ boostMultItem }} {{ fmtTime(boostTimer) }}</div>
+            </div>
+            <div class="flex items-center gap-2 justify-center text-[8px] py-0.5" v-if="autoClicker || autoBuilder">
+              <span v-if="autoClicker" class="text-sky-400">🤖 자동클릭 {{ fmtTime(autoClickerTimer) }}</span>
+              <span v-if="autoBuilder" class="text-emerald-400">🧠 자동건설</span>
+            </div>
+          </div>
+
+          <!-- 이벤트 메세지 (건설 중 발생) -->
+          <div class="card py-2 px-3 mb-2 animate-pulse" v-if="eventMessage" style="border-color: rgba(234,179,8,0.4)">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] text-yellow-300">{{ eventMessage }}</span>
+              <button class="btn btn-sm btn-warning" @click="resolveEvent">해결</button>
+            </div>
+          </div>
+
+          <!-- 건물 목록 -->
+          <div class="space-y-2">
+            <div v-for="b in visibleBuildings" :key="b.id" class="card relative build-card" :class="{'shake': b.cooldown>0 && b.level>0}">
+              <div class="flex gap-2">
+                <div class="img-wrap">
+                  <img :src="b.img" :alt="b.name" class="build-img" onerror="this.onerror=null;var m={'mine':'1','crystal_fac':'2','drone_hub':'11','refinery':'3','recycler':'10','solar_plant':'4','plasma_coil':'7','fission_reactor':'5','fusion_reactor':'6','outpost':'9'};this.src='img/'+(m[this.getAttribute('data-id')]||'1')+'.jpg'" @click.stop="showPreview(b.img)" style="cursor:pointer" :data-id="b.id">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-200">{{ b.icon }} {{ b.name }}</span>
+                    <span class="text-[9px] font-bold" :class="b.level>0?'text-purple-300':'text-slate-600'">{{ b.level>0 ? 'LV '+b.level : '미건설' }}</span>
+                  </div>
+                  <div class="text-[9px] text-slate-500 leading-tight mt-px">{{ b.desc }}</div>
+                  <div class="text-[7px] text-purple-400/70 mt-px" v-if="b.level===0 && !b.building">
+                    건설 시 📡+{{ b.awarenessGiven }} · 예상시간 {{ fmtTime(b.buildTime * effectiveShipBuildSpeedMult * getPlanetMultiplier(activeBasePlanetId)) }}
+                  </div>
+
+                  <div v-if="b.building" class="mt-1">
+                    <div class="flex justify-between text-[8px]">
+                      <span class="text-amber-300">🏗️ 건설중</span>
+                      <span class="text-amber-300/80">{{ fmtTime(b.buildRemaining) }}</span>
+                    </div>
+                    <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" :style="{width: ((1-b.buildRemaining/b.buildTotal)*100)+'%'}"></div></div>
+                  </div>
+
+                  <div v-if="b.level>0 && b.res && !b.building" class="flex items-center gap-1.5 mt-1 text-[10px]">
+                    <span :style="{color: $RES_COLOR[b.res]}">{{ $RES_ICO[b.res] }} {{ fmt(resources[b.res]) }}</span>
+                    <span class="text-emerald-400/80 text-[9px]">+{{ fmt((resourceIncome[b.res]||0)*(resMultipliers[b.res]||1)) }}/s</span>
+                  </div>
+
+                  <div v-if="!b.building && b.level===0" class="flex items-center justify-between mt-1">
+                    <span class="text-[11px] font-bold" :class="'price-tier-'+b.priceTier">💰 {{ fmt(b.currentPrice) }} <span class="text-[8px] font-normal ml-1">{{ tierLabel(b.priceTier) }}</span></span>
+                    <span class="text-[8px] text-slate-500">월수익 💰 {{ fmt(b.income) }}</span>
+                  </div>
+                  <div v-else-if="!b.building" class="flex items-center justify-between mt-1">
+                    <span class="text-[8px] text-slate-500">월수익 <span class="text-emerald-300">{{ fmt(b.income * b.level * effectiveIncomeMult * (1 + 0.12*(b.level-1))) }}/s</span></span>
+                    <span class="text-[7.5px] text-purple-300/80" v-if="b.level < b.maxLevel">
+                      ⬆️ {{ fmt(upgradeCost(b)) }} (⏳{{ fmtTime(Math.max(1, Math.floor(b.buildTime * Math.pow(1.15, b.level) * effectiveShipBuildSpeedMult * getPlanetMultiplier(activeBasePlanetId)))) }})
+                    </span>
+                    <span class="text-[8px] text-emerald-400/80" v-else-if="buildingAwakened[b.id]">✨ {{ buildingAwakeningEffects[b.id].name }}</span>
+                    <span class="text-[8px] text-slate-500" v-else-if="b.tier > 1 && transcendLevel < b.tier - 1">각성 조건: 초월 Lv{{ b.tier - 1 }}+</span>
+                    <span class="text-[8px] text-amber-400/80" v-else>MAX · 각성 가능</span>
+                  </div>
+
+                  <div v-if="!b.building" class="flex gap-1 mt-1">
+                    <button v-if="b.level===0" class="btn btn-sm btn-success flex-1" @click="buyBuilding(b, $event)" :disabled="!canBuyBuilding(b)">건설</button>
+                    <button v-else-if="buildingAwakened[b.id]" class="btn btn-sm btn-ghost flex-1" disabled>✨ 각성</button>
+                    <button v-else-if="b.level>=b.maxLevel" class="btn btn-sm btn-warning flex-1" @click="awakenBuilding(b)">✨ 각성</button>
+                    <button v-else class="btn btn-sm flex-1" style="background:#7c3aed;color:#fff" @click="upgradeBuilding(b, $event)" :disabled="!canUpgradeBuilding(b)">⬆️ 업글</button>
+                  </div>
+                  <div class="text-[7px] text-slate-600 mt-px" v-if="b.cooldown>0">⏳ {{ fmtTime(b.cooldown) }}</div>
+                </div>
+              </div>
+              <div class="locked-overlay" v-if="buildingLocked(b) && b.level===0 && !b.building">
+                <div class="text-[11px] text-slate-400 mb-1">🔒</div>
+                <div class="text-[9px] text-slate-500 text-center px-2 leading-relaxed">{{ buildingLockReason(b) }}</div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- 2. 기지 정보 서브 탭 -->
+        <template v-if="baseActiveSubTab==='info'">
+          <!-- 행성 기지 돔 비주얼저 -->
+          <div class="card py-3 px-3 relative overflow-hidden border-indigo-500/30 text-center" style="background: linear-gradient(185deg, #0f172a, #1e1b4b); min-height: 120px;">
+            <div class="star-field" style="position:absolute; inset:0; opacity:0.6; pointer-events:none">
+              <div class="star" style="top:10%; left:20%"></div>
+              <div class="star" style="top:30%; left:75%"></div>
+              <div class="star" style="top:70%; left:40%"></div>
+              <div class="star" style="top:50%; left:10%"></div>
+            </div>
+            
+            <div class="relative z-10 flex flex-col justify-between h-full">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[9px] text-indigo-400 font-bold uppercase tracking-wider">🌌 Planetary Dome Visualizer</span>
+                <span class="text-[9px] bg-indigo-950 text-indigo-300 border border-indigo-800/40 px-2 py-0.5 rounded-full font-bold font-mono">STAGE {{ domeStage }}</span>
               </div>
               
-              <div class="flex items-center justify-between border-t border-slate-800/60 pt-1 mt-1.5">
-                <span class="text-[7.5px] text-slate-500 font-sans">보상: 💰{{ fmt(mission.rewardGold) }} / 💎각성석 {{ mission.rewardStones }}개</span>
-                <button class="btn btn-xs btn-ghost border-amber-800/40 text-amber-300 text-[8px] py-0.5 px-2 hover:bg-amber-900/20 font-sans"
-                        @click="completeMission(idx)" :disabled="!canCompleteMission(mission)">
-                  📜 완료 수령
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card py-1.5 px-3" style="border-color:rgba(56,189,248,0.2)">
-          <div class="flex items-center justify-between cursor-pointer" @click="guideOpen.buildings = !guideOpen.buildings">
-            <span class="text-[10px] font-bold text-sky-300">📖 건물 가이드</span>
-            <span class="text-[9px] text-slate-500">{{ guideOpen.buildings ? '▲' : '▼' }}</span>
-          </div>
-          <div v-if="guideOpen.buildings" class="text-[8.5px] text-slate-400 leading-relaxed mt-1 pt-1 border-t border-slate-700/50">
-            💰 할인 타이밍(<span class="text-emerald-400">⬇️ 초급매</span>)에 건물을 건설/업그레이드하여 월세를 받고, 인지도(📡)를 올려 새 건물을 해금하세요. LV20 도달 시 각성 보너스를 얻습니다.
-          </div>
-        </div>
-        <div class="card card-accent py-2 px-3">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-bold text-purple-400">📡 명성 <span class="text-[9px] text-slate-500 font-normal">(인지도)</span></span>
-            <span class="text-[11px] text-purple-300">{{ fmt(awareness) }}</span>
-          </div>
-          <div class="progress-bar mb-1">
-            <div class="progress-fill" :style="{width: fameMilestoneProgress+'%', background: '#a78bfa'}"></div>
-          </div>
-          <div class="text-[9px] text-slate-500" v-if="nextFameMilestone">🏆 다음 목표: <span class="text-amber-300">{{ nextFameMilestone.name }}</span> ({{ fmt(nextFameMilestone.need) }})<br>{{ nextFameMilestone.desc }}</div>
-          <div class="text-[9px] text-emerald-400" v-else>✨ 모든 명성 업적 달성!</div>
-          <div class="text-[8px] text-amber-400/70 mt-1" v-if="fameBonusDisplay">🏅 명성 보너스: 수입 {{ fameBonusDisplay }}</div>
-        </div>
-
-        <div class="card py-2 px-3" v-if="nextUnlock" style="border-color:rgba(56,189,248,0.15)">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[10px] font-bold text-sky-300">📋 다음 잠금해제</span>
-          </div>
-          <div class="flex items-center gap-1 text-[9px]">
-            <span class="text-sky-400">{{ nextUnlock.icon }} {{ nextUnlock.name }}</span>
-            <span class="text-slate-500">· {{ nextUnlock.need }}</span>
-          </div>
-          <div class="progress-bar mt-1" v-if="nextUnlock.progress > 0 && nextUnlock.progress < 100">
-            <div class="progress-fill bg-sky-400" :style="{width: nextUnlock.progress+'%'}"></div>
-          </div>
-        </div>
-
-        <div class="card py-2 px-3" v-if="eventMessage">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] text-yellow-300">{{ eventMessage }}</span>
-            <button class="btn btn-sm btn-warning" @click="resolveEvent">해결</button>
-          </div>
-        </div>
-
-        <div class="card py-2 px-3" v-if="auctionActive && auctionBuilding">
-          <div class="flex items-center justify-between">
-            <div class="text-[11px]">
-              <span class="text-rose-300">🔔</span>
-              <span class="text-slate-200">{{ auctionBuilding.name }}</span>
-              <span class="text-emerald-300 ml-1">{{ fmt(auctionPrice) }}</span>
-              <span class="text-slate-500 ml-1">({{ Math.round((1-auctionDiscount)*100) }}%↓)</span>
-            </div>
-            <button class="btn btn-sm btn-warning" @click="tryAuction">{{ Math.round(auctionChance*100) }}%</button>
-          </div>
-          <div class="text-[8px] text-slate-600 mt-1">{{ fmtTime(auctionTimer) }}</div>
-        </div>
-
-        <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.3)">
-          <div class="text-[10px] font-bold text-amber-300 mb-1">💱 자원 거래소</div>
-          <div class="text-[7px] text-slate-500 mb-2">판매: 자원→돈 · 구매: 돈→자원 (매수 +50% 수수료)</div>
-          <div class="space-y-1">
-            <div v-for="k in ['metal','crystal','hydrogen','plasma','solar','fission','fusion']" :key="k" v-if="visibleResources[k]" class="flex items-center justify-between bg-slate-900/50 rounded px-2 py-1 text-[9px]">
-              <span class="w-16">{{ {'metal':'⛏️ 메탈','crystal':'💎 크리스탈','hydrogen':'⚡ 수소','plasma':'🔵 플라즈마','solar':'☀️ 태양열','fission':'⚛️ 핵분열','fusion':'🔥 핵융합'}[k] }}</span>
-              <span class="text-emerald-400/70">판매 {{ exchangeSellRate[k] }}/개</span>
-              <span class="text-rose-400/70">매수 {{ Math.floor(exchangeSellRate[k]*effectiveExchangeBuyRate) }}/개</span>
-              <div class="flex gap-0.5">
-                <button class="btn btn-sm btn-success" style="font-size:7px;padding:1px 4px" @click="sellResource(k,Math.min(100,(resources[k]||0).toNumber()))" :disabled="!(resources[k]||0).gte(1)">📤</button>
-                <button class="btn btn-sm btn-primary" style="font-size:7px;padding:1px 4px" @click="buyResource(k,10)" :disabled="money.lt(Math.floor(exchangeSellRate[k]*effectiveExchangeBuyRate)*10)">📥</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.2)">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[10px] font-bold text-amber-300">🏗️ 건설 슬롯 ({{ constructionSlots.filter(s=>s.busy).length }}/{{ maxConstructionSlots }})</span>
-          </div>
-          <div v-for="(slot,i) in constructionSlots" :key="i" class="flex items-center gap-2 text-[9px] py-1 border-b border-slate-800/50 last:border-0">
-            <template v-if="slot.busy">
-              <div class="flex-1">
-                <div class="flex justify-between">
-                  <span class="text-sky-300">{{ slot.action==='buy'?'🏗️ 건설':'⬆️ 업글' }} {{ (buildings.find(b=>b.id===slot.buildingId)||{}).name }}</span>
-                  <span class="text-amber-300/80">{{ fmtTime(slot.remaining) }}</span>
-                </div>
-                <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" :style="{width: ((1-slot.remaining/slot.total)*100)+'%'}"></div></div>
-              </div>
-              <button class="btn btn-sm btn-danger" style="font-size:7px" @click="cancelConstruction(i)">✕</button>
-            </template>
-            <span v-else class="text-slate-600 flex-1">🟢 빈 슬롯</span>
-          </div>
-        </div>
-
-        <div class="card py-2 px-3 mb-2" style="border-color:rgba(250,204,21,0.2)">
-          <div class="flex items-center gap-3 justify-center py-1">
-            <button class="click-btn" ref="clickBtn" @click="doClick($event)" :class="{glow: boostTimer>0}" :style="boostTimer>0?{boxShadow:'0 0 30px rgba(251,191,36,0.5)'}:{}">💸</button>
-            <div class="text-[10px] text-slate-500">
-              <div>클릭당</div>
-              <div class="text-sm font-bold text-slate-200">+{{ fmt(effectiveClickPower * (boostTimer>0?boostMultItem:1)) }}</div>
-            </div>
-            <div class="text-[9px] text-amber-400 ml-1" v-if="boostTimer>0">⚡ ×{{ boostMultItem }} {{ fmtTime(boostTimer) }}</div>
-          </div>
-          <div class="flex items-center gap-2 justify-center text-[8px] py-0.5" v-if="autoClicker || autoBuilder">
-            <span v-if="autoClicker" class="text-sky-400">🤖 자동클릭 {{ fmtTime(autoClickerTimer) }}</span>
-            <span v-if="autoBuilder" class="text-emerald-400">🧠 자동건설</span>
-          </div>
-        </div>
-
-        <div class="space-y-2">
-          <div v-for="b in visibleBuildings" :key="b.id" class="card relative build-card" :class="{'shake': b.cooldown>0 && b.level>0}">
-            <div class="flex gap-2">
-              <div class="img-wrap">
-                <img :src="b.img" :alt="b.name" class="build-img" onerror="this.onerror=null;var m={'mine':'1','crystal_fac':'2','drone_hub':'11','refinery':'3','recycler':'10','solar_plant':'4','plasma_coil':'7','fission_reactor':'5','fusion_reactor':'6','outpost':'9'};this.src='img/'+(m[this.getAttribute('data-id')]||'1')+'.jpg'" @click.stop="showPreview(b.img)" style="cursor:pointer" :data-id="b.id">
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-bold text-slate-200">{{ b.icon }} {{ b.name }}</span>
-                  <span class="text-[9px] font-bold" :class="b.level>0?'text-purple-300':'text-slate-600'">{{ b.level>0 ? 'LV '+b.level : '미건설' }}</span>
-                </div>
-                <div class="text-[9px] text-slate-500 leading-tight mt-px">{{ b.desc }}</div>
-                <div class="text-[7px] text-purple-400/70 mt-px" v-if="b.level===0 && !b.building">건설 시 📡+{{ b.awarenessGiven }} · 업글 시 📡+{{ b.awarenessGiven }}×LV</div>
-
-                <div v-if="b.building" class="mt-1">
-                  <div class="flex justify-between text-[8px]">
-                    <span class="text-amber-300">🏗️ 건설중</span>
-                    <span class="text-amber-300/80">{{ fmtTime(b.buildRemaining) }}</span>
+              <div class="my-4 flex items-end justify-center relative min-h-[70px]">
+                <div class="rounded-t-full border-t border-x border-indigo-500/50 bg-indigo-500/5 transition-all duration-700 relative flex items-end justify-center"
+                     :style="{
+                       width: (domeStage === 1 ? '70px' : domeStage === 2 ? '110px' : domeStage === 3 ? '160px' : '220px'),
+                       height: (domeStage === 1 ? '35px' : domeStage === 2 ? '55px' : domeStage === 3 ? '80px' : '100px'),
+                       boxShadow: '0 0 20px rgba(99, 102, 241, ' + (domeStage * 0.15) + ')'
+                     }">
+                  <div class="flex items-end gap-1.5 pb-0.5 justify-center z-10 w-full px-2">
+                    <div class="w-2.5 bg-indigo-400/30 rounded-t transition-all duration-500" :style="{ height: domeStage >= 2 ? '25px' : '10px' }"></div>
+                    <div class="w-3.5 bg-indigo-400/50 rounded-t transition-all duration-500" :style="{ height: domeStage >= 3 ? '45px' : '15px' }"></div>
+                    <div class="w-3 bg-cyan-400/60 rounded-t transition-all duration-500" :style="{ height: domeStage >= 4 ? '70px' : '20px' }"></div>
+                    <div class="w-4 bg-indigo-400/40 rounded-t transition-all duration-500" :style="{ height: domeStage >= 3 ? '35px' : '12px' }"></div>
                   </div>
-                  <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" :style="{width: ((1-b.buildRemaining/b.buildTotal)*100)+'%'}"></div></div>
+                  <div class="absolute inset-0 rounded-t-full border border-cyan-400/40 animate-pulse pointer-events-none" v-if="domeStage >= 3" style="animation-duration: 3s"></div>
+                  <div class="absolute w-px bg-cyan-400 animate-ping" v-if="domeStage >= 4" style="height: 40px; top: -40px;"></div>
                 </div>
-
-                <div v-if="b.level>0 && b.res && !b.building" class="flex items-center gap-1.5 mt-1 text-[10px]">
-                  <span :style="{color: $RES_COLOR[b.res]}">{{ $RES_ICO[b.res] }} {{ fmt(resources[b.res]) }}</span>
-                  <span class="text-emerald-400/80 text-[9px]">+{{ fmt((resourceIncome[b.res]||0)*(resMultipliers[b.res]||1)) }}/s</span>
-                </div>
-
-                <div v-if="!b.building && b.level===0" class="flex items-center justify-between mt-1">
-                  <span class="text-[11px] font-bold" :class="'price-tier-'+b.priceTier">💰 {{ fmt(b.currentPrice) }} <span class="text-[8px] font-normal ml-1">{{ tierLabel(b.priceTier) }}</span></span>
-                  <span class="text-[8px] text-slate-500">월수익 💰 {{ fmt(b.income) }}</span>
-                </div>
-                <div v-else-if="!b.building" class="flex items-center justify-between mt-1">
-                  <span class="text-[8px] text-slate-500">월수익 <span class="text-emerald-300">{{ fmt(b.income * b.level * effectiveIncomeMult * (1 + 0.12*(b.level-1))) }}/s</span></span>
-                  <span class="text-[8px] text-purple-300/80" v-if="b.level < b.maxLevel">⬆️ {{ fmt(upgradeCost(b)) }} → +{{ fmt(upgradePreview(b).dIncome) }}/s</span>
-                  <span class="text-[8px] text-emerald-400/80" v-else-if="buildingAwakened[b.id]">✨ {{ buildingAwakeningEffects[b.id].name }}</span>
-                  <span class="text-[8px] text-slate-500" v-else-if="b.tier > 1 && transcendLevel < b.tier - 1">각성 조건: 초월 Lv{{ b.tier - 1 }}+</span>
-                  <span class="text-[8px] text-amber-400/80" v-else>MAX · 각성 가능</span>
-                </div>
-
-                <div v-if="!b.building" class="flex gap-1 mt-1">
-                  <button v-if="b.level===0" class="btn btn-sm btn-success flex-1" @click="buyBuilding(b, $event)" :disabled="!canBuyBuilding(b)">건설</button>
-                  <button v-else-if="buildingAwakened[b.id]" class="btn btn-sm btn-ghost flex-1" disabled>✨ 각성</button>
-                  <button v-else-if="b.level>=b.maxLevel" class="btn btn-sm btn-warning flex-1" @click="awakenBuilding(b)">✨ 각성</button>
-                  <button v-else class="btn btn-sm flex-1" style="background:#7c3aed;color:#fff" @click="upgradeBuilding(b, $event)" :disabled="!canUpgradeBuilding(b)">⬆️ 업글</button>
-                </div>
-                <div class="text-[7px] text-slate-600 mt-px" v-if="b.cooldown>0">⏳ {{ fmtTime(b.cooldown) }}</div>
+              </div>
+              
+              <div class="text-[9px] text-slate-400">
+                <span v-if="domeStage === 1">🛰️ 미지의 행성에 첫 임시 초소를 구축 중입니다.</span>
+                <span v-else-if="domeStage === 2">🌱 생명유지 돔이 확장되며 소규모 타운이 형성되었습니다.</span>
+                <span v-else-if="domeStage === 3">🛡️ 대형 전자기 방어막 쉴드가 활성화된 중도시 기지입니다.</span>
+                <span v-else-if="domeStage === 4">🌌 차원 도약 안테나가 결합된 ultimate 양자 스타포트 메트로폴리스!</span>
               </div>
             </div>
-            <div class="locked-overlay" v-if="buildingLocked(b) && b.level===0 && !b.building">
-              <div class="text-[11px] text-slate-400 mb-1">🔒</div>
-              <div class="text-[9px] text-slate-500 text-center px-2 leading-relaxed">{{ buildingLockReason(b) }}</div>
+          </div>
+
+          <!-- 기지 행성 선택 드롭다운 -->
+          <div class="card py-2 px-3 border-indigo-500/20 bg-slate-900/10">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-indigo-400 font-sans">🪐 기지 위치 성계 설정</span>
+              <span class="text-[9px] text-slate-500">기지를 두는 위치에 따라 진행 시간이 다릅니다</span>
+            </div>
+            <div class="flex items-center justify-between text-[9px] gap-2">
+              <span class="text-slate-300 font-bold">기지 위치:</span>
+              <select v-model="activeBasePlanetId" class="bg-slate-950 text-slate-200 border border-slate-700 rounded px-1.5 py-0.5 text-[9px] outline-none">
+                <option value="earth">🌍 지구 (1.0x 시간)</option>
+                <option value="venus" :disabled="!colonies.some(c=>c.planetId==='venus')">🟡 금성 (1.5x 시간)</option>
+                <option value="europa" :disabled="!colonies.some(c=>c.planetId==='europa')">🔵 유로파 (2.0x 시간)</option>
+                <option value="io" :disabled="!colonies.some(c=>c.planetId==='io')">🟠 이오 (2.5x 시간)</option>
+                <option value="titan" :disabled="!colonies.some(c=>c.planetId==='titan')">🟤 타이탄 (3.0x 시간)</option>
+                <option value="kepler" :disabled="!colonies.some(c=>c.planetId==='kepler')">🟣 케플러-22b (4.0x 시간)</option>
+                <option value="andromeda" :disabled="!colonies.some(c=>c.planetId==='andromeda')">🌌 안드로메다 개척지 (6.0x 시간)</option>
+              </select>
             </div>
           </div>
-        </div>
+
+          <!-- 명성 (인지도) -->
+          <div class="card card-accent py-2 px-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[11px] font-bold text-purple-400">📡 명성 <span class="text-[9px] text-slate-500 font-normal">(인지도)</span></span>
+              <span class="text-[11px] text-purple-300">{{ fmt(awareness) }}</span>
+            </div>
+            <div class="progress-bar mb-1">
+              <div class="progress-fill" :style="{width: fameMilestoneProgress+'%', background: '#a78bfa'}"></div>
+            </div>
+            <div class="text-[9px] text-slate-500" v-if="nextFameMilestone">🏆 다음 목표: <span class="text-amber-300">{{ nextFameMilestone.name }}</span> ({{ fmt(nextFameMilestone.need) }})<br>{{ nextFameMilestone.desc }}</div>
+            <div class="text-[9px] text-emerald-400" v-else>✨ 모든 명성 업적 달성!</div>
+            <div class="text-[8px] text-amber-400/70 mt-1" v-if="fameBonusDisplay">🏅 명성 보너스: 수입 {{ fameBonusDisplay }}</div>
+          </div>
+
+          <!-- 다음 잠금해제 -->
+          <div class="card py-2 px-3" v-if="nextUnlock" style="border-color:rgba(56,189,248,0.15)">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-bold text-sky-300">📋 다음 잠금해제</span>
+            </div>
+            <div class="flex items-center gap-1 text-[9px]">
+              <span class="text-sky-400">{{ nextUnlock.icon }} {{ nextUnlock.name }}</span>
+              <span class="text-slate-500">· {{ nextUnlock.need }}</span>
+            </div>
+            <div class="progress-bar mt-1" v-if="nextUnlock.progress > 0 && nextUnlock.progress < 100">
+              <div class="progress-fill bg-sky-400" :style="{width: nextUnlock.progress+'%'}"></div>
+            </div>
+          </div>
+        </template>
+
+        <!-- 3. 임무 & 거래 서브 탭 -->
+        <template v-if="baseActiveSubTab==='missions_trade'">
+          <!-- 일일/계약 임무 계약판 -->
+          <div class="card py-3 px-3 border-amber-500/20 bg-slate-900/10">
+            <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-700/50">
+              <span class="text-xs font-bold text-amber-400 font-sans">📜 은하계 현상금 & 기부 계약서</span>
+              <span class="text-[9px] text-slate-500">임무를 완수하고 각성석과 골드를 획득하세요</span>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-2">
+              <div v-for="(mission, idx) in missions" :key="mission.id" class="bg-slate-950/60 p-2 rounded border border-slate-800 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-[10px] font-bold text-amber-300 font-sans">{{ mission.name }}</span>
+                    <span class="text-[8px] font-bold px-1.5 py-px rounded bg-slate-900 font-mono" :class="canCompleteMission(mission) ? 'text-emerald-400' : 'text-slate-500'">
+                      {{ mission.type === 'deliver_metal' ? (fmt(resources.metal) + '/' + fmt(mission.reqAmount)) : (mission.progress + '/' + mission.target) }}
+                    </span>
+                  </div>
+                  <div class="text-[8.5px] text-slate-400 leading-snug">{{ mission.desc }}</div>
+                </div>
+                
+                <div class="flex items-center justify-between border-t border-slate-800/60 pt-1 mt-1.5">
+                  <span class="text-[7.5px] text-slate-500 font-sans">보상: 💰{{ fmt(mission.rewardGold) }} / 💎각성석 {{ mission.rewardStones }}개</span>
+                  <button class="btn btn-xs btn-ghost border-amber-800/40 text-amber-300 text-[8px] py-0.5 px-2 hover:bg-amber-900/20 font-sans"
+                          @click="completeMission(idx)" :disabled="!canCompleteMission(mission)">
+                    📜 완료 수령
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 자원 거래소 -->
+          <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.3)">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] font-bold text-amber-300">💱 자원 거래소 <span class="text-[8px] font-normal text-slate-400">(⏱️ {{ fmtTime(10 * getPlanetMultiplier(activeBasePlanetId)) }})</span></span>
+              <span class="text-[9px] text-amber-400 font-bold" v-if="tradeShip">🛳️ 가용 무역선: {{ getAvailableTradeShips() }} / {{ tradeShip.count }}척</span>
+            </div>
+            <div class="text-[7px] text-slate-500 mb-2">판매: 자원→돈 · 구매: 돈→자원 (매수 +50% 수수료)</div>
+            <div class="space-y-1">
+              <div v-for="k in ['metal','crystal','hydrogen','plasma','solar','fission','fusion']" :key="k" v-if="visibleResources[k]" class="flex items-center justify-between bg-slate-900/50 rounded px-2 py-1 text-[9px]">
+                <span class="w-16">{{ {'metal':'⛏️ 메탈','crystal':'💎 크리스탈','hydrogen':'⚡ 수소','plasma':'🔵 플라즈마','solar':'☀️ 태양열','fission':'⚛️ 핵분열','fusion':'🔥 핵융합'}[k] }}</span>
+                <span class="text-emerald-400/70">판매 {{ exchangeSellRate[k] }}/개</span>
+                <span class="text-rose-400/70">매수 {{ Math.floor(exchangeSellRate[k]*effectiveExchangeBuyRate) }}/개</span>
+                <div class="flex gap-0.5">
+                  <button class="btn btn-sm btn-success" style="font-size:7px;padding:1px 4px" @click="sellResource(k,Math.min(100,(resources[k]||0).toNumber()))" :disabled="!(resources[k]||0).gte(1) || getAvailableTradeShips()<=0">📤</button>
+                  <button class="btn btn-sm btn-primary" style="font-size:7px;padding:1px 4px" @click="buyResource(k,10)" :disabled="money.lt(Math.floor(exchangeSellRate[k]*effectiveExchangeBuyRate)*10) || getAvailableTradeShips()<=0">📥</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 병렬 무역 게이지 목록 -->
+            <div v-if="tradeTasks.length > 0" class="mt-3 pt-2 border-t border-slate-800/80 space-y-1.5">
+              <div class="text-[8px] text-slate-500 font-bold uppercase tracking-wider mb-1">🛳️ 수송선 가동 현황</div>
+              <div v-for="t in tradeTasks" :key="t.id" class="bg-slate-950/80 rounded p-1.5 text-[8.5px]">
+                <div class="flex justify-between items-center text-[9px] mb-0.5">
+                  <span class="font-bold text-slate-300">
+                    <span v-if="t.type==='exchange_sell'">📤 [판매] {{ {'metal':'⛏️ 메탈','crystal':'💎 크리스탈','hydrogen':'⚡ 수소','plasma':'🔵 플라즈마','solar':'☀️ 태양열','fission':'⚛️ 핵분열','fusion':'🔥 핵융합'}[t.resKey] }}</span>
+                    <span v-else-if="t.type==='exchange_buy'">📥 [매수] {{ {'metal':'⛏️ 메탈','crystal':'💎 크리스탈','hydrogen':'⚡ 수소','plasma':'🔵 플라즈마','solar':'☀️ 태양열','fission':'⚛️ 핵분열','fusion':'🔥 핵융합'}[t.resKey] }}</span>
+                    <span v-else-if="t.type==='colony_support'">💸 [식민지 지원] → {{ t.colonyId }}</span>
+                    <span v-else-if="t.type==='auto_trade'">🤖 [자동무역] {{ t.routeName }}</span>
+                  </span>
+                  <span class="text-amber-400 font-mono font-bold">{{ fmtTime(t.duration - t.elapsed) }}</span>
+                </div>
+                <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" :style="{width: (t.elapsed/t.duration*100)+'%'}"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 경매 건물 -->
+          <div class="card py-2 px-3" v-if="auctionActive && auctionBuilding">
+            <div class="flex items-center justify-between">
+              <div class="text-[11px]">
+                <span class="text-rose-300">🔔</span>
+                <span class="text-slate-200">{{ auctionBuilding.name }}</span>
+                <span class="text-emerald-300 ml-1">{{ fmt(auctionPrice) }}</span>
+                <span class="text-slate-500 ml-1">({{ Math.round((1-auctionDiscount)*100) }}%↓)</span>
+              </div>
+              <button class="btn btn-sm btn-warning" @click="tryAuction">{{ Math.round(auctionChance*100) }}%</button>
+            </div>
+            <div class="text-[8px] text-slate-600 mt-1">{{ fmtTime(auctionTimer) }}</div>
+          </div>
+        </template>
       </div>
 
       <!-- TAB: FLEET -->
@@ -794,7 +876,7 @@
             <span class="text-[9px] text-amber-300" v-if="tradeShip.count > 0">{{ tradeShip.count }}척</span>
           </div>
           <div class="text-[8px] text-slate-400">화물 공간: {{ tradeShip.cargo }} · 항해 속도: ×{{ tradeShip.speed }}</div>
-          <div v-if="tradeShip.count <= 0 && !tradeShip.building" class="flex flex-wrap items-center gap-1 mt-1">
+          <div v-if="!tradeShip.building" class="flex flex-wrap items-center gap-1 mt-1">
             <span class="text-[9px] text-slate-500">⛏️30,000 💎10,000</span>
             <input type="number" class="ship-qty" v-model.number="tradeShip.tradeQty" min="1" max="99" style="width:35px">
             <button class="btn btn-sm btn-warning" @click="buildTradeShip()" :disabled="!canBuildTradeShip()">건조 ({{ fmtTime(120 * (tradeShip.tradeQty||1)) }})</button>
