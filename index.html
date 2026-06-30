@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="img/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="img/icon.svg">
-  <title>스페이스 임페리얼 v2.0: 은하 건물주 - 사령함과 유물</title>
+  <title>스페이스 임페리얼 v2.1: 은하 건물주 - 초월 특성 & 무한 임무</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css?family=Orbitron:400,700,900&display=swap" rel="stylesheet">
   <script src="vue.min.js"></script>
@@ -118,6 +118,78 @@
 
       <!-- TAB: BASE -->
       <div v-if="activeTab==='buildings'" class="space-y-3">
+        <!-- 행성 기지 돔 비주얼저 -->
+        <div class="card py-3 px-3 relative overflow-hidden border-indigo-500/30 text-center" style="background: linear-gradient(185deg, #0f172a, #1e1b4b); min-height: 120px;">
+          <div class="star-field" style="position:absolute; inset:0; opacity:0.6; pointer-events:none">
+            <div class="star" style="top:10%; left:20%"></div>
+            <div class="star" style="top:30%; left:75%"></div>
+            <div class="star" style="top:70%; left:40%"></div>
+            <div class="star" style="top:50%; left:10%"></div>
+          </div>
+          
+          <div class="relative z-10 flex flex-col justify-between h-full">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[9px] text-indigo-400 font-bold uppercase tracking-wider">🌌 Planetary Dome Visualizer</span>
+              <span class="text-[9px] bg-indigo-950 text-indigo-300 border border-indigo-800/40 px-2 py-0.5 rounded-full font-bold font-mono">STAGE {{ domeStage }}</span>
+            </div>
+            
+            <div class="my-4 flex items-end justify-center relative min-h-[70px]">
+              <div class="rounded-t-full border-t border-x border-indigo-500/50 bg-indigo-500/5 transition-all duration-700 relative flex items-end justify-center"
+                   :style="{
+                     width: (domeStage === 1 ? '70px' : domeStage === 2 ? '110px' : domeStage === 3 ? '160px' : '220px'),
+                     height: (domeStage === 1 ? '35px' : domeStage === 2 ? '55px' : domeStage === 3 ? '80px' : '100px'),
+                     boxShadow: '0 0 20px rgba(99, 102, 241, ' + (domeStage * 0.15) + ')'
+                   }">
+                <div class="flex items-end gap-1.5 pb-0.5 justify-center z-10 w-full px-2">
+                  <div class="w-2.5 bg-indigo-400/30 rounded-t transition-all duration-500" :style="{ height: domeStage >= 2 ? '25px' : '10px' }"></div>
+                  <div class="w-3.5 bg-indigo-400/50 rounded-t transition-all duration-500" :style="{ height: domeStage >= 3 ? '45px' : '15px' }"></div>
+                  <div class="w-3 bg-cyan-400/60 rounded-t transition-all duration-500" :style="{ height: domeStage >= 4 ? '70px' : '20px' }"></div>
+                  <div class="w-4 bg-indigo-400/40 rounded-t transition-all duration-500" :style="{ height: domeStage >= 3 ? '35px' : '12px' }"></div>
+                </div>
+                <div class="absolute inset-0 rounded-t-full border border-cyan-400/40 animate-pulse pointer-events-none" v-if="domeStage >= 3" style="animation-duration: 3s"></div>
+                <div class="absolute w-px bg-cyan-400 animate-ping" v-if="domeStage >= 4" style="height: 40px; top: -40px;"></div>
+              </div>
+            </div>
+            
+            <div class="text-[9px] text-slate-400">
+              <span v-if="domeStage === 1">🛰️ 미지의 행성에 첫 임시 초소를 구축 중입니다.</span>
+              <span v-else-if="domeStage === 2">🌱 생명유지 돔이 확장되며 소규모 타운이 형성되었습니다.</span>
+              <span v-else-if="domeStage === 3">🛡️ 대형 전자기 방어막 쉴드가 활성화된 중도시 기지입니다.</span>
+              <span v-else-if="domeStage === 4">🌌 차원 도약 안테나가 결합된 ultimate 양자 스타포트 메트로폴리스!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 일일/계약 임무 계약판 -->
+        <div class="card py-3 px-3 border-amber-500/20 bg-slate-900/10">
+          <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-700/50">
+            <span class="text-xs font-bold text-amber-400 font-sans">📜 은하계 현상금 & 기부 계약서</span>
+            <span class="text-[9px] text-slate-500">임무를 완수하고 각성석과 골드를 획득하세요</span>
+          </div>
+          
+          <div class="grid grid-cols-1 gap-2">
+            <div v-for="(mission, idx) in missions" :key="mission.id" class="bg-slate-950/60 p-2 rounded border border-slate-800 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-0.5">
+                  <span class="text-[10px] font-bold text-amber-300 font-sans">{{ mission.name }}</span>
+                  <span class="text-[8px] font-bold px-1.5 py-px rounded bg-slate-900 font-mono" :class="canCompleteMission(mission) ? 'text-emerald-400' : 'text-slate-500'">
+                    {{ mission.type === 'deliver_metal' ? (fmt(resources.metal) + '/' + fmt(mission.reqAmount)) : (mission.progress + '/' + mission.target) }}
+                  </span>
+                </div>
+                <div class="text-[8.5px] text-slate-400 leading-snug">{{ mission.desc }}</div>
+              </div>
+              
+              <div class="flex items-center justify-between border-t border-slate-800/60 pt-1 mt-1.5">
+                <span class="text-[7.5px] text-slate-500 font-sans">보상: 💰{{ fmt(mission.rewardGold) }} / 💎각성석 {{ mission.rewardStones }}개</span>
+                <button class="btn btn-xs btn-ghost border-amber-800/40 text-amber-300 text-[8px] py-0.5 px-2 hover:bg-amber-900/20 font-sans"
+                        @click="completeMission(idx)" :disabled="!canCompleteMission(mission)">
+                  📜 완료 수령
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="card py-1.5 px-3" style="border-color:rgba(56,189,248,0.2)">
           <div class="flex items-center justify-between cursor-pointer" @click="guideOpen.buildings = !guideOpen.buildings">
             <span class="text-[10px] font-bold text-sky-300">📖 건물 가이드</span>
@@ -736,6 +808,36 @@
           </div>
         </div>
 
+        <!-- 자동 무역 운항 설정 -->
+        <div class="card py-2 px-3 border-emerald-500/20 bg-slate-900/10" v-if="tradeShip.count > 0">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-bold text-emerald-400">🤖 자동 무역 제어</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" v-model="autoTrade" class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+            </label>
+          </div>
+          
+          <div class="flex items-center justify-between text-[9px] gap-2 mt-1">
+            <span class="text-slate-400">왕복 노선 지정:</span>
+            <select v-model="autoTradeRoute" class="bg-slate-950 text-slate-200 border border-slate-700 rounded px-1.5 py-0.5 text-[9px] outline-none">
+              <option value="earth_mars">지구 - 화성 노선 (기본)</option>
+              <option value="earth_asteroid">지구 - 소행성대 노선 (고수익)</option>
+            </select>
+          </div>
+          
+          <!-- 운항 카운트다운 타이머 시각화 -->
+          <div class="mt-2" v-if="autoTrade">
+            <div class="flex justify-between text-[8px] text-slate-500 mb-0.5">
+              <span>운항 중...</span>
+              <span>남은 시간: {{ autoTradeTimer.toFixed(1) }}초</span>
+            </div>
+            <div class="progress-bar" style="height:3px">
+              <div class="progress-fill bg-emerald-500" :style="{width: ((autoTradeTimer / (autoTradeRoute==='earth_asteroid' ? 60 : 30)) * 100) + '%'}"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- 현재 위치 -->
         <div class="card py-2 px-3">
           <div class="text-[10px] font-bold text-sky-300 mb-1">📍 현재 위치: {{ tradePosts[tradeLocation].icon }} {{ tradePosts[tradeLocation].name }}</div>
@@ -807,11 +909,18 @@
             <span class="text-[9px] text-slate-500">{{ guideOpen.research ? '▲' : '▼' }}</span>
           </div>
           <div v-if="guideOpen.research" class="text-[8.5px] text-slate-400 leading-relaxed mt-1 pt-1 border-t border-slate-700/50">
-            🔬 자원을 소모해 즉시 연구 레벨을 올리세요. 레벨당 버프가 영구히 누적됩니다 (레벨이 높을수록 비용 증가).
+            🔬 자원을 소모해 즉시 연구 레벨을 올리세요. 레벨당 버프가 영구히 누적됩니다. 특정 연구를 일정 레벨 달성하면 후행 연구가 잠금해제됩니다.
           </div>
         </div>
-        <div class="text-[9px] text-slate-500 mb-1">🔬 자원을 소비하여 연구 레벨을 올리세요 (레벨이 높을수록 비용 증가)</div>
-        <div v-for="r in research" :key="r.id" class="card py-2 px-3" :class="{'border-purple-500/30': canResearch(r), 'border-rose-500/30': !canResearch(r) && !(r.requires && r.level < r.requires.level), 'border-slate-700': true}">
+
+        <!-- 과학 / 군사 / 경제 탭네비 -->
+        <div class="flex bg-slate-950/60 p-1 rounded border border-purple-950/30 mb-2">
+          <button class="flex-1 py-1 text-[11px] font-bold rounded" :class="researchTab === 'science' ? 'bg-purple-900/40 text-purple-300 border border-purple-700/50 font-sans' : 'text-slate-400 font-sans'" @click="researchTab = 'science'">🔬 과학 기술</button>
+          <button class="flex-1 py-1 text-[11px] font-bold rounded" :class="researchTab === 'military' ? 'bg-purple-900/40 text-purple-300 border border-purple-700/50 font-sans' : 'text-slate-400 font-sans'" @click="researchTab = 'military'">⚔️ 군사 기술</button>
+          <button class="flex-1 py-1 text-[11px] font-bold rounded" :class="researchTab === 'economy' ? 'bg-purple-900/40 text-purple-300 border border-purple-700/50 font-sans' : 'text-slate-400 font-sans'" @click="researchTab = 'economy'">📈 경제 경영</button>
+        </div>
+
+        <div v-for="r in research.filter(x => x.category === researchTab)" :key="r.id" class="card py-2 px-3" :class="{'border-purple-500/30': canResearch(r), 'border-rose-500/30': !canResearch(r) && !(r.requires && r.level < r.requires.level), 'border-slate-700': true}">
           <div class="flex items-center justify-between">
             <div>
               <div class="text-xs font-bold text-slate-200">{{ r.icon }} {{ r.name }}</div>
@@ -1147,6 +1256,39 @@
             <div class="text-[9px] text-slate-500 mt-1" v-else>모든 것을 초기화하고 영구 수입 보너스를 얻습니다.</div>
             <div class="text-[8px] text-emerald-400/80 mt-1" v-if="!prestigePoints">예상 포인트: 약 {{ Math.max(2, Math.floor(Math.pow((totalWealth.toNumber() + Object.values(resources).reduce((a,b)=>a+(b.toNumber?.()||0),0)) / 50000, 0.55))) }}P</div>
             <button class="btn btn-sm btn-warning mt-1" @click="prestige">✨ 환생 (자산 100k 이상)</button>
+          </div>
+
+          <!-- 초월 특성 상점 -->
+          <div class="card py-3 px-3 border-cyan-500/20 bg-slate-900/20">
+            <div class="flex items-center justify-between mb-3 border-b border-slate-700/50 pb-2">
+              <span class="text-xs font-bold text-cyan-400">✨ 초월 특성 상점</span>
+              <span class="text-[10px] text-cyan-300 font-extrabold bg-cyan-950 px-2 py-0.5 rounded">환생 포인트: {{ prestigePoints }}P</span>
+            </div>
+
+            <div class="space-y-2">
+              <div v-for="perk in $PERK_DEFS" :key="perk.id" class="flex gap-2.5 bg-slate-950/60 p-2 rounded border border-cyan-950/40 items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="text-xl bg-cyan-950/40 w-8 h-8 rounded flex items-center justify-center flex-shrink-0">
+                    {{ perk.icon }}
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-[10.5px] font-bold text-cyan-300">{{ perk.name }}</span>
+                      <span class="text-[8px] text-slate-500 font-mono">LV.{{ prestigePerkLevel(perk.id) }}/{{ perk.max }}</span>
+                    </div>
+                    <div class="text-[8px] text-slate-400 leading-snug">{{ perk.desc }}</div>
+                  </div>
+                </div>
+                
+                <div class="text-right flex-shrink-0">
+                  <button class="btn btn-sm btn-ghost border-cyan-800/40 text-cyan-300 text-[9px] py-1 px-2.5 hover:bg-cyan-900/20"
+                          @click="buyPrestigePerk(perk.id)" :disabled="!canBuyPrestigePerk(perk.id)">
+                    <span v-if="prestigePerkCost(perk.id) !== null">✨ 구매 ({{ prestigePerkCost(perk.id) }}P)</span>
+                    <span v-else>최대레벨</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="card py-2 px-3" style="border-color:rgba(124,58,237,0.5)">

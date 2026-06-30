@@ -1,7 +1,7 @@
 {
   "name": "스페이스 임페리얼: 은하 건물주",
   "short_name": "스페이스 임페리얼",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "은하 건물주가 되어 은하계를 정복하세요",
   "start_url": "index.html",
   "display": "standalone",

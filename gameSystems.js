@@ -52,59 +52,59 @@ const BUILDING_TEMPLATES = [
   ];
 
   const RESEARCH_LIST = [
-    { id: 'r7', name: '클릭 강화', icon: '👆',
+    { id: 'r7', name: '클릭 강화', icon: '👆', category: 'economy',
       baseMoneyCost: 1000, costScale: 1.12,
       desc: l => `클릭력 +${l*10}`, effect: (g, l) => { g.clickPower = 200 + l * 10; } },
-    { id: 'r1', name: '광산 효율', icon: '⛏️', baseCost: { metal: 5000 }, costScale: 1.12,
+    { id: 'r1', name: '광산 효율', icon: '⛏️', category: 'science', baseCost: { metal: 5000 }, costScale: 1.12,
       desc: l => `메탈 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.metal = 1 + l * 0.02; } },
-    { id: 'r2', name: '합성 기술', icon: '💎', baseCost: { metal: 12000, crystal: 3000 }, costScale: 1.13,
+    { id: 'r2', name: '합성 기술', icon: '💎', category: 'science', baseCost: { metal: 12000, crystal: 3000 }, costScale: 1.13,
       desc: l => `크리스탈 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.crystal = 1 + l * 0.02; } },
-    { id: 'r3', name: '정제 기술', icon: '⚡', baseCost: { metal: 30000, crystal: 8000 }, costScale: 1.14,
+    { id: 'r3', name: '정제 기술', icon: '⚡', category: 'science', baseCost: { metal: 30000, crystal: 8000 }, costScale: 1.14,
       desc: l => `수소 생산 +${l*2}%`, effect: (g, l) => { g.resMultipliers.hydrogen = 1 + l * 0.02; },
       requires: { id: 'r2', level: 3 } },
-    { id: 'r4', name: '에너지 저장', icon: '📦', baseCost: { metal: 15000 }, costScale: 1.12,
+    { id: 'r4', name: '에너지 저장', icon: '📦', category: 'science', baseCost: { metal: 15000 }, costScale: 1.12,
       desc: l => `모든 저장고 +${l*5}%`, effect: (g, l) => { g.storageMult = 1 + l * 0.05; } },
-    { id: 'r5', name: '건물 관리', icon: '🏗️', baseCost: { metal: 25000, crystal: 8000 }, costScale: 1.13,
+    { id: 'r5', name: '건물 관리', icon: '🏗️', category: 'economy', baseCost: { metal: 25000, crystal: 8000 }, costScale: 1.13,
       desc: l => `건물 월세 +${l*2}%`, effect: (g, l) => { g.incomeMult = 1 + l * 0.02; } },
-    { id: 'r6', name: '인지도 확산', icon: '📡', baseCost: { metal: 50000, crystal: 15000 }, costScale: 1.14,
+    { id: 'r6', name: '인지도 확산', icon: '📡', category: 'economy', baseCost: { metal: 50000, crystal: 15000 }, costScale: 1.14,
       desc: l => `인지도 획득량 +${l*3}%`, effect: (g, l) => { g.awarenessMult = 1 + l * 0.03; } },
-    { id: 'r8', name: '건물 관리 II', icon: '🏗️', baseCost: { metal: 150000, crystal: 40000, hydrogen: 8000 }, costScale: 1.15,
+    { id: 'r8', name: '건물 관리 II', icon: '🏗️', category: 'economy', baseCost: { metal: 150000, crystal: 40000, hydrogen: 8000 }, costScale: 1.15,
       desc: l => `월세 +${l*3}%`, effect: (g, l) => { g.incomeMult2 = 1 + l * 0.03; },
       requires: { id: 'r5', level: 10 } },
-    { id: 'r9', name: '핵융합 안정화', icon: '🔥', baseCost: { metal: 300000, crystal: 80000, hydrogen: 30000 }, costScale: 1.16,
+    { id: 'r9', name: '핵융합 안정화', icon: '🔥', category: 'science', baseCost: { metal: 300000, crystal: 80000, hydrogen: 30000 }, costScale: 1.16,
       desc: l => `핵융합 생산 +${l*4}%`, effect: (g, l) => { g.resMultipliers.fusion = 1 + l * 0.04; },
       requires: { id: 'r3', level: 8 } },
-    { id: 'r10', name: '우주 무역', icon: '📈', baseCost: { metal: 400000, crystal: 150000, plasma: 30000 }, costScale: 1.16,
+    { id: 'r10', name: '우주 무역', icon: '📈', category: 'economy', baseCost: { metal: 400000, crystal: 150000, plasma: 30000 }, costScale: 1.16,
       desc: l => `소득 +${l*4}%`, effect: (g, l) => { g.incomeMult3 = 1 + l * 0.04; },
       requires: { id: 'r6', level: 8 } },
-    { id: 'r11', name: '함선 생산', icon: '🚀', baseCost: { metal: 200000, crystal: 50000 }, costScale: 1.15,
+    { id: 'r11', name: '함선 생산', icon: '🚀', category: 'military', baseCost: { metal: 200000, crystal: 50000 }, costScale: 1.15,
       desc: l => `함선 건조 시간 -${Math.min(90, l*2)}%`, effect: (g, l) => { g.shipBuildSpeedMult = Math.max(0.1, 1 - l * 0.02); },
       requires: { id: 'r4', level: 5 } },
-    { id: 'r12', name: '전투 교리', icon: '⚔️', baseCost: { metal: 400000, crystal: 100000, solar: 20000 }, costScale: 1.16,
+    { id: 'r12', name: '전투 교리', icon: '⚔️', category: 'military', baseCost: { metal: 400000, crystal: 100000, solar: 20000 }, costScale: 1.16,
       desc: l => `함대 전투력 +${l*3}%`, effect: (g, l) => { g.fleetPowerMult = 1 + l * 0.03; },
       requires: { id: 'r5', level: 8 } },
-    { id: 'r13', name: '식민지 자동 운송', icon: '📦', baseCost: { metal: 300000, crystal: 80000, hydrogen: 15000 }, costScale: 1.15,
+    { id: 'r13', name: '식민지 자동 운송', icon: '📦', category: 'economy', baseCost: { metal: 300000, crystal: 80000, hydrogen: 15000 }, costScale: 1.15,
       desc: l => `자동 운송 ${Math.min(100, l*20)}%`, effect: (g, l) => { g.colonyAutoTransport = l >= 1; },
       requires: { id: 'r6', level: 5 } },
-    { id: 'r14', name: '식민지 자동화', icon: '🏭', baseCost: { metal: 600000, crystal: 200000, hydrogen: 60000, plasma: 10000 }, costScale: 1.16,
+    { id: 'r14', name: '식민지 자동화', icon: '🏭', category: 'economy', baseCost: { metal: 600000, crystal: 200000, hydrogen: 60000, plasma: 10000 }, costScale: 1.16,
       desc: l => `자동 업글 ${Math.min(100, l*20)}%`, effect: (g, l) => { g.colonyAutoUpgrade = l >= 1; },
       requires: { id: 'r13', level: 5 } },
-    { id: 'r15', name: '자동 채굴 드론', icon: '🤖', baseCost: { metal: 1000000, crystal: 300000, hydrogen: 80000, solar: 30000 }, costScale: 1.16,
+    { id: 'r15', name: '자동 채굴 드론', icon: '🤖', category: 'military', baseCost: { metal: 1000000, crystal: 300000, hydrogen: 80000, solar: 30000 }, costScale: 1.16,
       desc: l => `자동클릭 간격 ${Math.max(1, 5 - l + 1)}초`, effect: (g, l) => { g.autoClicker = l >= 1; g.autoClickerInterval = Math.max(1, 5 - l + 1); },
       requires: { id: 'r11', level: 8 } },
-    { id: 'r16', name: '건물 관리 AI', icon: '🧠', baseCost: { metal: 2000000, crystal: 800000, hydrogen: 200000, plasma: 80000 }, costScale: 1.18,
+    { id: 'r16', name: '건물 관리 AI', icon: '🧠', category: 'economy', baseCost: { metal: 2000000, crystal: 800000, hydrogen: 200000, plasma: 80000 }, costScale: 1.18,
       desc: l => `자동건설 ${Math.min(100, l*20)}%`, effect: (g, l) => { g.autoBuilder = l >= 1; },
       requires: { id: 'r15', level: 5 } },
-    { id: 'r17', name: '우주 무역 II', icon: '📈', baseCost: { metal: 3000000, crystal: 1500000, hydrogen: 400000, plasma: 150000 }, costScale: 1.18,
+    { id: 'r17', name: '우주 무역 II', icon: '📈', category: 'economy', baseCost: { metal: 3000000, crystal: 1500000, hydrogen: 400000, plasma: 150000 }, costScale: 1.18,
       desc: l => `소득 +${l*5}%`, effect: (g, l) => { g.incomeMult4 = 1 + l * 0.05; },
       requires: { id: 'r10', level: 10 } },
-    { id: 'r18', name: '함선 생산 II', icon: '🚀', baseCost: { metal: 2500000, crystal: 1000000, solar: 150000 }, costScale: 1.16,
+    { id: 'r18', name: '함선 생산 II', icon: '🚀', category: 'military', baseCost: { metal: 2500000, crystal: 1000000, solar: 150000 }, costScale: 1.16,
       desc: l => `건조 시간 -${Math.min(95, l*3)}%`, effect: (g, l) => { g.shipBuildSpeedMult = Math.max(0.05, 1 - l * 0.03); },
       requires: { id: 'r11', level: 10 } },
-    { id: 'r19', name: '전투 교리 II', icon: '⚔️', baseCost: { metal: 5000000, crystal: 2000000, hydrogen: 600000, solar: 200000 }, costScale: 1.18,
+    { id: 'r19', name: '전투 교리 II', icon: '⚔️', category: 'military', baseCost: { metal: 5000000, crystal: 2000000, hydrogen: 600000, solar: 200000 }, costScale: 1.18,
       desc: l => `전투력 +${l*5}%`, effect: (g, l) => { g.fleetPowerMult2 = 1 + l * 0.05; },
       requires: { id: 'r12', level: 10 } },
-    { id: 'r20', name: '에너지 저장 II', icon: '📦', baseCost: { metal: 4000000, crystal: 2000000, plasma: 300000 }, costScale: 1.16,
+    { id: 'r20', name: '에너지 저장 II', icon: '📦', category: 'science', baseCost: { metal: 4000000, crystal: 2000000, plasma: 300000 }, costScale: 1.16,
       desc: l => `저장고 +${l*10}%`, effect: (g, l) => { g.storageMult2 = 1 + l * 0.10; },
       requires: { id: 'r4', level: 10 } }
   ];
@@ -120,7 +120,9 @@ const BUILDING_TEMPLATES = [
     { type: 'battleship', name: '전함', icon: '🚢', power: 25000, cost: { metal: 120000, crystal: 40000, hydrogen: 10000, solar: 2000 }, time: 400, strongAgainst: 'marauder', awarenessNeeded: 20000, img: 'img/ship-destroyer.jpg', maxLevel: 4, upgradeTime: 600, requiresBuilding: 'solar_plant' },
     { type: 'carrier', name: '항공모함', icon: '✈️', power: 250000, cost: { metal: 300000, crystal: 100000, hydrogen: 25000, plasma: 3000 }, time: 600, strongAgainst: 'juggernaut', awarenessNeeded: 50000, img: 'img/ship-carrier.jpg', maxLevel: 3, upgradeTime: 1200, requiresBuilding: 'plasma_coil' },
     { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 2500000, cost: { metal: 800000, crystal: 250000, hydrogen: 60000, fission: 3000 }, time: 1200, strongAgainst: 'raider', awarenessNeeded: 100000, img: 'img/ship-dreadnought.jpg', maxLevel: 3, upgradeTime: 2400, requiresBuilding: 'fission_reactor' },
-    { type: 'mothership', name: '모선', icon: '🌌', power: 25000000, cost: { metal: 2000000, crystal: 600000, hydrogen: 150000, fusion: 3000 }, time: 2400, strongAgainst: 'juggernaut', awarenessNeeded: 200000, img: 'img/ship-mothership.jpg', maxLevel: 2, upgradeTime: 3600, requiresBuilding: 'fusion_reactor' }
+    { type: 'mothership', name: '모선', icon: '🌌', power: 25000000, cost: { metal: 2000000, crystal: 600000, hydrogen: 150000, fusion: 3000 }, time: 2400, strongAgainst: 'juggernaut', awarenessNeeded: 200000, img: 'img/ship-mothership.jpg', maxLevel: 2, upgradeTime: 3600, requiresBuilding: 'fusion_reactor' },
+    { type: 'alien_miner', name: '외계 채굴수송선', icon: '🛸', power: 10, cost: { metal: 50000, crystal: 15000, solar: 5000 }, time: 180, strongAgainst: null, awarenessNeeded: 0, img: 'img/ship-alien-miner.jpg', maxLevel: 5, upgradeTime: 300, special: '식민지 속도 +5%' },
+    { type: 'alien_dread', name: '전투종족 디스트로이어', icon: '👽', power: 5000000, cost: { metal: 1200000, crystal: 400000, fission: 8000, fusion: 2000 }, time: 1500, strongAgainst: 'juggernaut', awarenessNeeded: 0, img: 'img/ship-alien-dread.jpg', maxLevel: 3, upgradeTime: 2000, special: '모든 상성 우위' }
   ];
 
   const PIRATE_TYPES = [
@@ -128,6 +130,14 @@ const BUILDING_TEMPLATES = [
     { type: 'pirate_fleet', name: '해적단', icon: '🏴‍☠️', weakTo: 'corvette', powerBase: 1.5 },
     { type: 'marauder', name: '침투선', icon: '🪓', weakTo: 'frigate', powerBase: 5 },
     { type: 'juggernaut', name: '거함', icon: '👹', weakTo: 'destroyer', powerBase: 20 }
+  ];
+
+  const PRESTIGE_PERK_DEFS = [
+    { id: 'starting_gold', name: '초기 자금 지원', icon: '💰', max: 5, cost: [5, 8, 12, 18, 25], desc: '시작 골드 +100,000' },
+    { id: 'const_slots', name: '건설 슬롯 추가', icon: '🏗️', max: 2, cost: [10, 20], desc: '동시 건설 슬롯 +1' },
+    { id: 'combat_speed', name: '자동 사냥 가속', icon: '⚡', max: 5, cost: [4, 6, 8, 12, 16], desc: '자동 전투 쿨타임 -10%' },
+    { id: 'colony_boost', name: '식민지 효율 개선', icon: '🏭', max: 5, cost: [5, 7, 10, 14, 20], desc: '식민지 생산 속도 +15%' },
+    { id: 'trade_boost', name: '수송선단 물류 혁신', icon: '📦', max: 5, cost: [4, 6, 9, 13, 18], desc: '무역 거래 수익 +20%' }
   ];
 
   const TRADE_POSTS = [
@@ -220,6 +230,25 @@ const BUILDING_TEMPLATES = [
       ]}
   };
 
+  const MID_EXPEDITION_EVENTS = {
+    solar_flare: {
+      name: '⚠️ [돌발] 태양 코로나 분출',
+      desc: '강력한 태양 폭풍이 함대의 경로를 덮치고 있습니다.',
+      choices: [
+        { text: '⚡ 엔진 과부하 (돌파 시 시간 단축, 20% 손실 위험)', type: 'warp' },
+        { text: '🛡️ 보호막 최대화 (대기 시 안전, 시간 지연)', type: 'wait' }
+      ]
+    },
+    space_trader: {
+      name: '🛸 [돌발] 방랑하는 우주 상인',
+      desc: '수송로 상에서 떠돌이 상인선단과 무선 채널이 연결되었습니다.',
+      choices: [
+        { text: '⛏️ 메탈 10k 판매 (💰100k 골드 획득)', type: 'trade_metal' },
+        { text: '👋 교신 종료', type: 'ignore' }
+      ]
+    }
+  };
+
   const COLONY_TEMPLATES = [
   { planetId: 'earth', name: '지구 개척지', factorySlots: 6, prodSpeed: 1.0 },
   { planetId: 'venus', name: '금성 개척지', factorySlots: 6, prodSpeed: 1.1 },
@@ -269,6 +298,7 @@ const COLONY_FACTORY_TYPES = [
     Vue.prototype.$RES_KR = RES_KR;
     Vue.prototype.$RES_COLOR = RES_COLOR;
     Vue.prototype.$RES_ICO = RES_ICO;
+    Vue.prototype.$PERK_DEFS = PRESTIGE_PERK_DEFS;
   }
   window.GameSystemsMixin = {
     data() {
@@ -353,6 +383,7 @@ const COLONY_FACTORY_TYPES = [
         eventMessage: '', eventTimer: 0,
 
         activeTab: 'buildings',
+        researchTab: 'science',
         _saveTick: 0, _toastT: null,
         lastSeen: 0, offlineReport: null,
         flagship: {
@@ -372,8 +403,20 @@ const COLONY_FACTORY_TYPES = [
           { id: 'crystal_magnet', name: '크리스탈 자화기', icon: '🧲', level: 0, desc: '각성석 획득 확률 +1% per level' }
         ],
         autoCombat: false,
+        prestigePerks: {
+          starting_gold: 0,
+          const_slots: 0,
+          combat_speed: 0,
+          colony_boost: 0,
+          trade_boost: 0
+        },
+        autoTrade: false,
+        autoTradeRoute: 'earth_mars',
+        autoTradeTimer: 0,
 
         constructionSlots: [
+          { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 },
+          { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 },
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 },
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 }
         ],
@@ -397,7 +440,7 @@ const COLONY_FACTORY_TYPES = [
 
         cheatOpen: false,
         guideOpen: { buildings: false, fleet: false, colony: false, research: false, trade: false },
-        expedition: { inProgress: false, targetId: null, remaining: 0, total: 0, eventId: null },
+        expedition: { inProgress: false, targetId: null, remaining: 0, total: 0, eventId: null, midTriggered: false, midEventId: null },
         expeditionOverlay: null,
         speedMult: 1,
         prestigePoints: 0,
@@ -560,6 +603,12 @@ const COLONY_FACTORY_TYPES = [
       },
       visibleShips() {
         return this.shipTypes.filter(s => {
+          if (s.type === 'alien_miner') {
+            return this.alienTier && this.alienTier.trader >= 1;
+          }
+          if (s.type === 'alien_dread') {
+            return this.alienTier && this.alienTier.warlord >= 2;
+          }
           if (s.awarenessNeeded > this.awareness) return false;
           if (s.requiresBuilding) {
             const bld = this.buildings.find(b => b.id === s.requiresBuilding);
@@ -633,6 +682,20 @@ const COLONY_FACTORY_TYPES = [
           mult *= (1 - this.flagship.stats.warp * 0.02);
         }
         return Math.max(0.01, mult);
+      },
+      effectiveMaxConstructionSlots() {
+        const perkBonus = this.prestigePerks?.const_slots || 0;
+        return 2 + perkBonus;
+      },
+      domeStage() {
+        const totalLv = this.buildings.reduce((s, b) => s + b.level, 0);
+        const outpost = this.buildings.find(b => b.id === 'outpost')?.level || 0;
+        const fusion = this.buildings.find(b => b.id === 'fusion_reactor')?.level || 0;
+
+        if (outpost >= 10 && fusion >= 5 && totalLv >= 100) return 4;
+        if (outpost >= 1 || fusion >= 1 || totalLv >= 50) return 3;
+        if (totalLv >= 15) return 2;
+        return 1;
       },
       fleetPower() {
         let p = 0;
@@ -815,7 +878,7 @@ const COLONY_FACTORY_TYPES = [
       canBuyBuilding(b) { return b.cooldown <= 0 && b.level === 0 && this.money.gte(b.currentPrice) && !b.building; },
       buyBuilding(b, e) {
         if (!this.canBuyBuilding(b)) return;
-        const slot = this.constructionSlots.find(s => !s.busy);
+        const slot = this.constructionSlots.slice(0, this.effectiveMaxConstructionSlots).find(s => !s.busy);
         if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
         this.money = this.money.sub(b.currentPrice);
         b.owned = 1; b.building = true;
@@ -843,7 +906,7 @@ const COLONY_FACTORY_TYPES = [
       canUpgradeBuilding(b) { return b.level > 0 && b.level < 100 && this.money.gte(this.upgradeCost(b)) && !b.building; },
       upgradeBuilding(b, e) {
         if (!this.canUpgradeBuilding(b)) return;
-        const slot = this.constructionSlots.find(s => !s.busy);
+        const slot = this.constructionSlots.slice(0, this.effectiveMaxConstructionSlots).find(s => !s.busy);
         if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
         const cost = this.upgradeCost(b);
         const nextLv = b.level + 1;
@@ -960,6 +1023,13 @@ const COLONY_FACTORY_TYPES = [
                 this.spawnFloatText(`📡+${awGain}`, '#a78bfa', window.innerWidth/2, window.innerHeight/2);
                 this.boostResourceBump(b.res);
               }
+              if (this.missions) {
+                for (const m of this.missions) {
+                  if (m.type === 'upgrade_buildings') {
+                    m.progress = Math.min(m.target, m.progress + 1);
+                  }
+                }
+              }
               b.building = false; b.buildRemaining = 0; b.buildTotal = 0;
               slot.busy = false; slot.buildingId = null; slot.action = null; slot.level = 0; slot.remaining = 0; slot.total = 0;
             }
@@ -1067,6 +1137,41 @@ const COLONY_FACTORY_TYPES = [
               post.prices[res].current = Math.round(base * fluctuation * 100) / 100;
             }
             post.priceTimer = 60 + Math.random() * 120;
+          }
+        }
+        
+        // 자동 무역 로직
+        if (this.autoTrade && this.tradeShip.count > 0) {
+          this.autoTradeTimer -= dt;
+          if (this.autoTradeTimer <= 0) {
+            const speed = this.tradeShip.speed || 1;
+            let baseDuration = 30; // seconds
+            let profitPerUnit = 3.2; // Earth-Mars metal
+            let routeName = "지구-화성 메탈 왕복 노선";
+
+            if (this.autoTradeRoute === 'earth_asteroid') {
+              baseDuration = 60;
+              profitPerUnit = 10.0;
+              routeName = "지구-소행성대 크리스탈 왕복 노선";
+            }
+
+            const tripDuration = Math.max(2, baseDuration / speed);
+            this.autoTradeTimer = tripDuration;
+
+            let boost = 1;
+            if (this.prestigePerks && this.prestigePerks.trade_boost) {
+              boost += this.prestigePerks.trade_boost * 0.2;
+            }
+            const cargoCap = (this.tradeShip.cargo || 100) * this.tradeShip.count;
+            const profit = new Decimal(Math.floor(cargoCap * profitPerUnit * boost));
+
+            this.money = this.money.add(profit);
+            this.toast(`🤖 자동 무역 완료! ${routeName} 수송으로 +💰${this.fmt(profit)} 골드 획득!`);
+            
+            this.tradeLog.push(`🤖 [자동 무역] ${routeName} 완료 (+${this.fmt(profit)} 골드)`);
+            if (this.tradeLog.length > 20) this.tradeLog.shift();
+            
+            this.totalTradeProfit += profit.toNumber();
           }
         }
       },
@@ -1486,7 +1591,14 @@ const COLONY_FACTORY_TYPES = [
           for (const f of c.factories) {
             if (f.level <= 0) continue;
             const t = this.colonyFactoryTypes[f.id];
-            const rate = t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1) * dt;
+            let boost = 1;
+            if (this.prestigePerks && this.prestigePerks.colony_boost) {
+              boost += this.prestigePerks.colony_boost * 0.15;
+            }
+            if (this.ships && this.ships.alien_miner) {
+              boost += (this.ships.alien_miner.count || 0) * 0.05;
+            }
+            const rate = t.baseOutput * f.level * (1 + 0.15 * (f.level - 1)) * (c.prodSpeed || 1) * boost * dt;
             const cap = Math.floor(5000 * Math.pow(1.5, f.level));
             c.resources[t.res] = Math.min(cap, (c.resources[t.res] || 0) + rate);
           }
@@ -1603,7 +1715,7 @@ const COLONY_FACTORY_TYPES = [
         for (const s of this.shipTypes) {
           const cnt = this.ships[s.type]?.count || 0;
           let mult = 1;
-          if (s.strongAgainst === pirateType) mult = 1.6;
+          if (s.strongAgainst === pirateType || s.type === 'alien_dread') mult = 1.6;
           p += cnt * this.shipPower(s) * mult;
         }
         if (this.flagshipPower) {
@@ -1673,8 +1785,15 @@ const COLONY_FACTORY_TYPES = [
             }
           }
 
-          this.pirateWave++; this.combatCooldown = 10; this.pirateAttackTimer = 300;
+          this.pirateWave++; this.combatCooldown = this.combatCooldownDuration(10); this.pirateAttackTimer = 300;
           this.stats.totalBattlesWon++;
+          if (this.missions) {
+            for (const m of this.missions) {
+              if (m.type === 'defeat_pirates') {
+                m.progress = Math.min(m.target, m.progress + 1);
+              }
+            }
+          }
           this.stats.totalBattleLoot += loot.toNumber();
           this.stats.maxWave = Math.max(this.stats.maxWave, this.pirateWave);
           if (this.alienTier.warlord >= 3 && Math.random() < 0.05) {
@@ -1688,7 +1807,7 @@ const COLONY_FACTORY_TYPES = [
           this.money = this.money.sub(penalty);
           this.pushLog(`❌ 패배 ${lost}척 손실 · ${this.fmt(penalty)} 약탈`, 'log-lose');
           if (e) this.spawnFloatText('-' + this.fmt(penalty), '#fb7185', e.clientX, e.clientY - 8);
-          this.combatCooldown = 15;
+          this.combatCooldown = this.combatCooldownDuration(15);
         }
       },
 
@@ -1778,7 +1897,7 @@ const COLONY_FACTORY_TYPES = [
         }
         target.timer = target.cooldown;
         target.active = false;
-        this.combatCooldown = 10;
+        this.combatCooldown = this.combatCooldownDuration(10);
         this.raidTravel = { active: false, target: null, remaining: 0, total: 0 };
       },
       tickRaids(dt) {
@@ -1809,11 +1928,26 @@ const COLONY_FACTORY_TYPES = [
         this.expedition.total = t.timeBase * timeMult;
         this.expedition.remaining = this.expedition.total;
         this.expedition.eventId = null;
+        this.expedition.midTriggered = false;
+        this.expedition.midEventId = null;
         this.toast(`🛰️ ${t.icon} ${t.name} 탐사 시작 (${this.fmtTime(this.expedition.total)})`);
       },
       tickExpedition(dt) {
-        if (!this.expedition.inProgress) return;
+        if (!this.expedition.inProgress || this.expeditionOverlay) return;
         this.expedition.remaining = Math.max(0, this.expedition.remaining - dt);
+        
+        if (!this.expedition.midTriggered && this.expedition.remaining < this.expedition.total / 2) {
+          this.expedition.midTriggered = true;
+          if (Math.random() < 0.4) {
+            const midEvents = ['solar_flare', 'space_trader'];
+            const evId = midEvents[Math.floor(Math.random() * midEvents.length)];
+            this.expedition.midEventId = evId;
+            const ev = MID_EXPEDITION_EVENTS[evId];
+            this.expeditionOverlay = { target: EXPEDITION_TARGETS.find(x => x.id === this.expedition.targetId), event: ev, eventId: evId, isMid: true };
+            return;
+          }
+        }
+
         if (this.expedition.remaining <= 0) {
           const target = EXPEDITION_TARGETS.find(x => x.id === this.expedition.targetId);
           if (target) {
@@ -1831,6 +1965,34 @@ const COLONY_FACTORY_TYPES = [
         if (!overlay) return;
         const choice = overlay.event.choices[choiceIdx];
         if (!choice) return;
+        
+        if (overlay.isMid) {
+          const type = choice.type;
+          if (type === 'warp') {
+            if (Math.random() < 0.2) {
+              const lost = this.applyLosses(0.2);
+              this.toast(`💥 돌입 중 태양풍 강타! 정찰기 ${lost}척 손실`);
+            } else {
+              this.expedition.remaining = Math.max(1, this.expedition.remaining / 2);
+              this.toast(`⚡ 성공! 태양풍을 추진력 삼아 탐사 시간이 절반으로 단축되었습니다!`);
+            }
+          } else if (type === 'wait') {
+            this.expedition.remaining += 30;
+            this.toast(`🛡️ 안전하게 우회합니다. 탐사 완료 시간이 30초 늘어났습니다.`);
+          } else if (type === 'trade_metal') {
+            if (this.resources.metal.gte(10000)) {
+              this.resources.metal = this.resources.metal.sub(10000);
+              this.money = this.money.add(100000);
+              this.toast(`💰 상인과 메탈을 판매하여 100,000 골드를 획득했습니다!`);
+            } else {
+              this.toast(`🚫 메탈이 부족하여 거래가 무산되었습니다.`);
+            }
+          } else if (type === 'ignore') {
+            this.toast(`상인 선단과의 교신을 무시하고 갈 길을 갑니다.`);
+          }
+          this.expeditionOverlay = null;
+          return;
+        }
         if (choice.risk && Math.random() < choice.risk) {
           const lost = this.applyLosses(0.3);
           this.toast(`❌ 탐사 실패! ${lost}척 손실`);
@@ -1955,8 +2117,30 @@ const COLONY_FACTORY_TYPES = [
         const gain = this.effectiveClickPower * (this.boostTimer > 0 ? this.boostMultItem : 1);
         this.money = this.money.add(gain);
         this.stats.totalClicks++;
-        if (e) this.spawnFloatText('+' + this.fmt(gain), '#fde68a', e.clientX, e.clientY);
+        if (e) {
+          this.spawnFloatText('+' + this.fmt(gain), '#fde68a', e.clientX, e.clientY);
+          this.spawnParticleEffect(e.clientX, e.clientY);
+        }
         const btn = this.$refs.clickBtn; if (btn) { btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop'); }
+      },
+      spawnParticleEffect(x, y) {
+        const layer = document.getElementById('fxLayer'); if (!layer) return;
+        const colors = ['#fde68a', '#60a5fa', '#a78bfa', '#f472b6', '#34d399'];
+        for (let i = 0; i < 8; i++) {
+          const d = document.createElement('div');
+          d.className = 'spark-particle';
+          d.style.left = x + 'px';
+          d.style.top = y + 'px';
+          d.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 30 + Math.random() * 40;
+          const dx = Math.cos(angle) * dist;
+          const dy = Math.sin(angle) * dist;
+          d.style.setProperty('--dx', dx + 'px');
+          d.style.setProperty('--dy', dy + 'px');
+          layer.appendChild(d);
+          setTimeout(() => d.remove(), 600);
+        }
       },
 
       spawnFloatText(text, color, x, y) {
@@ -2126,6 +2310,111 @@ const COLONY_FACTORY_TYPES = [
         this.awakeningStones -= this.artifactUpgradeCost(art);
         art.level++;
         this.toast(`🔮 유물 [${art.name}] 업그레이드 완료! (LV.${art.level})`);
+      },
+
+      prestigePerkLevel(perkId) {
+        return this.prestigePerks ? (this.prestigePerks[perkId] || 0) : 0;
+      },
+      prestigePerkCost(perkId) {
+        const def = PRESTIGE_PERK_DEFS.find(d => d.id === perkId);
+        if (!def) return 999;
+        const lv = this.prestigePerkLevel(perkId);
+        if (lv >= def.max) return null;
+        return def.cost[lv];
+      },
+      canBuyPrestigePerk(perkId) {
+        const cost = this.prestigePerkCost(perkId);
+        if (cost === null) return false;
+        return this.prestigePoints >= cost;
+      },
+      buyPrestigePerk(perkId) {
+        if (!this.canBuyPrestigePerk(perkId)) return;
+        const cost = this.prestigePerkCost(perkId);
+        this.prestigePoints -= cost;
+        this.$set(this.prestigePerks, perkId, this.prestigePerkLevel(perkId) + 1);
+        this.toast(`✨ 특성 업그레이드 완료!`);
+      },
+      combatCooldownDuration(base) {
+        let speed = 1;
+        if (this.prestigePerks && this.prestigePerks.combat_speed) {
+          speed -= this.prestigePerks.combat_speed * 0.1;
+        }
+        return Math.max(1, base * speed);
+      },
+      generateRandomMission(index) {
+        if (!this.missions) this.missions = [];
+        const types = ['deliver_metal', 'defeat_pirates', 'upgrade_buildings'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        const wave = this.pirateWave || 1;
+        
+        let name = "";
+        let desc = "";
+        let target = 0;
+        let reqAmount = 0;
+        let rewardStones = 1;
+
+        if (type === 'deliver_metal') {
+          name = "⛏️ 메탈 긴급 공수";
+          reqAmount = Math.floor(100 * Math.pow(1.35, wave));
+          desc = `은하 의회에 메탈 ${this.fmt(reqAmount)}개를 기부하고 각성석을 얻으세요.`;
+          target = reqAmount;
+          rewardStones = 1;
+        } else if (type === 'defeat_pirates') {
+          name = "☠️ 우주 해적 소탕 지령";
+          target = 2 + Math.floor(wave / 5);
+          desc = `치안 유지를 위해 우주 해적을 ${target}회 격파하세요.`;
+          rewardStones = 2;
+        } else {
+          name = "🏗️ 기지 인프라 확장 계획";
+          target = 3 + Math.floor(wave / 4);
+          desc = `기지 성장을 위해 건물 건설 또는 업그레이드를 ${target}회 완료하세요.`;
+          rewardStones = 1;
+        }
+
+        const rewardGold = new Decimal(Math.floor(800 * Math.pow(1.45, wave)));
+
+        const mission = {
+          id: Math.random().toString(36).substr(2, 9),
+          type,
+          name,
+          desc,
+          target,
+          progress: 0,
+          reqAmount,
+          rewardGold,
+          rewardStones
+        };
+
+        this.$set(this.missions, index, mission);
+      },
+      canCompleteMission(mission) {
+        if (!mission) return false;
+        if (mission.type === 'deliver_metal') {
+          return this.resources.metal.gte(mission.reqAmount);
+        }
+        return mission.progress >= mission.target;
+      },
+      completeMission(index) {
+        const mission = this.missions[index];
+        if (!mission || !this.canCompleteMission(mission)) return;
+
+        if (mission.type === 'deliver_metal') {
+          this.resources.metal = this.resources.metal.sub(mission.reqAmount);
+        }
+
+        this.money = this.money.add(mission.rewardGold);
+        this.awakeningStones += mission.rewardStones;
+
+        this.toast(`🎉 미션 완료! 💰+${this.fmt(mission.rewardGold)} 골드 / 💎각성석 +${mission.rewardStones} 획득!`);
+        this.generateRandomMission(index);
+      },
+      initMissions() {
+        if (!this.missions || this.missions.length < 3) {
+          this.missions = [];
+          for (let i = 0; i < 3; i++) {
+            this.generateRandomMission(i);
+          }
+        }
       },
 
       boostResourceBump(res) {
@@ -2299,8 +2588,11 @@ const COLONY_FACTORY_TYPES = [
         const tb = this.transcendBonus;
         const ar = { ...this.alienRep };
         const at = { ...this.alienTier };
+        const perks = { ...this.prestigePerks };
+        const startingGoldBonus = (perks.starting_gold || 0) * 100000;
+        
         const defaults = {
-          money: new Decimal(10000), clickPower: 200,
+          money: new Decimal(10000 + startingGoldBonus), clickPower: 200,
           incomeMult2: 1, incomeMult3: 1, incomeMult4: 1, fleetPowerMult2: 1, storageMult2: 1,
           autoClickerInterval: 5,
           resources: { metal: new Decimal(100), metalMax: new Decimal(500), crystal: new Decimal(10), crystalMax: new Decimal(300), hydrogen: new Decimal(0), hydrogenMax: new Decimal(200), plasma: new Decimal(0), plasmaMax: new Decimal(200), solar: new Decimal(0), solarMax: new Decimal(200), fission: new Decimal(0), fissionMax: new Decimal(200), fusion: new Decimal(0), fusionMax: new Decimal(200) },
@@ -2311,6 +2603,8 @@ const COLONY_FACTORY_TYPES = [
           awareness: 0, fameMilestones: FAME_MILESTONES.map(m => ({ ...m, reached: false })),
         research: RESEARCH_LIST.map(r => ({ ...r, level: 0 })),
         constructionSlots: [
+          { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 },
+          { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 },
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 },
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 }
         ],
@@ -2371,6 +2665,7 @@ const COLONY_FACTORY_TYPES = [
         this.transcendAwareness = 1;
         this.alienRep = ar;
         this.alienTier = at;
+        this.prestigePerks = perks;
         this.incomeMult = 1;
         this.recalcMaxes();
         this.toast('🔄 초기화 완료');
@@ -2418,7 +2713,7 @@ const COLONY_FACTORY_TYPES = [
         }
         if (this.autoBuilder && (this._autoBuilderCD = (this._autoBuilderCD || 0) - sdt) <= 0) {
           this._autoBuilderCD = 10;
-          const slot = this.constructionSlots.find(s => !s.busy);
+          const slot = this.constructionSlots.slice(0, this.effectiveMaxConstructionSlots).find(s => !s.busy);
           if (slot) {
             const buyAvail = this.visibleBuildings.filter(b => this.canBuyBuilding(b));
             if (buyAvail.length) {
@@ -2509,6 +2804,11 @@ const COLONY_FACTORY_TYPES = [
             tradeLocation: this.tradeLocation, trading: this.trading, tradeRemaining: this.tradeRemaining, tradeTotal: this.tradeTotal,
             tradeCargo: { ...this.tradeCargo }, totalTradeProfit: this.totalTradeProfit,
             tradeLog: this.tradeLog.slice(-20),
+            prestigePerks: { ...this.prestigePerks },
+            autoTrade: this.autoTrade,
+            autoTradeRoute: this.autoTradeRoute,
+            autoTradeTimer: this.autoTradeTimer,
+            missions: (this.missions || []).map(m => ({ ...m, rewardGold: m.rewardGold ? m.rewardGold.toString() : '0' })),
             raidTargets: this.raidTargets.map(t => ({ id: t.id, active: t.active, timer: t.timer })),
             raidTravel: { active: this.raidTravel.active, targetId: this.raidTravel.target?.id || null, remaining: this.raidTravel.remaining, total: this.raidTravel.total },
             expedition: { inProgress: this.expedition.inProgress, targetId: this.expedition.targetId, remaining: this.expedition.remaining, total: this.expedition.total, eventId: this.expedition.eventId }
@@ -2519,7 +2819,11 @@ const COLONY_FACTORY_TYPES = [
       },
       loadSystems() {
         try {
-          const raw = localStorage.getItem('systemsState'); if (!raw) return;
+          const raw = localStorage.getItem('systemsState');
+          if (!raw) {
+            this.initMissions();
+            return;
+          }
           const o = JSON.parse(raw);
           if (o.money) this.money = new Decimal(o.money);
           if (o.awareness) this.awareness = o.awareness;
@@ -2564,7 +2868,15 @@ const COLONY_FACTORY_TYPES = [
               if (r.level > 0) r.effect(this, r.level);
             }
           }
-          if (o.missions) { /* legacy - no op */ }
+          if (o.prestigePerks) Object.assign(this.prestigePerks, o.prestigePerks);
+          if (o.autoTrade !== undefined) this.autoTrade = o.autoTrade;
+          if (o.autoTradeRoute) this.autoTradeRoute = o.autoTradeRoute;
+          if (o.autoTradeTimer) this.autoTradeTimer = o.autoTradeTimer;
+          if (o.missions && o.missions.length > 0) {
+            this.missions = o.missions.map(m => ({ ...m, rewardGold: new Decimal(m.rewardGold || '0') }));
+          } else {
+            this.initMissions();
+          }
           if (o.ships) {
             const SHIP_MIGRATION = { interceptor: 'corvette', fighter: 'frigate', torpedo: 'fast_boat', bomber: 'destroyer', battleship: 'cruiser', carrier: 'battleship', dreadnought: 'carrier' };
             let needsMigrate = false;
