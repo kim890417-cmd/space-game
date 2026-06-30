@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="img/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="img/icon.svg">
-  <title>스페이스 임페리얼: 은하 건물주</title>
+  <title>스페이스 임페리얼 v2.0: 은하 건물주 - 사령함과 유물</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css?family=Orbitron:400,700,900&display=swap" rel="stylesheet">
   <script src="vue.min.js"></script>
@@ -503,6 +503,13 @@
             <div class="text-[8px] text-amber-400/80 mb-1 text-center" v-if="effectiveFleetPower(currentPirate.type) >= piratePower*1.5">🔥 압도적 유리 — 약점 함선 다수 보유</div>
             <div class="text-[8px] text-slate-500 mb-1 text-center" v-else-if="effectiveFleetPower(currentPirate.type) >= piratePower">⚔️ 유리한 전력</div>
             <div class="text-[8px] text-rose-400/80 mb-1 text-center" v-else>⚠️ 전력 부족 — {{ shipTypeName(currentPirate.weakTo) }} 건조 필요</div>
+            <div class="flex items-center justify-between mb-2 bg-slate-900/60 p-1.5 rounded">
+              <span class="text-[10px] text-slate-300 font-bold">🤖 자동 전투 활성화</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" v-model="autoCombat" class="sr-only peer">
+                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+              </label>
+            </div>
             <button class="btn btn-danger w-full text-xs py-2" @click="huntPirates($event)" :disabled="fleetPower<=0||combatCooldown>0">{{ combatCooldown>0 ? '재정비 '+fmtTime(combatCooldown) : '🚀 출격' }}</button>
             <div class="text-[9px] text-center mt-1" :class="pirateAttackTimer < 60 ? 'text-rose-400 font-bold animate-pulse' : 'text-amber-400/70'">⏰ 다음 습격 {{ fmtTime(pirateAttackTimer) }} {{ pirateAttackTimer < 60 ? '⚠️ 곧 침공!' : '' }}</div>
             <div class="mt-2 max-h-20 overflow-y-auto text-[8px] leading-relaxed">
@@ -822,126 +829,127 @@
         </div>
       </div>
 
-      <!-- TAB: GUIDE -->
-      <div v-if="activeTab==='guide'" class="space-y-2">
-
-        <!-- 세계관 -->
-        <details class="card py-2 px-3 block" style="border-color:rgba(56,189,248,0.3);background:linear-gradient(135deg,rgba(15,23,42,0.9),rgba(30,41,59,0.5))">
-          <summary class="text-xs font-bold text-sky-300 cursor-pointer outline-none select-none">🌌 세계관: 은하 건물주</summary>
-          <div class="text-[9.5px] text-slate-300 leading-relaxed mt-2 border-t border-slate-700/50 pt-1.5 space-y-1.5">
-            <p>서기 2157년, 인류는 태양계 곳곳에 거주지를 건설하고 자원을 채굴하며 우주로 진출했습니다. 당신은 신생 기업 <span class="text-amber-300 font-bold">'스페이스 임페리얼'</span>의 CEO가 되어, 소행성 지대에 첫 기지를 세우고 우주 제국을 건설해야 합니다.</p>
-            <p>작은 광산에서 시작하여 드론 허브, 정제소, 발전소를 거쳐 전초기지까지 — 각 건물은 월세 수익과 자원을 생산합니다. 수익을 재투자하여 건물을 업그레이드하고, 인지도를 높여 더 발전된 기술과 건물을 잠금해제하세요.</p>
-            <p>함대를 건조하여 해적을 토벌하고, 행성을 탐험하여 식민지를 세우며, 연구를 통해 기술을 발전시켜 궁극적으로 <span class="text-yellow-300 font-bold">우주 억만장자</span>가 되는 것이 목표입니다.</p>
-          </div>
-        </details>
-
-        <!-- 게임 목표 -->
-        <details class="card py-2 px-3 block" style="border-color:rgba(250,204,21,0.3)">
-          <summary class="text-xs font-bold text-amber-300 cursor-pointer outline-none select-none">🎯 게임 목표</summary>
-          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1.5 mt-2 border-t border-slate-700/50 pt-1.5">
-            <div><span class="text-emerald-400 font-bold">1차 목표:</span> 총 자산 <span class="text-yellow-300 font-bold">1,000,000,000 (10억)</span> 달성 → 엔딩</div>
-            <div><span class="text-purple-400 font-bold">심화 목표:</span> 환생(프레스티지)으로 영구 보너스 획득, 각종 업적 달성, 도전 모드 클리어, 외계 종족과 교류</div>
-            <div><span class="text-rose-400 font-bold">최종 목표:</span> 모든 건물 각성, 모든 연구 완료, 최고 레벨 함대, 초월 달성</div>
-          </div>
-        </details>
-
-        <!-- 진행 가이드 -->
-        <details class="card py-2 px-3 block" style="border-color:rgba(52,211,153,0.3)">
-          <summary class="text-xs font-bold text-emerald-300 cursor-pointer outline-none select-none">📋 처음 시작 가이드</summary>
-          <div class="space-y-2 text-[9px] text-slate-400 leading-relaxed mt-2 border-t border-slate-700/50 pt-1.5">
-            <div class="bg-slate-900/50 rounded p-1.5">
-              <div class="text-emerald-400 font-bold mb-0.5">1️⃣ 기지 건설 (💰 돈 벌기)</div>
-              <div>클릭으로 돈을 벌어 <span class="text-sky-300">지표 광산</span>을 지으세요. 건물은 초당 수익을 자동으로 생성합니다.</div>
+      <!-- TAB: FLAGSHIP & ARTIFACTS -->
+      <div v-if="activeTab==='flagship'" class="space-y-3">
+        <!-- 사령함 정보 -->
+        <div class="card py-3 px-3 relative overflow-hidden border-cyan-500/30" style="background-image:url('img/ship-flagship.png');background-size:cover;background-position:center;min-height:160px">
+          <div style="position:absolute;inset:0;background:linear-gradient(to right, rgba(15,23,42,0.95), rgba(15,23,42,0.7))"></div>
+          
+          <div class="relative z-10 flex flex-col justify-between h-full">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-cyan-400 font-bold tracking-wider">🚀 COMMAND FLAGSHIP</span>
+                <span class="text-[10px] bg-cyan-950/80 text-cyan-300 border border-cyan-800/40 px-2 py-0.5 rounded-full font-bold">LV.{{ flagship.level }}</span>
+              </div>
+              <h2 class="text-base font-black tracking-tight text-white mb-2">사령함 임페리얼 스톰</h2>
+              <div class="text-[10px] text-slate-300 leading-relaxed max-w-[75%]">은하 전장을 지배하는 연방의 주력 모선입니다. 엔진과 무장을 개량해 아군 함대를 서포트하고 자원을 수집하세요.</div>
             </div>
-            <div class="bg-slate-900/50 rounded p-1.5">
-              <div class="text-emerald-400 font-bold mb-0.5">2️⃣ 인지도 올리기 (📡 명성)</div>
-              <div>건물을 건설/업그레이드하면 인지도(📡)가 쌓이며, 새 건물과 함선이 잠금해제됩니다.</div>
-            </div>
-            <div class="bg-slate-900/50 rounded p-1.5">
-              <div class="text-emerald-400 font-bold mb-0.5">3️⃣ 함대 건조 (🚀 함선)</div>
-              <div>함선을 모아 해적을 토벌하고 전리품을 얻으세요. 적에 대응하는 <span class="text-rose-400 font-bold">상성 함선</span>을 맞추는 것이 중요합니다.</div>
-            </div>
-            <div class="bg-slate-900/50 rounded p-1.5">
-              <div class="text-emerald-400 font-bold mb-0.5">4️⃣ 연구 (🔬 기술)</div>
-              <div>연구를 통해 건물 효율, 인지도, 전투력 등 다양한 영구 효과를 자원을 소모하여 획득하세요.</div>
-            </div>
-            <div class="bg-slate-900/50 rounded p-1.5">
-              <div class="text-emerald-400 font-bold mb-0.5">5️⃣ 행성 탐험 & 식민지 (🌍 개척)</div>
-              <div>식민 함선으로 행성을 개척하여 식민지를 세우고, 공장을 돌려 수집한 자원을 본진으로 수송하세요.</div>
+            
+            <div class="mt-4 flex items-center justify-between">
+              <div>
+                <div class="text-[8px] text-slate-400 mb-0.5">개조 필요 자원</div>
+                <div class="flex gap-2 text-[10px]">
+                  <span :class="resources.metal.gte(flagshipUpgradeCost().metal) ? 'text-emerald-400' : 'text-rose-400'">⛏️ {{ fmt(flagshipUpgradeCost().metal) }}</span>
+                  <span :class="resources.crystal.gte(flagshipUpgradeCost().crystal) ? 'text-emerald-400' : 'text-rose-400'">💎 {{ fmt(flagshipUpgradeCost().crystal) }}</span>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-primary bg-cyan-600 hover:bg-cyan-500 px-4 py-1.5 text-xs text-white" @click="upgradeFlagship()" :disabled="!canUpgradeFlagship()">
+                🚀 사령함 개조
+              </button>
             </div>
           </div>
-        </details>
+        </div>
 
-        <!-- 건물 시스템 -->
-        <details class="card py-2 px-3 block" style="border-color:rgba(99,102,241,0.3)">
-          <summary class="text-xs font-bold text-indigo-300 cursor-pointer outline-none select-none">🏗️ 건물 시스템</summary>
-          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1 mt-2 border-t border-slate-700/50 pt-1.5">
-            <div>• 총 10종의 건물이 있으며, 월세 수익과 특정 자원을 생산합니다.</div>
-            <div>• 건물 가격은 <span class="text-emerald-400 font-bold">초급매(×0.5)</span> ~ <span class="text-rose-400 font-bold">초고가(×2.0)</span>로 실시간 변동합니다.</div>
-            <div>• 업그레이드할수록 수익과 생산량이 12%씩 복리 증가합니다.</div>
-            <div>• 최대 레벨(LV20) 도달 후 <span class="text-amber-300 font-bold">각성</span>하면 강력한 고유 특수 효과가 활성화됩니다.</div>
+        <!-- 사령함 업그레이드 포인트 -->
+        <div class="card py-3 px-3">
+          <div class="flex items-center justify-between mb-3 border-b border-slate-700/50 pb-2">
+            <span class="text-xs font-bold text-slate-200"> 스탯 포인트 배분</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] text-cyan-300 font-extrabold bg-cyan-950 px-2 py-0.5 rounded">잔여 포인트: {{ flagship.points }}</span>
+              <button class="text-[9px] text-rose-400 border border-rose-900/50 bg-rose-950/20 px-1.5 py-0.5 rounded hover:bg-rose-900/40" @click="resetFlagshipStats()">🔄 재설정 (100k 골드)</button>
+            </div>
           </div>
-        </details>
-
-        <!-- 함선 & 전투 -->
-        <details class="card py-2 px-3 block" style="border-color:rgba(251,113,133,0.3)">
-          <summary class="text-xs font-bold text-rose-300 cursor-pointer outline-none select-none">🚀 함선 & 전투 시스템</summary>
-          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1 mt-2 border-t border-slate-700/50 pt-1.5">
-            <div>• 11종의 함선을 건조하여 해적 침공을 막거나 약탈(Raid) 임무를 보냅니다.</div>
-            <div>• 각 함선은 특정 해적 유형에 강한 <span class="text-rose-400 font-bold">상성</span>이 존재합니다.</div>
-            <div>• <span class="text-amber-300 font-bold">정찰기</span>는 인지도를 생성하고, <span class="text-sky-300 font-bold">수리함</span>은 아군 함선 손실률을 크게 낮춥니다.</div>
+          
+          <div class="space-y-2">
+            <!-- ⚔️ 공격력 -->
+            <div class="flex items-center justify-between bg-slate-900/50 p-2 rounded border border-slate-800">
+              <div>
+                <div class="text-[11px] font-bold text-rose-400">⚔️ 전하 충격포 (공격력)</div>
+                <div class="text-[9px] text-slate-400">사령함 자체 전투력 +1,000 / LV.{{ flagship.stats.attack }}</div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[12px] font-bold text-white font-mono">{{ flagship.stats.attack * 1000 * (1 + (flagship.level - 1) * 0.1) }}</span>
+                <button class="w-6 h-6 flex items-center justify-center bg-cyan-600 rounded text-xs font-bold text-white hover:bg-cyan-500 disabled:opacity-30" @click="investFlagshipStat('attack')" :disabled="flagship.points <= 0">+</button>
+              </div>
+            </div>
+            
+            <!-- 🛡️ 방어막 -->
+            <div class="flex items-center justify-between bg-slate-900/50 p-2 rounded border border-slate-800">
+              <div>
+                <div class="text-[11px] font-bold text-blue-400">🛡️ 플라스마 필드 (방어막)</div>
+                <div class="text-[9px] text-slate-400">함선 손실율 -1% (최대 -75% 제한) / LV.{{ flagship.stats.shield }}</div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[12px] font-bold text-white font-mono">-{{ flagship.stats.shield }}%</span>
+                <button class="w-6 h-6 flex items-center justify-center bg-cyan-600 rounded text-xs font-bold text-white hover:bg-cyan-500 disabled:opacity-30" @click="investFlagshipStat('shield')" :disabled="flagship.points <= 0 || flagship.stats.shield >= 75">+</button>
+              </div>
+            </div>
+            
+            <!-- ⚙️ 엔진 -->
+            <div class="flex items-center justify-between bg-slate-900/50 p-2 rounded border border-slate-800">
+              <div>
+                <div class="text-[11px] font-bold text-amber-400">⚙️ 하이퍼 추진기 (차원워프)</div>
+                <div class="text-[9px] text-slate-400">함선 건조 및 건물 건설 속도 +2% / LV.{{ flagship.stats.warp }}</div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[12px] font-bold text-white font-mono">+{{ flagship.stats.warp * 2 }}%</span>
+                <button class="w-6 h-6 flex items-center justify-center bg-cyan-600 rounded text-xs font-bold text-white hover:bg-cyan-500 disabled:opacity-30" @click="investFlagshipStat('warp')" :disabled="flagship.points <= 0 || flagship.stats.warp >= 50">+</button>
+              </div>
+            </div>
+            
+            <!-- 📡 레이더 -->
+            <div class="flex items-center justify-between bg-slate-900/50 p-2 rounded border border-slate-800">
+              <div>
+                <div class="text-[11px] font-bold text-emerald-400">📡 양자 탐지기 (자원스캔)</div>
+                <div class="text-[9px] text-slate-400">해적 전투 승리 골드 획득량 +5% / LV.{{ flagship.stats.radar }}</div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-[12px] font-bold text-white font-mono">+{{ flagship.stats.radar * 5 }}%</span>
+                <button class="w-6 h-6 flex items-center justify-center bg-cyan-600 rounded text-xs font-bold text-white hover:bg-cyan-500 disabled:opacity-30" @click="investFlagshipStat('radar')" :disabled="flagship.points <= 0">+</button>
+              </div>
+            </div>
           </div>
-        </details>
+        </div>
 
-        <!-- 연구 & 자원 -->
-        <details class="card py-2 px-3 block" style="border-color:rgba(168,139,250,0.3)">
-          <summary class="text-xs font-bold text-purple-300 cursor-pointer outline-none select-none">🔬 연구 & 자원 시스템</summary>
-          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1 mt-2 border-t border-slate-700/50 pt-1.5">
-            <div>• 20개의 연구 프로젝트를 완료하여 영구 버프와 자동화 기능(자동클릭, 자동건설)을 얻으세요.</div>
-            <div>• 총 7종 자원: <span class="text-emerald-400">⛏️메탈</span> <span class="text-purple-400">💎크리스탈</span> <span class="text-sky-400">⚡수소</span> <span class="text-pink-400">🔵플라즈마</span> <span class="text-yellow-400">☀️태양열</span> <span class="text-rose-400">⚛️핵분열</span> <span class="text-fuchsia-400">🔥핵융합</span></div>
-            <div>• 거래소에서 자원을 매매할 수 있으며, 교역 연맹 평판 1티어 달성 시 매수 수수료가 제거됩니다.</div>
+        <!-- 고대 유물 -->
+        <div class="card py-3 px-3">
+          <div class="flex items-center justify-between mb-3 border-b border-slate-700/50 pb-2">
+            <span class="text-xs font-bold text-slate-200">🔮 잃어버린 문명의 고대 유물</span>
+            <span class="text-[10px] text-slate-400">전투 승리 시 파편을 모아 레벨을 올리세요</span>
           </div>
-        </details>
-
-        <!-- 탐험 & 식민지 -->
-        <details class="card py-2 px-3 block" style="border-color:rgba(250,204,21,0.3)">
-          <summary class="text-xs font-bold text-amber-300 cursor-pointer outline-none select-none">🌍 탐험 & 식민지 시스템</summary>
-          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1 mt-2 border-t border-slate-700/50 pt-1.5">
-            <div>• 식민 함선을 건조하여 행성을 개척하면 식민지를 세울 수 있습니다.</div>
-            <div>• 식민지에서 생산된 자원은 운송을 통해 본진 인벤토리로 수송됩니다.</div>
-            <div>• 연구를 통해 자동 수송 및 자동 공장 업그레이드를 해제할 수 있습니다.</div>
+          
+          <div class="grid grid-cols-1 gap-2">
+            <div v-for="art in artifacts" :key="art.id" class="flex gap-3 bg-slate-950/60 p-2.5 rounded border border-purple-900/20 items-center">
+              <div class="text-2xl bg-purple-950/50 border border-purple-800/30 w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+                {{ art.icon }}
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-0.5">
+                  <span class="text-[11px] font-bold text-purple-300">{{ art.name }}</span>
+                  <span class="text-[9px] text-purple-400/90 font-bold bg-purple-950/80 px-1.5 py-px rounded font-mono">LV.{{ art.level }}/50</span>
+                </div>
+                <div class="text-[9px] text-slate-400 leading-snug mb-1">{{ art.desc }}</div>
+                
+                <div class="flex items-center justify-between border-t border-slate-800/60 pt-1 mt-1">
+                  <span class="text-[8px] text-slate-500">강화 비용: 💎각성석 {{ artifactUpgradeCost(art) }}개</span>
+                  <button class="btn btn-sm btn-ghost border-purple-800/40 text-purple-300 text-[9px] py-0.5 px-2 hover:bg-purple-900/20" @click="upgradeArtifact(art)" :disabled="!canUpgradeArtifact(art)">
+                    🔮 강화
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </details>
-
-        <!-- 프레스티지 & 초월 -->
-        <details class="card py-2 px-3 block" style="border-color:rgba(124,58,237,0.4)">
-          <summary class="text-xs font-bold text-purple-300 cursor-pointer outline-none select-none">✨ 환생 & 초월</summary>
-          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1 mt-2 border-t border-slate-700/50 pt-1.5">
-            <div>• <span class="text-amber-300 font-bold">환생(프레스티지):</span> 총자산 100k 이상일 때 가능. 모든 것이 초기화되는 대신 영구 수입 보너스를 얻습니다.</div>
-            <div>• <span class="text-purple-300 font-bold">초월(트랜센드):</span> 모든 건물 각성 후 각성석을 사용해 초월하며 수입 및 속도를 극대화합니다.</div>
-            <div>• 도전 모드를 클리어하면 초월과 각성에 필요한 귀중한 각성석을 획득합니다.</div>
-          </div>
-        </details>
-
-        <!-- 외계 종족 -->
-        <details class="card py-2 px-3 block" style="border-color:rgba(34,211,238,0.25)">
-          <summary class="text-xs font-bold text-cyan-300 cursor-pointer outline-none select-none">👽 외계 종족</summary>
-          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1 mt-2 border-t border-slate-700/50 pt-1.5">
-            <div>• 행성 탐험 중 무작위로 교역 연맹🤝, 전투 종족⚔️, 기술 위원회🔮와 조우합니다.</div>
-            <div>• 평판을 쌓아 티어를 올리면 거래소 혜택, 전투력 증가, 연구 속도 가속 등 영구 보너스를 제공받습니다.</div>
-          </div>
-        </details>
-
-        <!-- 팁 -->
-        <details class="card py-2 px-3 block" style="border-color:rgba(251,191,36,0.3)">
-          <summary class="text-xs font-bold text-yellow-300 cursor-pointer outline-none select-none">💡 초보자 팁</summary>
-          <div class="text-[9px] text-slate-400 leading-relaxed space-y-1 mt-2 border-t border-slate-700/50 pt-1.5">
-            <div>• 초반에는 광산을 짓고 업그레이드하면서, 정찰기를 3~5척 모아 인지도를 모으세요.</div>
-            <div>• 건물은 가격이 <span class="text-emerald-400 font-bold">⬇️⬇️ 초급매(x0.5)</span>가 되었을 때 구매하는 것이 핵심입니다.</div>
-            <div>• 연구는 수입 증가 및 인지도 확산을 우선시하고, 무역선은 원금 회수가 매우 느리니 초반에는 자제하세요.</div>
-          </div>
-        </details>
-
+        </div>
       </div>
 
       <!-- TAB: INFO -->
@@ -1214,7 +1222,7 @@
       <div class="nav-item" :class="{active: activeTab==='colony'}" @click="activeTab='colony'"><span class="nav-icon">🏙️</span><div>식민지</div><span class="nav-badge" v-if="colonyCount">{{ colonyCount }}</span></div>
       <div class="nav-item" :class="{active: activeTab==='trade'}" @click="activeTab='trade'"><span class="nav-icon">📦</span><div>무역</div></div>
       <div class="nav-item" :class="{active: activeTab==='research'}" @click="activeTab='research'"><span class="nav-icon">🔬</span><div>연구</div></div>
-      <div class="nav-item" :class="{active: activeTab==='guide'}" @click="activeTab='guide'"><span class="nav-icon">📖</span><div>설명</div></div>
+      <div class="nav-item" :class="{active: activeTab==='flagship'}" @click="activeTab='flagship'"><span class="nav-icon">🔮</span><div>사령함</div></div>
       <div class="nav-item" :class="{active: activeTab==='info'}" @click="activeTab='info'"><span class="nav-icon">👤</span><div>정보</div></div>
     </div>
 

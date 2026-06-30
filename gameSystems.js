@@ -46,8 +46,8 @@ const BUILDING_TEMPLATES = [
     { id: 'fusion_reactor', name: '핵융합로', icon: '🔥', img: 'img/bld-fusion.jpg', desc: '핵융합 반응 에너지',
       basePrice: 25000000, income: 550, awarenessNeeded: 100000, awarenessGiven: 80, tier: 9, res: 'fusion', output: 1.2,
       unlockRequires: { fission_reactor: 4, plasma_coil: 6 }, buildTime: 1200 },
-    { id: 'outpost', name: '전초기지', icon: '🚀', img: 'img/bld-outpost.jpg', desc: '새 행성 자원 탐색',
-      basePrice: 50000000, income: 900, awarenessNeeded: 200000, awarenessGiven: 100, tier: 10, res: 'crystal', output: 5.0,
+    { id: 'outpost', name: '전초기지', icon: '🚀', img: 'img/bld-outpost.jpg', desc: '모든 기본 자원 생산 및 글로벌 버프 제공',
+      basePrice: 50000000, income: 900, awarenessNeeded: 200000, awarenessGiven: 100, tier: 10, res: 'all', output: 5.0,
       unlockRequires: { fusion_reactor: 4, fission_reactor: 6 }, buildTime: 2400 }
   ];
 
@@ -355,6 +355,23 @@ const COLONY_FACTORY_TYPES = [
         activeTab: 'buildings',
         _saveTick: 0, _toastT: null,
         lastSeen: 0, offlineReport: null,
+        flagship: {
+          level: 1,
+          points: 0,
+          stats: {
+            attack: 0,
+            shield: 0,
+            warp: 0,
+            radar: 0
+          }
+        },
+        artifacts: [
+          { id: 'nano_shield', name: '나노 방어막 복구 장치', icon: '🛡️', level: 0, desc: '전투 시 함선 손실률 감소 (-1% per level, 최대 -50%)' },
+          { id: 'warp_lens', name: '시공간 렌즈', icon: '🔍', level: 0, desc: '모든 자원 생산량 +3% per level' },
+          { id: 'hyper_core', name: '차원 발전 코어', icon: '🔋', level: 0, desc: '오프라인 방치 보상 효율 +5% per level' },
+          { id: 'crystal_magnet', name: '크리스탈 자화기', icon: '🧲', level: 0, desc: '각성석 획득 확률 +1% per level' }
+        ],
+        autoCombat: false,
 
         constructionSlots: [
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 },
@@ -473,8 +490,16 @@ const COLONY_FACTORY_TYPES = [
       resourceIncome() {
         const rates = {};
         for (const k of RES) rates[k] = 0;
-        for (const b of this.buildings)
-          if (b.level > 0 && b.res) rates[b.res] = (rates[b.res] || 0) + b.output * b.level * (1 + 0.10 * (b.level - 1));
+        for (const b of this.buildings) {
+          if (b.level > 0) {
+            if (b.res === 'all') {
+              const out = b.output * b.level * (1 + 0.10 * (b.level - 1));
+              for (const k of RES) rates[k] = (rates[k] || 0) + out;
+            } else if (b.res) {
+              rates[b.res] = (rates[b.res] || 0) + b.output * b.level * (1 + 0.10 * (b.level - 1));
+            }
+          }
+        }
         if (this.challengeModifiers.metalProd) rates.metal = (rates.metal || 0) * this.challengeModifiers.metalProd;
         for (const p of this.planets) {
           if (p.explorationLevel <= 0) continue;
@@ -492,6 +517,20 @@ const COLONY_FACTORY_TYPES = [
             if (eff.resBonus) for (const k in eff.resBonus) if (rates[k]) rates[k] *= 1 + eff.resBonus[k];
           }
         }
+        
+        // 전초기지 건설 개수 비례 자원 생산 부스트 (+10% per lv) & 시공간 렌즈 유물 부스트 (+3% per lv)
+        const outpostCount = this.buildings.find(b => b.id === 'outpost')?.level || 0;
+        const outpostResMult = 1 + outpostCount * 0.10;
+        let artifactResMult = 1;
+        if (this.artifacts) {
+          const lens = this.artifacts.find(a => a.id === 'warp_lens');
+          if (lens) artifactResMult += lens.level * 0.03;
+        }
+        const globalResMult = outpostResMult * artifactResMult;
+        for (const k of RES) {
+          if (rates[k] > 0) rates[k] *= globalResMult;
+        }
+        
         return rates;
       },
       effectiveIncomeMult() {
@@ -583,23 +622,55 @@ const COLONY_FACTORY_TYPES = [
           : 0;
         return { name: next.name, need: needStr, progress: progress };
       },
+      flagshipPower() {
+        if (!this.flagship) return 0;
+        const baseAttack = this.flagship.stats.attack * 1000 * (1 + (this.flagship.level - 1) * 0.1);
+        return baseAttack;
+      },
+      effectiveShipBuildSpeedMult() {
+        let mult = this.shipBuildSpeedMult;
+        if (this.flagship) {
+          mult *= (1 - this.flagship.stats.warp * 0.02);
+        }
+        return Math.max(0.01, mult);
+      },
       fleetPower() {
         let p = 0;
         for (const s of this.shipTypes) {
           const cnt = this.ships[s.type]?.count || 0;
           p += cnt * this.shipPower(s);
         }
+        p += this.flagshipPower;
         let mult = this.fleetPowerMult * (this.fleetPowerMult2 || 1);
         if (this.buildingAwakened.outpost) mult *= 1.3;
         if (this.alienTier.warlord >= 1) mult *= 1.25;
+        
+        // 전초기지 건설 개수 비례 함대 전투력 버프 (+5% per lv)
+        const outpostCount = this.buildings.find(b => b.id === 'outpost')?.level || 0;
+        mult *= (1 + outpostCount * 0.05);
+        
         return p * mult;
       },
       currentPirate() {
+        const isBoss = (this.pirateWave % 10 === 0);
+        if (isBoss) {
+          const bossNum = this.pirateWave / 10;
+          const scale = Math.pow(1.20, this.pirateWave - 1);
+          const power = Math.max(50, Math.floor(20 * scale * 3.5));
+          return {
+            type: 'boss',
+            name: `정예 외계 보스 (Tier ${bossNum})`,
+            icon: '👾',
+            weakTo: 'mothership',
+            power: power,
+            isBoss: true
+          };
+        }
         const pt = this.pirateTypes[(this.pirateWave - 1) % this.pirateTypes.length];
         const scale = Math.pow(1.20, this.pirateWave - 1);
         const wavePower = Math.floor(pt.powerBase * scale);
         const earlyBonus = this.pirateWave <= 3 ? 0.8 : 1;
-        return { type: pt.type, name: pt.name, icon: pt.icon, weakTo: pt.weakTo, power: Math.max(1, Math.floor(wavePower * earlyBonus)) };
+        return { type: pt.type, name: pt.name, icon: pt.icon, weakTo: pt.weakTo, power: Math.max(1, Math.floor(wavePower * earlyBonus)), isBoss: false };
       },
       piratePower() {
         let p = this.currentPirate ? this.currentPirate.power : 0;
@@ -748,7 +819,7 @@ const COLONY_FACTORY_TYPES = [
         if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
         this.money = this.money.sub(b.currentPrice);
         b.owned = 1; b.building = true;
-        const buildSpeedMult = this.shipBuildSpeedMult;
+        const buildSpeedMult = this.effectiveShipBuildSpeedMult;
         b.buildTotal = Math.max(1, Math.floor(b.buildTime * buildSpeedMult));
         b.buildRemaining = b.buildTotal;
         slot.busy = true; slot.buildingId = b.id; slot.action = 'buy'; slot.level = 1;
@@ -776,7 +847,7 @@ const COLONY_FACTORY_TYPES = [
         if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
         const cost = this.upgradeCost(b);
         const nextLv = b.level + 1;
-        const buildSpeedMult = this.shipBuildSpeedMult;
+        const buildSpeedMult = this.effectiveShipBuildSpeedMult;
         const buildTime = Math.max(1, Math.floor(b.buildTime * Math.pow(1.15, nextLv - 1) * buildSpeedMult));
         this.money = this.money.sub(cost);
         b.building = true; b.buildTotal = buildTime; b.buildRemaining = buildTime;
@@ -1123,7 +1194,7 @@ const COLONY_FACTORY_TYPES = [
         if (st.cost.fission) this.resources.fission = this.resources.fission.sub((st.cost.fission || 0) * count);
         if (st.cost.fusion) this.resources.fusion = this.resources.fusion.sub((st.cost.fusion || 0) * count);
         const s = this.ships[st.type];
-        s.building = true; s.buildCount = count; s.totalTime = st.time * count * this.shipBuildSpeedMult * (this.transcendBuildSpeed || 1); s.elapsed = 0;
+        s.building = true; s.buildCount = count; s.totalTime = st.time * count * this.effectiveShipBuildSpeedMult * (this.transcendBuildSpeed || 1); s.elapsed = 0;
         s.buildCost = { metal: (st.cost.metal || 0) * count, crystal: (st.cost.crystal || 0) * count, hydrogen: (st.cost.hydrogen || 0) * count, plasma: (st.cost.plasma || 0) * count, solar: (st.cost.solar || 0) * count, fission: (st.cost.fission || 0) * count, fusion: (st.cost.fusion || 0) * count };
         this.awareness += Math.max(1, Math.floor(st.power / 10)) * this.effectiveAwarenessMult;
         this.toast(`🚀 ${st.name} ${count}척 건조 시작 (${this.fmtTime(s.totalTime)})`);
@@ -1234,7 +1305,7 @@ const COLONY_FACTORY_TYPES = [
         const s = this.ships[st.type];
         s.upgrading = true;
         s.upgradeElapsed = 0;
-        s.upgradeTotalTime = (st.upgradeTime || 60) * this.shipBuildSpeedMult;
+        s.upgradeTotalTime = (st.upgradeTime || 60) * this.effectiveShipBuildSpeedMult;
         this.toast(`⬆️ ${st.name} LV${s.level} → LV${s.level+1} 업그레이드 시작 (${this.fmtTime(s.upgradeTotalTime)})`);
       },
 
@@ -1244,7 +1315,7 @@ const COLONY_FACTORY_TYPES = [
         for (let i = 0; i < qty; i++) {
           const countForThisShip = currentCount + i;
           const penaltyFactor = 1 + countForThisShip * 0.25;
-          total += 120 * this.shipBuildSpeedMult * penaltyFactor;
+          total += 120 * this.effectiveShipBuildSpeedMult * penaltyFactor;
         }
         return total;
       },
@@ -1535,10 +1606,17 @@ const COLONY_FACTORY_TYPES = [
           if (s.strongAgainst === pirateType) mult = 1.6;
           p += cnt * this.shipPower(s) * mult;
         }
+        if (this.flagshipPower) {
+          p += this.flagshipPower;
+        }
         let m = this.fleetPowerMult * (this.fleetPowerMult2 || 1);
         if (this.buildingAwakened.outpost) m *= 1.3;
         if (this.alienTier.warlord >= 1) m *= 1.25;
         if (this.transcendFleetBonus) m *= 1 + this.transcendFleetBonus;
+        
+        const outpostCount = this.buildings.find(b => b.id === 'outpost')?.level || 0;
+        m *= (1 + outpostCount * 0.05);
+        
         return p * m;
       },
       shipTypeName(type) { const s = this.shipTypes.find(x => x.type === type); return s ? s.name : type; },
@@ -1549,15 +1627,52 @@ const COLONY_FACTORY_TYPES = [
         const enemy = this.currentPirate;
         const eff = this.effectiveFleetPower(enemy.type);
         const roll = eff * (0.85 + Math.random() * 0.3);
-        this.pushLog(`${enemy.icon} ${enemy.name} (전투력 ${enemy.power}) vs 함대 ${eff} (약점→${this.shipTypeName(enemy.weakTo)} ${this.weakShipCount}척)`, 'log-info');
+        this.pushLog(`${enemy.icon} ${enemy.name} (전투력 ${enemy.power}) vs 함대 ${Math.floor(eff)} (약점→${this.shipTypeName(enemy.weakTo)} ${this.weakShipCount}척)`, 'log-info');
         if (roll >= enemy.power) {
-          const loot = new Decimal(Math.floor(800 * Math.pow(1.15, this.pirateWave - 1) * (eff >= enemy.power * 1.5 ? 2 : 1)));
+          // 사령함 레이더 탐지 보너스 (+5% per lv)
+          let lootMult = 1;
+          if (this.flagship) {
+            lootMult += this.flagship.stats.radar * 0.05;
+          }
+          const baseLoot = 800 * Math.pow(1.15, this.pirateWave - 1) * (eff >= enemy.power * 1.5 ? 2 : 1);
+          const loot = new Decimal(Math.floor(baseLoot * lootMult));
+          
           this.money = this.money.add(loot);
           const lost = this.applyLosses(0.05);
           const fameGain = Math.max(1, Math.floor(this.pirateWave * 3));
           this.awareness += fameGain;
           this.pushLog(`✅ 승리 +${this.fmt(loot)}${lost ? ` (손실 ${lost}척)` : ''} 📡명성 +${fameGain}`, 'log-win');
           if (e) this.spawnFloatText('+' + this.fmt(loot), '#34d399', e.clientX, e.clientY - 8);
+          
+          // 보스 퇴치 보상
+          if (enemy.isBoss) {
+            const stoneReward = 3 + Math.floor(Math.random() * 3);
+            this.awakeningStones += stoneReward;
+            this.toast(`👾 정예 보스 처치 성공! 각성석 +${stoneReward} 획득!`);
+            
+            const nonMaxed = this.artifacts.filter(a => a.level < 50);
+            if (nonMaxed.length > 0) {
+              const lucky = nonMaxed[Math.floor(Math.random() * nonMaxed.length)];
+              lucky.level++;
+              this.toast(`🔮 보스 전리품: 유물 [${lucky.name}] 레벨 업! (LV.${lucky.level})`);
+            }
+          } else {
+            // 일반 전투 유물 획득 확률 검사 (기본 3% + 크리스탈 자화기 보너스)
+            let artChance = 0.03;
+            if (this.artifacts) {
+              const mag = this.artifacts.find(a => a.id === 'crystal_magnet');
+              if (mag) artChance += mag.level * 0.01;
+            }
+            if (Math.random() < artChance) {
+              const nonMaxed = this.artifacts.filter(a => a.level < 50);
+              if (nonMaxed.length > 0) {
+                const lucky = nonMaxed[Math.floor(Math.random() * nonMaxed.length)];
+                lucky.level++;
+                this.toast(`🔮 전리품: 고대 유물 파편 획득! [${lucky.name}] LV.${lucky.level}`);
+              }
+            }
+          }
+
           this.pirateWave++; this.combatCooldown = 10; this.pirateAttackTimer = 300;
           this.stats.totalBattlesWon++;
           this.stats.totalBattleLoot += loot.toNumber();
@@ -1580,11 +1695,27 @@ const COLONY_FACTORY_TYPES = [
       applyLosses(ratio) {
         let total = 0;
         const repairCount = this.ships.repair?.count || 0;
+        
+        // 사령함 방어막 업그레이드 (-1% per point) & 나노 방어막 복구 장치 유물 (-1% per level)
+        let discount = 0;
+        if (this.flagship) {
+          discount += this.flagship.stats.shield * 0.01;
+        }
+        if (this.artifacts) {
+          const art = this.artifacts.find(a => a.id === 'nano_shield');
+          if (art) {
+            discount += art.level * 0.01;
+          }
+        }
+        discount = Math.min(0.75, discount); // 최대 75% 감소 제한
+        
         const effectiveRatio = repairCount > 0 ? ratio * Math.max(0.05, 1 - repairCount * 0.1) : ratio;
+        const finalRatio = effectiveRatio * (1 - discount);
+        
         for (const s of this.shipTypes) {
           const cnt = this.ships[s.type]?.count || 0;
           if (cnt <= 0) continue;
-          let loss = Math.round(cnt * effectiveRatio);
+          let loss = Math.round(cnt * finalRatio);
           if (ratio >= 0.2) {
             loss = Math.max(1, loss);
           }
@@ -1926,7 +2057,14 @@ const COLONY_FACTORY_TYPES = [
         if (!this.lastSeen) return;
         const now = Date.now(); let elapsed = Math.floor((now - this.lastSeen) / 1000);
         if (elapsed < 30) return; elapsed = Math.min(elapsed, 28800);
-        const mult = 0.5;
+        
+        let mult = 0.5;
+        if (this.artifacts) {
+          const core = this.artifacts.find(a => a.id === 'hyper_core');
+          if (core) mult += core.level * 0.05;
+        }
+        mult = Math.min(1.0, mult);
+        
         const inc = this.passiveIncome * elapsed * mult;
         if (inc > 0) this.money = this.money.add(inc);
         for (const k of RES) {
@@ -1937,6 +2075,58 @@ const COLONY_FACTORY_TYPES = [
         if (inc > 0) this.offlineReport = { seconds: elapsed, gained: inc };
       },
       dismissOffline() { this.offlineReport = null; },
+
+      flagshipUpgradeCost() {
+        const lv = this.flagship.level;
+        return {
+          metal: new Decimal(200000).mul(Decimal.pow(1.4, lv - 1)),
+          crystal: new Decimal(50000).mul(Decimal.pow(1.4, lv - 1))
+        };
+      },
+      canUpgradeFlagship() {
+        const cost = this.flagshipUpgradeCost();
+        return this.resources.metal.gte(cost.metal) && this.resources.crystal.gte(cost.crystal);
+      },
+      upgradeFlagship() {
+        if (!this.canUpgradeFlagship()) return;
+        const cost = this.flagshipUpgradeCost();
+        this.resources.metal = this.resources.metal.sub(cost.metal);
+        this.resources.crystal = this.resources.crystal.sub(cost.crystal);
+        this.flagship.level++;
+        this.flagship.points += 3;
+        this.toast(`🚀 사령함 레벨 업! LV.${this.flagship.level} (스탯 포인트 +3)`);
+      },
+      investFlagshipStat(stat) {
+        if (this.flagship.points <= 0) return;
+        this.flagship.stats[stat]++;
+        this.flagship.points--;
+      },
+      resetFlagshipStats() {
+        if (this.money.lt(100000)) {
+          this.toast('❌ 골드가 부족합니다. (재설정 비용: 100,000 골드)');
+          return;
+        }
+        this.money = this.money.sub(100000);
+        let totalPoints = 0;
+        for (const k in this.flagship.stats) {
+          totalPoints += this.flagship.stats[k];
+          this.flagship.stats[k] = 0;
+        }
+        this.flagship.points += totalPoints;
+        this.toast('🔄 사령함 스탯이 재설정되었습니다.');
+      },
+      artifactUpgradeCost(art) {
+        return art.level + 1;
+      },
+      canUpgradeArtifact(art) {
+        return this.awakeningStones >= this.artifactUpgradeCost(art) && art.level < 50;
+      },
+      upgradeArtifact(art) {
+        if (!this.canUpgradeArtifact(art)) return;
+        this.awakeningStones -= this.artifactUpgradeCost(art);
+        art.level++;
+        this.toast(`🔮 유물 [${art.name}] 업그레이드 완료! (LV.${art.level})`);
+      },
 
       boostResourceBump(res) {
         if (!res) return;
@@ -2161,6 +2351,20 @@ const COLONY_FACTORY_TYPES = [
         this.transcendLevel = tl;
         this.transcendBonus = tb;
         this.shipAwakened = {};
+        this.flagship = {
+          level: 1,
+          points: 0,
+          stats: {
+            attack: 0,
+            shield: 0,
+            warp: 0,
+            radar: 0
+          }
+        };
+        for (const a of this.artifacts) {
+          a.level = 0;
+        }
+        this.autoCombat = false;
         this.transcendBuildSpeed = 1;
         this.transcendFleetBonus = 0;
         this.transcendResearchSpeed = 1;
@@ -2202,6 +2406,9 @@ const COLONY_FACTORY_TYPES = [
         this.tickRaids(sdt);
         this.tickExpedition(sdt);
         if (this.combatCooldown > 0) this.combatCooldown = Math.max(0, this.combatCooldown - sdt);
+        if (this.autoCombat && this.combatCooldown <= 0 && this.fleetPower > 0) {
+          this.huntPirates(null);
+        }
         if (this.autoClicker) {
           this.autoClickerTimer -= sdt;
           if (this.autoClickerTimer <= 0) {
@@ -2262,6 +2469,9 @@ const COLONY_FACTORY_TYPES = [
             prestigePoints: this.prestigePoints,
             prestigeBonus: this.prestigeBonus,
             buildingAwakened: this.buildingAwakened,
+            flagship: this.flagship,
+            artifacts: this.artifacts.map(a => ({ id: a.id, level: a.level })),
+            autoCombat: this.autoCombat,
             colonyAutoTransport: this.colonyAutoTransport,
             colonyAutoUpgrade: this.colonyAutoUpgrade,
             autoClicker: this.autoClicker,
@@ -2401,6 +2611,14 @@ const COLONY_FACTORY_TYPES = [
           if (o.prestigePoints) this.prestigePoints = o.prestigePoints;
           if (o.prestigeBonus) this.prestigeBonus = o.prestigeBonus;
           if (o.buildingAwakened) this.buildingAwakened = o.buildingAwakened;
+          if (o.flagship) this.flagship = o.flagship;
+          if (o.artifacts) {
+            for (const saved of o.artifacts) {
+              const a = this.artifacts.find(x => x.id === saved.id);
+              if (a) a.level = saved.level || 0;
+            }
+          }
+          if (o.autoCombat !== undefined) this.autoCombat = o.autoCombat;
           if (o.colonyAutoTransport) this.colonyAutoTransport = o.colonyAutoTransport;
           if (o.colonyAutoUpgrade) this.colonyAutoUpgrade = o.colonyAutoUpgrade;
           if (o.autoClicker) this.autoClicker = o.autoClicker;
