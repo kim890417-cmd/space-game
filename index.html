@@ -1381,13 +1381,14 @@
             </div>
           </div>
 
-          <button class="btn btn-sm btn-cheat w-full text-xs py-2" @click="toggleCheat">⚡ 치트 메뉴</button>
-          <div v-if="cheatOpen" class="card py-2 px-3" style="border-color:rgba(124,58,237,0.5)">
+          <button v-if="devMode" class="btn btn-sm btn-cheat w-full text-xs py-2" @click="toggleCheat">⚡ 치트 메뉴</button>
+          <div v-if="cheatOpen && devMode" class="card py-2 px-3" style="border-color:rgba(124,58,237,0.5)">
             <div class="text-xs font-bold text-purple-400 mb-2">⚡ 치트</div>
             <div class="cheat-panel">
               <button class="btn btn-sm btn-cheat" @click="cheatMoney">💰 돈 ×100</button>
               <button class="btn btn-sm btn-cheat" @click="cheatResources">📦 자원 +10000</button>
               <button class="btn btn-sm btn-cheat" @click="cheatSpeed">⚡ 속도 ×{{ speedMult >= 100 ? '1' : speedMult >= 10 ? '100' : '10' }}</button>
+              <button class="btn btn-sm btn-cheat" @click="cheatAwakeningStones">💎 각성석 +10</button>
               <button class="btn btn-sm btn-cheat" @click="cheatReset" style="background:#dc2626">🔄 초기화</button>
               <button class="btn btn-sm btn-cheat" @click="exportSave" style="background:#059669">📋 내보내기</button>
               <button class="btn btn-sm btn-cheat" @click="importSave" style="background:#d97706">📥 불러오기</button>

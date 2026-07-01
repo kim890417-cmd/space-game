@@ -1,4 +1,5 @@
 (function () {
+  const DEV_MODE = true;
   const RES = ['metal', 'crystal', 'hydrogen', 'plasma', 'solar', 'fission', 'fusion'];
   const RES_KR = { metal: '메탈', crystal: '크리스탈', hydrogen: '수소', plasma: '플라즈마', solar: '태양열', fission: '핵분열', fusion: '핵융합' };
   const RES_ICO = { metal: '⛏️', crystal: '💎', hydrogen: '⚡', plasma: '🔵', solar: '☀️', fission: '⚛️', fusion: '🔥' };
@@ -463,6 +464,7 @@ const COLONY_FACTORY_TYPES = [
         EXPEDITION_TARGETS: EXPEDITION_TARGETS,
 
         cheatOpen: false,
+        devMode: DEV_MODE,
         guideOpen: { buildings: false, fleet: false, colony: false, research: false, trade: false },
         expedition: { inProgress: false, targetId: null, remaining: 0, total: 0, eventId: null, midTriggered: false, midEventId: null },
         expeditionOverlay: null,
@@ -2943,20 +2945,21 @@ const COLONY_FACTORY_TYPES = [
         }
       },
 
-      cheatMoney() { this.money = this.money.mul(100); this.toast('💰 ×100 돈!'); },
-      cheatResources() {
+      cheatMoney() { if (!this.devMode) return; this.money = this.money.mul(100); this.toast('💰 ×100 돈!'); },
+      cheatResources() { if (!this.devMode) return;
         for (const k of RES) {
           if (this.resources[k]) this.resources[k] = this.resources[k].add(new Decimal(10000));
         }
         this.toast('📦 ×10000 자원!');
       },
-      cheatSpeed() {
+      cheatSpeed() { if (!this.devMode) return;
         this.speedMult = this.speedMult >= 100 ? 1 : this.speedMult * 10;
         this.toast(`⚡ 속도 ×${this.speedMult}`);
       },
-      toggleCheat() { this.cheatOpen = !this.cheatOpen; },
+      toggleCheat() { if (!this.devMode) return; this.cheatOpen = !this.cheatOpen; },
+      cheatAwakeningStones() { if (!this.devMode) return; this.awakeningStones += 10; this.toast('💎 각성석 +10!'); },
 
-      exportSave() {
+      exportSave() { if (!this.devMode) return;
         try {
           this.saveSystems();
           const raw = localStorage.getItem('systemsState');
@@ -2964,7 +2967,7 @@ const COLONY_FACTORY_TYPES = [
           navigator.clipboard.writeText(raw).then(() => this.toast('📋 세이브 복사 완료!')).catch(() => this.toast('🚫 클립보드 실패'));
         } catch (e) { this.toast('🚫 오류'); }
       },
-      importSave() {
+      importSave() { if (!this.devMode) return;
         const text = prompt('불러올 세이브 코드를 붙여넣으세요:');
         if (!text) return;
         try {
