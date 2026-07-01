@@ -229,12 +229,12 @@ const BUILDING_TEMPLATES = [
       ]},
     time_dilation: { name: '시간 왜곡 현상', desc: '블랙홀 근방에서 시간이 비정상적으로 흐른다.',
       choices: [
-        { text: '관측한다', reward: { transcendBonus: 0.5 } },
+        { text: '관측한다', reward: { awakeningStones: 2 } },
         { text: '에너지를 모은다', reward: { fusion: 5000, plasma: 5000 } }
       ]},
     singularity: { name: '특이점 접근', desc: '경계 그 너머. 무모한 도전이다.',
       choices: [
-        { text: '탐사한다', reward: { awakeningStones: 3, transcendBonus: 1.0 }, risk: 0.3 },
+        { text: '탐사한다', reward: { awakeningStones: 5 }, risk: 0.3 },
         { text: '돌아간다', reward: { metal: 10000, crystal: 5000 } }
       ]}
   };
@@ -815,17 +815,8 @@ const COLONY_FACTORY_TYPES = [
         return this.alienTier.merchanter >= 1 ? 1.0 : this.exchangeBuyRate;
       },
       transcendRequirements() {
-        const reqs = [];
-        const awakenable = this.buildings.filter(b => {
-          const need = Math.max(0, (b.tier || 1) - 1);
-          return need <= this.transcendLevel;
-        });
-        for (const b of awakenable) {
-          reqs.push({ type: 'building', name: b.name, met: !!this.buildingAwakened[b.id], id: b.id });
-        }
         const stoneNeed = 5 + this.transcendLevel * 5;
-        reqs.push({ type: 'stones', current: this.awakeningStones, needed: stoneNeed, met: this.awakeningStones >= stoneNeed });
-        return reqs;
+        return { current: this.awakeningStones, needed: stoneNeed, met: this.awakeningStones >= stoneNeed };
       },
     },
 
@@ -944,7 +935,7 @@ const COLONY_FACTORY_TYPES = [
         const incomeNext = b.income * nextLv * inc * (1 + 0.08 * (nextLv - 1));
         return { cost: this.upgradeCost(b), dIncome: incomeNext - incomeNow };
       },
-      canUpgradeBuilding(b) { return b.level > 0 && b.level < 100 && this.money.gte(this.upgradeCost(b)) && !b.building; },
+      canUpgradeBuilding(b) { return b.level > 0 && b.level < b.maxLevel && this.money.gte(this.upgradeCost(b)) && !b.building; },
       upgradeBuilding(b, e) {
         if (!this.canUpgradeBuilding(b)) return;
         const slot = this.constructionSlots.slice(0, this.effectiveMaxConstructionSlots).find(s => !s.busy);
@@ -964,12 +955,12 @@ const COLONY_FACTORY_TYPES = [
       canAwakenBuilding(b) {
         if (b.level < 20) return false;
         if (this.buildingAwakened[b.id]) return false;
-        const needTranscend = Math.max(0, (b.tier || 1) - 1);
-        if (this.transcendLevel < needTranscend) return false;
+        if ((this.awakeningStones || 0) < 5) return false;
         return true;
       },
       awakenBuilding(b) {
         if (!this.canAwakenBuilding(b)) return;
+        this.awakeningStones -= 5;
         this.$set(this.buildingAwakened, b.id, true);
         const eff = this.buildingAwakeningEffects[b.id];
         this.toast(`✨ ${b.name} 각성! ${eff.desc}`);
@@ -977,29 +968,19 @@ const COLONY_FACTORY_TYPES = [
       },
 
       canTranscend() {
-        const awakenable = this.buildings.filter(b => {
-          const need = Math.max(0, (b.tier || 1) - 1);
-          return need <= this.transcendLevel;
-        });
-        if (awakenable.length === 0) return false;
-        const allAwakened = awakenable.every(b => this.buildingAwakened[b.id]);
-        return allAwakened && this.awakeningStones >= 5 + this.transcendLevel * 5;
+        return (this.awakeningStones || 0) >= 5 + this.transcendLevel * 5;
       },
       transcend() {
         if (!this.canTranscend()) return;
-        if (!confirm(`초월하시겠습니까?\n• 모든 건물 각성이 초기화됩니다\n• 각성석 ${5 + this.transcendLevel * 5}개 소모\n• 영구 수입 +200%\n• 함선 건조 시간 ×0.9\n• 함대 전투력 +15%\n• 연구 속도 +15%\n• 인지도 +20%\n계속하시겠습니까?`)) return;
-        this.awakeningStones -= 5 + this.transcendLevel * 5;
+        const cost = 5 + this.transcendLevel * 5;
+        if (!confirm(`초월하시겠습니까?\n• 각성석 ${cost}개 소모\n• 영구 수입 +50%\n• 함선 건조 시간 ×0.9\n• 함대 전투력 +15%\n• 연구 속도 +15%\n• 인지도 +20%\n계속하시겠습니까?`)) return;
+        this.awakeningStones -= cost;
         this.transcendLevel++;
-        this.transcendBonus += 2.0;
+        this.transcendBonus += 0.5;
         this.transcendBuildSpeed *= 0.9;
         this.transcendFleetBonus += 0.15;
         this.transcendResearchSpeed *= 1.15;
         this.transcendAwareness *= 1.2;
-        this.buildingAwakened = {};
-        for (const r of this.research) {
-          r.level = 0;
-          r.effect(this, 0);
-        }
         this.toast(`🌌 초월 LV ${this.transcendLevel}! 수입 +${Math.round(this.transcendBonus * 100)}%`);
         this.spawnFloatText('🌌 초월!', '#fbbf24', window.innerWidth / 2, window.innerHeight / 3);
       },
@@ -1467,7 +1448,6 @@ const COLONY_FACTORY_TYPES = [
         if (lv < st.maxLevel) return false;
         if (this.shipAwakened && this.shipAwakened[st.type]) return false;
         const needTranscend = Math.max(0, this.getShipTier(st.type) - 1);
-        if (this.transcendLevel < needTranscend) return false;
         if ((this.awakeningStones || 0) < this.shipAwakenCost(st)) return false;
         return true;
       },
@@ -2362,7 +2342,6 @@ const COLONY_FACTORY_TYPES = [
         if (r.fission) this.resources.fission = this.resources.fission.add(r.fission);
         if (r.fusion) this.resources.fusion = this.resources.fusion.add(r.fusion);
         if (r.awakeningStones) this.awakeningStones += r.awakeningStones;
-        if (r.transcendBonus) { this.transcendBonus += r.transcendBonus; this.toast(`🌌 초월 보너스 +${r.transcendBonus*100}%`); }
         if (r.researchBoost) { this.toast(`🔬 연구 속도 부스트! (보류)`); }
         if (r.alienRep) { for (const f in r.alienRep) { this.alienRep[f] = (this.alienRep[f] || 0) + r.alienRep[f]; } }
         if (choice.penalty) {

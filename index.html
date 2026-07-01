@@ -238,14 +238,14 @@
                       ⬆️ {{ fmt(upgradeCost(b)) }} (⏳{{ fmtTime(Math.max(1, Math.floor(b.buildTime * Math.pow(1.15, b.level) * effectiveShipBuildSpeedMult * getPlanetMultiplier(activeBasePlanetId)))) }})
                     </span>
                     <span class="text-[8px] text-emerald-400/80" v-else-if="buildingAwakened[b.id]">✨ {{ buildingAwakeningEffects[b.id].name }}</span>
-                    <span class="text-[8px] text-slate-500" v-else-if="b.tier > 1 && transcendLevel < b.tier - 1">각성 조건: 초월 Lv{{ b.tier - 1 }}+</span>
-                    <span class="text-[8px] text-amber-400/80" v-else>MAX · 각성 가능</span>
+                    <span class="text-[8px] text-amber-400/80" v-else-if="(awakeningStones||0) >= 5">MAX · 각성 가능 (💎5)</span>
+                    <span class="text-[8px] text-slate-500" v-else>MAX · 각성석 5개 필요</span>
                   </div>
 
                   <div v-if="!b.building" class="flex gap-1 mt-1">
                     <button v-if="b.level===0" class="btn btn-sm btn-success flex-1" @click="buyBuilding(b, $event)" :disabled="!canBuyBuilding(b)">건설</button>
                     <button v-else-if="buildingAwakened[b.id]" class="btn btn-sm btn-ghost flex-1" disabled>✨ 각성</button>
-                    <button v-else-if="b.level>=b.maxLevel && (b.tier <= 1 || transcendLevel >= b.tier - 1)" class="btn btn-sm btn-warning flex-1" @click="awakenBuilding(b)">✨ 각성</button>
+                    <button v-else-if="b.level>=b.maxLevel" class="btn btn-sm btn-warning flex-1" @click="awakenBuilding(b)" :disabled="(awakeningStones||0) < 5">✨ 각성 (💎5)</button>
                     <button v-else class="btn btn-sm flex-1" style="background:#7c3aed;color:#fff" @click="upgradeBuilding(b, $event)" :disabled="!canUpgradeBuilding(b)">⬆️ 업글</button>
                   </div>
                   <div class="text-[7px] text-slate-600 mt-px" v-if="b.cooldown>0">⏳ {{ fmtTime(b.cooldown) }}</div>
@@ -1407,7 +1407,7 @@
             <div class="text-[9px] text-slate-400 leading-relaxed space-y-1">
               <div><span class="text-emerald-400 font-bold">1차 목표:</span> 총 자산 <span class="text-yellow-300">1,000,000,000 (10억)</span> 달성 → 엔딩</div>
               <div><span class="text-purple-400 font-bold">심화 목표:</span> 환생(프레스티지)으로 영구 보너스 획득, 각종 업적 달성, 도전 모드 클리어, 외계 종족과 교류</div>
-              <div><span class="text-rose-400 font-bold">최종 목표:</span> 모든 건물 각성, 모든 연구 완료, 최고 레벨 함대, 초월 달성</div>
+              <div><span class="text-rose-400 font-bold">최종 목표:</span> 모든 건물 각성, 모든 연구 완료, 최고 레벨 함대, 높은 초월 레벨 달성</div>
             </div>
           </div>
 
@@ -1436,7 +1436,7 @@
               </div>
               <div class="bg-slate-900/50 rounded p-2">
                 <div class="text-emerald-400 font-bold mb-1">6️⃣ 환생 & 초월 (✨ 프레스티지)</div>
-                <div>충분히 성장했다면 <span class="text-amber-300">환생</span>하여 영구 수입 보너스를 획득하세요. 모든 건물을 각성한 후 <span class="text-purple-300">초월</span>하여 더 높은 차원으로 도약할 수 있습니다.</div>
+                <div>충분히 성장했다면 <span class="text-amber-300">환생</span>하여 영구 수입 보너스를 획득하세요. <span class="text-purple-300">초월</span>은 각성석을 소모하여 레벨업할 수 있으며, 레벨당 영구 버프를 제공합니다.</div>
               </div>
             </div>
           </div>
@@ -1531,12 +1531,7 @@
               </div>
               <div class="text-[8px] text-slate-400 mt-1" v-if="!canTranscend()">
                 <div class="mb-0.5">🌌 초월 조건:</div>
-                <div v-for="req in transcendRequirements" :key="req.type + (req.id||'')">
-                  <span v-if="req.met">✅</span>
-                  <span v-else>❌</span>
-                  <template v-if="req.type==='building'">{{ req.name }} 각성</template>
-                  <template v-else>💎 각성석 {{ req.current }}/{{ req.needed }}개</template>
-                </div>
+                <div>💎 각성석 <span :class="transcendRequirements.met ? 'text-emerald-400' : 'text-rose-400'">{{ transcendRequirements.current }}/{{ transcendRequirements.needed }}</span>개</div>
               </div>
               <div class="flex gap-1 mt-1" v-if="canTranscend()">
                 <button class="btn btn-sm btn-warning flex-1 text-[9px]" @click="transcend()">🌌 초월 (💎{{ 5+transcendLevel*5 }})</button>
