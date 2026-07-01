@@ -32,7 +32,7 @@ body { background-image: url('img/bg-space.jpg'); background-size: cover; backgr
 }
 
 .float-text { position: fixed; pointer-events: none; z-index: 998;
-  font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 15px;
+  font-family: 'Consolas', 'Courier New', monospace; font-weight: 900; font-size: 15px;
   text-shadow: 0 0 8px currentColor, 0 2px 4px rgba(0,0,0,0.7);
   animation: float-up 1s ease-out forwards; white-space: nowrap;
 }

@@ -1856,7 +1856,6 @@ const COLONY_FACTORY_TYPES = [
             remaining -= take;
           }
         }
-        if (this.$forceUpdate) this.$forceUpdate();
       },
       startColonyTransport(colony) {
         const sel = this.initColonyTransportSelections(colony);
