@@ -245,7 +245,7 @@
                   <div v-if="!b.building" class="flex gap-1 mt-1">
                     <button v-if="b.level===0" class="btn btn-sm btn-success flex-1" @click="buyBuilding(b, $event)" :disabled="!canBuyBuilding(b)">건설</button>
                     <button v-else-if="buildingAwakened[b.id]" class="btn btn-sm btn-ghost flex-1" disabled>✨ 각성</button>
-                    <button v-else-if="b.level>=b.maxLevel" class="btn btn-sm btn-warning flex-1" @click="awakenBuilding(b)">✨ 각성</button>
+                    <button v-else-if="b.level>=b.maxLevel && (b.tier <= 1 || transcendLevel >= b.tier - 1)" class="btn btn-sm btn-warning flex-1" @click="awakenBuilding(b)">✨ 각성</button>
                     <button v-else class="btn btn-sm flex-1" style="background:#7c3aed;color:#fff" @click="upgradeBuilding(b, $event)" :disabled="!canUpgradeBuilding(b)">⬆️ 업글</button>
                   </div>
                   <div class="text-[7px] text-slate-600 mt-px" v-if="b.cooldown>0">⏳ {{ fmtTime(b.cooldown) }}</div>
@@ -1529,6 +1529,15 @@
                 🌌 초월 LV {{ transcendLevel }}<br>
                 📈 수입 +{{ Math.round(transcendBonus*100) }}% · 🚀 건조 ×{{ (transcendBuildSpeed).toFixed(2) }} · ⚔️ +{{ Math.round(transcendFleetBonus*100) }}%
               </div>
+              <div class="text-[8px] text-slate-400 mt-1" v-if="!canTranscend()">
+                <div class="mb-0.5">🌌 초월 조건:</div>
+                <div v-for="req in transcendRequirements" :key="req.type + (req.id||'')">
+                  <span v-if="req.met">✅</span>
+                  <span v-else>❌</span>
+                  <template v-if="req.type==='building'">{{ req.name }} 각성</template>
+                  <template v-else>💎 각성석 {{ req.current }}/{{ req.needed }}개</template>
+                </div>
+              </div>
               <div class="flex gap-1 mt-1" v-if="canTranscend()">
                 <button class="btn btn-sm btn-warning flex-1 text-[9px]" @click="transcend()">🌌 초월 (💎{{ 5+transcendLevel*5 }})</button>
               </div>
@@ -1660,6 +1669,7 @@
           <button class="btn btn-sm w-full text-[9px] py-1.5" style="background:#2563eb;color:#fff" @click="completeAd('slot')">🏗️ 건설슬롯 +1 (30분)</button>
           <button class="btn btn-sm w-full text-[9px] py-1.5" style="background:#059669;color:#fff" @click="completeAd('boost')">⚡ 생산 2배 (10분)</button>
           <button class="btn btn-sm w-full text-[9px] py-1.5" style="background:#7c3aed;color:#fff" @click="completeAd('instant')">⏩ 건설 1개 즉시 완료</button>
+          <button class="btn btn-sm w-full text-[9px] py-1.5" style="background:#a855f7;color:#fff" @click="completeAd('awakening')">💎 각성석 +2</button>
         </div>
       </div>
     </div>

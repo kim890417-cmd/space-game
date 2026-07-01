@@ -814,6 +814,19 @@ const COLONY_FACTORY_TYPES = [
       effectiveExchangeBuyRate() {
         return this.alienTier.merchanter >= 1 ? 1.0 : this.exchangeBuyRate;
       },
+      transcendRequirements() {
+        const reqs = [];
+        const awakenable = this.buildings.filter(b => {
+          const need = Math.max(0, (b.tier || 1) - 1);
+          return need <= this.transcendLevel;
+        });
+        for (const b of awakenable) {
+          reqs.push({ type: 'building', name: b.name, met: !!this.buildingAwakened[b.id], id: b.id });
+        }
+        const stoneNeed = 5 + this.transcendLevel * 5;
+        reqs.push({ type: 'stones', current: this.awakeningStones, needed: stoneNeed, met: this.awakeningStones >= stoneNeed });
+        return reqs;
+      },
     },
 
     methods: {
@@ -2290,6 +2303,9 @@ const COLONY_FACTORY_TYPES = [
           } else {
             this.toast('📺 광고 완료! (완료할 건설이 없습니다)');
           }
+        } else if (rewardType === 'awakening') {
+          this.awakeningStones += 2;
+          this.toast('📺 광고 완료! 각성석 +2 획득!');
         }
       },
       cancelAd() {
@@ -2980,24 +2996,10 @@ const COLONY_FACTORY_TYPES = [
       },
 
       cheatReset(silent) {
-        if (!silent && !confirm('정말 초기화? (환생 포인트는 유지)')) return;
-        const pp = this.prestigePoints;
-        const pb = this.prestigeBonus;
-        const cat = this.colonyAutoTransport;
-        const cau = this.colonyAutoUpgrade;
-        const ac = this.autoClicker;
-        const ab = this.autoBuilder;
-        const cc = { ...this.challengesCompleted };
-        const as = this.awakeningStones;
-        const tl = this.transcendLevel;
-        const tb = this.transcendBonus;
-        const ar = { ...this.alienRep };
-        const at = { ...this.alienTier };
-        const perks = { ...this.prestigePerks };
-        const startingGoldBonus = (perks.starting_gold || 0) * 100000;
+        if (!silent && !confirm('정말 초기화? (완전 초기화)')) return;
         
         const defaults = {
-          money: new Decimal(10000 + startingGoldBonus), clickPower: 200,
+          money: new Decimal(10000), clickPower: 200,
           incomeMult2: 1, incomeMult3: 1, incomeMult4: 1, fleetPowerMult2: 1, storageMult2: 1,
           autoClickerInterval: 5,
           resources: { metal: new Decimal(100), metalMax: new Decimal(500), crystal: new Decimal(10), crystalMax: new Decimal(300), hydrogen: new Decimal(0), hydrogenMax: new Decimal(200), plasma: new Decimal(0), plasmaMax: new Decimal(200), solar: new Decimal(0), solarMax: new Decimal(200), fission: new Decimal(0), fissionMax: new Decimal(200), fusion: new Decimal(0), fusionMax: new Decimal(200) },
@@ -3039,39 +3041,28 @@ const COLONY_FACTORY_TYPES = [
           raidAlert: '', raidAlertTimer: 0
         };
         for (const k in defaults) this[k] = defaults[k];
-        this.prestigePoints = pp;
-        this.prestigeBonus = pb;
         this.buildingAwakened = {};
-        this.colonyAutoTransport = cat;
-        this.colonyAutoUpgrade = cau;
-        this.autoClicker = ac;
-        this.autoBuilder = ab;
-        this.challengesCompleted = cc;
-        this.awakeningStones = as;
-        this.transcendLevel = tl;
-        this.transcendBonus = tb;
         this.shipAwakened = {};
-        this.flagship = {
-          level: 1,
-          points: 0,
-          stats: {
-            attack: 0,
-            shield: 0,
-            warp: 0,
-            radar: 0
-          }
-        };
-        for (const a of this.artifacts) {
-          a.level = 0;
-        }
-        this.autoCombat = false;
+        this.prestigePoints = 0;
+        this.prestigeBonus = 0;
+        this.awakeningStones = 0;
+        this.transcendLevel = 0;
+        this.transcendBonus = 0;
         this.transcendBuildSpeed = 1;
         this.transcendFleetBonus = 0;
         this.transcendResearchSpeed = 1;
         this.transcendAwareness = 1;
-        this.alienRep = ar;
-        this.alienTier = at;
-        this.prestigePerks = perks;
+        this.challengesCompleted = {};
+        this.prestigePerks = {};
+        this.alienRep = {};
+        this.alienTier = {};
+        this.flagship = { level: 1, points: 0, stats: { attack: 0, shield: 0, warp: 0, radar: 0 } };
+        for (const a of this.artifacts) { a.level = 0; }
+        this.autoCombat = false;
+        this.colonyAutoTransport = false;
+        this.colonyAutoUpgrade = false;
+        this.autoClicker = false;
+        this.autoBuilder = false;
         this.incomeMult = 1;
         this.recalcMaxes();
         this.toast('🔄 초기화 완료');
