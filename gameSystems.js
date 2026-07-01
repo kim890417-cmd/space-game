@@ -964,7 +964,12 @@ const COLONY_FACTORY_TYPES = [
       },
 
       canTranscend() {
-        const allAwakened = this.buildings.every(b => this.buildingAwakened[b.id]);
+        const awakenable = this.buildings.filter(b => {
+          const need = Math.max(0, (b.tier || 1) - 1);
+          return need <= this.transcendLevel;
+        });
+        if (awakenable.length === 0) return false;
+        const allAwakened = awakenable.every(b => this.buildingAwakened[b.id]);
         return allAwakened && this.awakeningStones >= 5 + this.transcendLevel * 5;
       },
       transcend() {
