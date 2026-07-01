@@ -134,7 +134,7 @@ const BUILDING_TEMPLATES = [
 
   const PRESTIGE_PERK_DEFS = [
     { id: 'starting_gold', name: '초기 자금 지원', icon: '💰', max: 5, cost: [5, 8, 12, 18, 25], desc: '시작 골드 +100,000' },
-    { id: 'const_slots', name: '건설 슬롯 추가', icon: '🏗️', max: 2, cost: [10, 20], desc: '동시 건설 슬롯 +1' },
+    { id: 'const_slots', name: '건설 슬롯 추가', icon: '🏗️', max: 1, cost: [20], desc: '동시 건설 슬롯 +1' },
     { id: 'combat_speed', name: '자동 사냥 가속', icon: '⚡', max: 5, cost: [4, 6, 8, 12, 16], desc: '자동 전투 쿨타임 -10%' },
     { id: 'colony_boost', name: '식민지 효율 개선', icon: '🏭', max: 5, cost: [5, 7, 10, 14, 20], desc: '식민지 생산 속도 +15%' },
     { id: 'trade_boost', name: '수송선단 물류 혁신', icon: '📦', max: 5, cost: [4, 6, 9, 13, 18], desc: '무역 거래 수익 +20%' }
@@ -438,6 +438,13 @@ const COLONY_FACTORY_TYPES = [
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 }
         ],
         maxConstructionSlots: 2,
+        adCooldown: 0,
+        adSlotActive: false,
+        adSlotTimer: 0,
+        adWatching: false,
+        adProgress: 0,
+        adTotal: 6,
+        adCompleted: false,
         tradeShip: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, cargo: 100, speed: 1.0, level: 1, tradeQty: 1, cargoLevel: 1, speedLevel: 1 },
         tradePosts: TRADE_POSTS.map(p => ({
           ...p, prices: {
@@ -702,7 +709,8 @@ const COLONY_FACTORY_TYPES = [
       },
       effectiveMaxConstructionSlots() {
         const perkBonus = this.prestigePerks?.const_slots || 0;
-        return 2 + perkBonus;
+        const adBonus = this.adSlotActive ? 1 : 0;
+        return 2 + perkBonus + adBonus;
       },
       domeStage() {
         const totalLv = this.buildings.reduce((s, b) => s + b.level, 0);
@@ -2230,8 +2238,63 @@ const COLONY_FACTORY_TYPES = [
           }
         }
       },
+      tickAd(dt) {
+        if (this.adCooldown > 0) this.adCooldown = Math.max(0, this.adCooldown - dt);
+        if (this.adSlotActive) {
+          this.adSlotTimer -= dt;
+          if (this.adSlotTimer <= 0) {
+            this.adSlotActive = false;
+            this.adSlotTimer = 0;
+          }
+        }
+        if (this.adWatching) {
+          this.adProgress += dt;
+          if (this.adProgress >= this.adTotal) {
+            this.adCompleted = true;
+          }
+        }
+      },
+      startAd() {
+        if (this.adCooldown > 0) { this.toast(`⏳ 광고 쿨타임: ${this.fmtTime(this.adCooldown)}`); return false; }
+        if (this.adWatching) return false;
+        this.adWatching = true;
+        this.adProgress = 0;
+        this.adTotal = 6;
+        this.adCompleted = false;
+        return true;
+      },
+      completeAd(rewardType) {
+        if (!this.adWatching || !this.adCompleted) return;
+        this.adWatching = false;
+        this.adProgress = 0;
+        this.adCompleted = false;
+        this.adCooldown = 600;
+        if (rewardType === 'slot') {
+          this.adSlotActive = true;
+          this.adSlotTimer = 1800;
+          this.toast('📺 광고 완료! 건설슬롯 +1 (30분)');
+        } else if (rewardType === 'boost') {
+          this.boostTimer = 600;
+          this.boostMultItem = 2;
+          this.toast('📺 광고 완료! 생산 2배 (10분)');
+        } else if (rewardType === 'instant') {
+          const busySlot = this.constructionSlots.slice(0, this.effectiveMaxConstructionSlots).find(s => s.busy);
+          if (busySlot) {
+            busySlot.remaining = 0;
+            this.toast('📺 광고 완료! 건설 즉시 완료!');
+          } else {
+            this.toast('📺 광고 완료! (완료할 건설이 없습니다)');
+          }
+        }
+      },
+      cancelAd() {
+        if (!this.adWatching) return;
+        this.adWatching = false;
+        this.adProgress = 0;
+        this.adCompleted = false;
+        this.toast('❌ 광고 스킵됨 (보상 없음)');
+      },
       resolveExpedition(choiceIdx) {
-        const overlay = this.expeditionOverlay;
         if (!overlay) return;
         const choice = overlay.event.choices[choiceIdx];
         if (!choice) return;
@@ -2946,6 +3009,7 @@ const COLONY_FACTORY_TYPES = [
           { busy: false, buildingId: null, action: null, level: 0, remaining: 0, total: 0 }
         ],
         maxConstructionSlots: 2,
+        adCooldown: 0, adSlotActive: false, adSlotTimer: 0, adWatching: false, adProgress: 0, adCompleted: false,
         tradeShip: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, cargo: 100, speed: 1.0, level: 1, tradeQty: 1, cargoLevel: 1, speedLevel: 1 },
         tradePosts: TRADE_POSTS.map(p => ({
           ...p, prices: {
@@ -3038,6 +3102,7 @@ const COLONY_FACTORY_TYPES = [
         this.tickRaids(sdt);
         this.tickPatrol(sdt);
         this.tickExpedition(sdt);
+        this.tickAd(sdt);
         if (this.combatCooldown > 0) this.combatCooldown = Math.max(0, this.combatCooldown - sdt);
         if (this.autoCombat && this.combatCooldown <= 0 && this.fleetPower > 0) {
           this.huntPirates(null);
@@ -3155,7 +3220,10 @@ const COLONY_FACTORY_TYPES = [
             raidTravel: { active: this.raidTravel.active, targetId: this.raidTravel.target?.id || null, remaining: this.raidTravel.remaining, total: this.raidTravel.total },
             expedition: { inProgress: this.expedition.inProgress, targetId: this.expedition.targetId, remaining: this.expedition.remaining, total: this.expedition.total, eventId: this.expedition.eventId },
             activeBasePlanetId: this.activeBasePlanetId,
-            tradeTasks: this.tradeTasks
+            tradeTasks: this.tradeTasks,
+            adCooldown: this.adCooldown,
+            adSlotActive: this.adSlotActive,
+            adSlotTimer: this.adSlotTimer
           };
           for (const k of RES) data.resources[k] = this.resources[k].toFixed(3);
           localStorage.setItem('systemsState', JSON.stringify(data));
@@ -3384,6 +3452,9 @@ const COLONY_FACTORY_TYPES = [
             this.expedition.remaining = o.expedition.remaining || 0;
             this.expedition.total = o.expedition.total || 0;
           }
+          if (o.adCooldown !== undefined) this.adCooldown = o.adCooldown;
+          if (o.adSlotActive !== undefined) this.adSlotActive = o.adSlotActive;
+          if (o.adSlotTimer !== undefined) this.adSlotTimer = o.adSlotTimer;
           this.recalcMaxes();
         } catch (e) {}
       }

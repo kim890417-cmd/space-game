@@ -84,7 +84,7 @@
       <div class="flex items-center justify-between mb-1">
         <div class="flex items-center gap-1.5">
           <span class="text-xs font-bold text-amber-400 logo-co" style="font-family:'Consolas','Courier New',monospace"><span class="planet"></span> SPACE CO.</span>
-          <span class="text-[8px] text-slate-400 bg-slate-800 px-1 py-0.5 rounded font-bold">v5.1</span>
+          <span class="text-[8px] text-slate-400 bg-slate-800 px-1 py-0.5 rounded font-bold">v5.2</span>
         </div>
         <div class="flex items-center gap-2 text-[10px]" v-if="awareness>0">
           <span class="text-purple-400">📡 {{ fmt(awareness) }}</span>
@@ -152,9 +152,14 @@
           <!-- 건설 슬롯 -->
           <div class="card py-2 px-3" style="border-color:rgba(250,204,21,0.2)">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-[10px] font-bold text-amber-300">🏗️ 건설 슬롯 ({{ constructionSlots.filter(s=>s.busy).length }}/{{ maxConstructionSlots }})</span>
+              <span class="text-[10px] font-bold text-amber-300">🏗️ 건설 슬롯 ({{ constructionSlots.filter(s=>s.busy).length }}/{{ effectiveMaxConstructionSlots }})</span>
+              <div class="flex items-center gap-1.5">
+                <span v-if="adCooldown>0" class="text-[7px] text-slate-500">📺 {{ fmtTime(adCooldown) }}</span>
+                <button v-if="adCooldown<=0 && !adWatching" class="btn btn-sm text-[8px] px-2" style="background:#eab308;color:#000" @click="startAd()">📺 광고</button>
+                <span v-if="adSlotActive" class="text-[7px] text-emerald-400">➕{{ fmtTime(adSlotTimer) }}</span>
+              </div>
             </div>
-            <div v-for="(slot,i) in constructionSlots" :key="i" class="flex items-center gap-2 text-[9px] py-1 border-b border-slate-800/50 last:border-0">
+            <div v-for="(slot,i) in constructionSlots.slice(0, effectiveMaxConstructionSlots)" :key="i" class="flex items-center gap-2 text-[9px] py-1 border-b border-slate-800/50 last:border-0">
               <template v-if="slot.busy">
                 <div class="flex-1">
                   <div class="flex justify-between">
@@ -1633,6 +1638,29 @@
           </div>
         </div>
         <button class="btn btn-sm btn-ghost mt-3" @click="dismissExpedition">✕ 닫기</button>
+      </div>
+    </div>
+
+    <!-- AD OVERLAY -->
+    <div class="overlay" v-if="adWatching" style="z-index:350;background:rgba(0,0,0,0.92);flex-direction:column">
+      <div class="modal" style="border-color:rgba(234,179,8,0.5);text-align:center;max-width:320px">
+        <div class="text-lg font-bold text-amber-300 mb-2">📺 광고 시청 중</div>
+        <div class="text-[9px] text-slate-400 mb-3">끝까지 시청하면 보상이 지급됩니다</div>
+        <div class="w-full bg-slate-800 rounded-full h-3 mb-3 overflow-hidden">
+          <div class="h-full rounded-full transition-all duration-200" :style="{width: Math.min(100, adProgress/adTotal*100)+'%', background: 'linear-gradient(90deg,#eab308,#f59e0b)'}"></div>
+        </div>
+        <div class="text-[10px] text-slate-500 mb-3">{{ adCompleted ? '✅ 광고 완료!' : '⏳ ' + (adTotal-adProgress).toFixed(1) + '초 남음' }}</div>
+
+        <div v-if="!adCompleted" class="flex gap-2">
+          <button class="btn btn-sm btn-danger flex-1" @click="cancelAd()">✕ 스킵</button>
+        </div>
+
+        <div v-if="adCompleted" class="space-y-1.5">
+          <div class="text-[9px] text-slate-400 mb-1.5">🎁 보상 선택:</div>
+          <button class="btn btn-sm w-full text-[9px] py-1.5" style="background:#2563eb;color:#fff" @click="completeAd('slot')">🏗️ 건설슬롯 +1 (30분)</button>
+          <button class="btn btn-sm w-full text-[9px] py-1.5" style="background:#059669;color:#fff" @click="completeAd('boost')">⚡ 생산 2배 (10분)</button>
+          <button class="btn btn-sm w-full text-[9px] py-1.5" style="background:#7c3aed;color:#fff" @click="completeAd('instant')">⏩ 건설 1개 즉시 완료</button>
+        </div>
       </div>
     </div>
 
