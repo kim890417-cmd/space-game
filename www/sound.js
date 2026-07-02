@@ -10,6 +10,7 @@
     initialized: false,
     currentAudio: null,
     currentSrcName: '',
+    _lastBgmName: '',
     nextBgmId: null,
 
     bgmMap: {
@@ -73,7 +74,23 @@
 
     playBgm: function (name, fadeIn) {
       var self = this;
-      if (name === this.currentSrcName) return;
+      if (name === this.currentSrcName) {
+        if (this.currentAudio && this.currentAudio.volume === 0 && !this.bgmMuted) {
+          var targetVol = self.bgmVolume;
+          if (fadeIn) {
+            for (var i = 1; i <= 8; i++) {
+              (function (step) {
+                setTimeout(function () {
+                  if (self.currentAudio) self.currentAudio.volume = targetVol * (step / 8);
+                }, step * 100);
+              })(i);
+            }
+          } else {
+            this.currentAudio.volume = targetVol;
+          }
+        }
+        return;
+      }
       this.nextBgmId = name;
       this.stopBgm(0);
 
@@ -120,6 +137,7 @@
       if (!this.currentAudio) return;
       var audio = this.currentAudio;
       var self = this;
+      this._lastBgmName = this.currentSrcName;
       this.currentAudio = null;
       this.currentSrcName = '';
 
@@ -139,7 +157,8 @@
     },
 
     resumeBgm: function () {
-      if (this.currentSrcName) this.playBgm(this.currentSrcName, true);
+      var name = this.currentSrcName || this._lastBgmName;
+      if (name) this.playBgm(name, true);
     },
 
     switchBgm: function (tab) {
@@ -210,4 +229,15 @@
   };
 
   window.SoundManager = SoundManager;
+
+  (function () {
+    var a = new Audio();
+    a.loop = true;
+    a.volume = 0;
+    a.preload = 'auto';
+    a.src = SoundManager.bgmFiles['메인'];
+    a.play().catch(function () {});
+    SoundManager.currentAudio = a;
+    SoundManager.currentSrcName = '메인';
+  })();
 })();
