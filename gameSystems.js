@@ -1,5 +1,5 @@
 (function () {
-  const DEV_MODE = true;
+  const DEV_MODE = false;
   const RES = ['metal', 'crystal', 'hydrogen', 'plasma', 'solar', 'fission', 'fusion'];
   const RES_KR = { metal: '메탈', crystal: '크리스탈', hydrogen: '수소', plasma: '플라즈마', solar: '태양열', fission: '핵분열', fusion: '핵융합' };
   const RES_ICO = { metal: '⛏️', crystal: '💎', hydrogen: '⚡', plasma: '🔵', solar: '☀️', fission: '⚛️', fusion: '🔥' };
@@ -3122,7 +3122,7 @@ const COLONY_FACTORY_TYPES = [
       tapToStart() {
         this.splashActive = false;
         window.SoundManager.init();
-        window.SoundManager.switchBgm(this.activeTab);
+        window.SoundManager.startBgm();
       },
 
       tickSystems(dt) {

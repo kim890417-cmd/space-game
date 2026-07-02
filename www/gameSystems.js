@@ -3122,7 +3122,7 @@ const COLONY_FACTORY_TYPES = [
       tapToStart() {
         this.splashActive = false;
         window.SoundManager.init();
-        window.SoundManager.switchBgm(this.activeTab);
+        window.SoundManager.startBgm();
       },
 
       tickSystems(dt) {

@@ -1746,9 +1746,7 @@
         soundBgmMuted() { return window.SoundManager.bgmMuted; },
         soundSfxMuted() { return window.SoundManager.sfxMuted; }
       },
-      watch: {
-        activeTab(val) { window.SoundManager.switchBgm(val); }
-      },
+      watch: {},
       methods: {
         gameTick() {
           if (document.hidden) return;

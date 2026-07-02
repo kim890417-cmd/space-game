@@ -10,18 +10,11 @@
     initialized: false,
     currentAudio: null,
     currentSrcName: '',
-    _lastBgmName: '',
-    nextBgmId: null,
 
-    bgmMap: {
-      buildings: '메인',
-      fleet:     '긴장감웅장함',
-      colony:    '신비차분',
-      trade:     '메인2',
-      research:  '신비차분1',
-      flagship:  '긴장감웅장함1',
-      info:      '메인'
-    },
+    bgmPlaylist: ['메인', '메인2', '긴장감웅장함', '긴장감웅장함1', '신비차분', '신비차분1'],
+    bgmPlayOrder: [],
+    bgmPlayIndex: 0,
+
     bgmFiles: {
       '메인':           'audio/bgm/메인.mp3',
       '메인2':          'audio/bgm/메인2.mp3',
@@ -72,43 +65,47 @@
       if (this.sfxGain) this.sfxGain.gain.value = this.sfxMuted ? 0 : this.sfxVolume;
     },
 
-    playBgm: function (name, fadeIn) {
-      var self = this;
-      if (name === this.currentSrcName) {
-        if (this.currentAudio && this.currentAudio.volume === 0 && !this.bgmMuted) {
-          var targetVol = self.bgmVolume;
-          if (fadeIn) {
-            for (var i = 1; i <= 8; i++) {
-              (function (step) {
-                setTimeout(function () {
-                  if (self.currentAudio) self.currentAudio.volume = targetVol * (step / 8);
-                }, step * 100);
-              })(i);
-            }
-          } else {
-            this.currentAudio.volume = targetVol;
-          }
-        }
-        return;
+    _shufflePlaylist: function () {
+      this.bgmPlayOrder = this.bgmPlaylist.slice();
+      for (var i = this.bgmPlayOrder.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = this.bgmPlayOrder[i];
+        this.bgmPlayOrder[i] = this.bgmPlayOrder[j];
+        this.bgmPlayOrder[j] = tmp;
       }
-      this.nextBgmId = name;
+      this.bgmPlayIndex = 0;
+    },
+
+    startBgm: function () {
       this.stopBgm(0);
+      this._shufflePlaylist();
+      this._playNext();
+    },
+
+    _playNext: function () {
+      var self = this;
+      var name = this.bgmPlayOrder[this.bgmPlayIndex];
+      this.bgmPlayIndex = (this.bgmPlayIndex + 1) % this.bgmPlayOrder.length;
+      if (this.bgmPlayIndex === 0) this._shufflePlaylist();
 
       var url = this.bgmFiles[name];
-      if (!url) return;
+      if (!url) { this._playNext(); return; }
+
+      var oldAudio = this.currentAudio;
 
       var audio = new Audio();
-      audio.loop = true;
+      audio.loop = false;
       audio.preload = 'auto';
       audio.volume = 0;
 
       audio.addEventListener('error', function () {
         console.warn('SoundManager: BGM load failed', url);
+        setTimeout(function () { self._playNext(); }, 500);
       });
 
       audio.src = url;
-      self.currentSrcName = name;
       self.currentAudio = audio;
+      self.currentSrcName = name;
 
       var p = audio.play();
       if (p) p.catch(function () {
@@ -119,8 +116,28 @@
         });
       });
 
-      if (fadeIn) {
-        var targetVol = self.bgmMuted ? 0 : self.bgmVolume;
+      var handler = function () { self._playNext(); };
+      audio._endedHandler = handler;
+      audio.addEventListener('ended', handler);
+
+      var targetVol = self.bgmMuted ? 0 : self.bgmVolume;
+
+      if (oldAudio) {
+        var oldVol = oldAudio.volume;
+        for (var i = 1; i <= 6; i++) {
+          (function (step) {
+            setTimeout(function () {
+              if (self.currentAudio === audio) audio.volume = targetVol * (step / 6);
+              oldAudio.volume = oldVol * (1 - step / 6);
+            }, step * 100);
+          })(i);
+        }
+        setTimeout(function () {
+          oldAudio.pause();
+          oldAudio.src = '';
+          if (oldAudio._endedHandler) oldAudio.removeEventListener('ended', oldAudio._endedHandler);
+        }, 650);
+      } else {
         for (var i = 1; i <= 8; i++) {
           (function (step) {
             setTimeout(function () {
@@ -128,8 +145,6 @@
             }, step * 100);
           })(i);
         }
-      } else {
-        audio.volume = self.bgmMuted ? 0 : self.bgmVolume;
       }
     },
 
@@ -137,10 +152,9 @@
       if (!this.currentAudio) return;
       var audio = this.currentAudio;
       var self = this;
-      this._lastBgmName = this.currentSrcName;
+      if (audio._endedHandler) audio.removeEventListener('ended', audio._endedHandler);
       this.currentAudio = null;
       this.currentSrcName = '';
-
       if (fadeOut > 0 && !this.bgmMuted) {
         for (var i = 1; i <= 6; i++) {
           (function (step) {
@@ -157,13 +171,7 @@
     },
 
     resumeBgm: function () {
-      var name = this.currentSrcName || this._lastBgmName;
-      if (name) this.playBgm(name, true);
-    },
-
-    switchBgm: function (tab) {
-      var name = this.bgmMap[tab] || '메인';
-      this.playBgm(name, true);
+      this.startBgm();
     },
 
     playSfx: function (type) {
@@ -229,15 +237,4 @@
   };
 
   window.SoundManager = SoundManager;
-
-  (function () {
-    var a = new Audio();
-    a.loop = true;
-    a.volume = 0;
-    a.preload = 'auto';
-    a.src = SoundManager.bgmFiles['메인'];
-    a.play().catch(function () {});
-    SoundManager.currentAudio = a;
-    SoundManager.currentSrcName = '메인';
-  })();
 })();
