@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs><linearGradient id="bg_p1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c101b"/><stop offset="1" stop-color="#1a1a2e"/></linearGradient>
+  <radialGradient id="earth"><stop offset="0" stop-color="#1a9d63"/><stop offset="30%" stop-color="#0d7a4a"/><stop offset="60%" stop-color="#1a4a7a"/><stop offset="100%" stop-color="#0f172a"/></radialGradient></defs>
+  <rect width="300" height="200" fill="url(#bg_p1)"/>
+  <circle cx="150" cy="100" r="55" fill="url(#earth)"/>
+  <path d="M100 80 Q130 70 160 85 Q190 95 200 80" fill="none" stroke="#1a9d63" stroke-width="2" opacity="0.6"/>
+  <path d="M110 110 Q140 100 170 115 Q190 120 200 110" fill="none" stroke="#1a9d63" stroke-width="2" opacity="0.5"/>
+  <path d="M120 60 Q150 50 180 60" fill="none" stroke="#cbd5e1" stroke-width="1" opacity="0.3"/>
+  <ellipse cx="150" cy="100" rx="20" ry="8" fill="#1a4a7a" opacity="0.3"/>
+  <circle cx="140" cy="95" r="3" fill="#cbd5e1" opacity="0.4"/>
+  <circle cx="160" cy="105" r="2" fill="#cbd5e1" opacity="0.3"/>
+  <text x="150" y="180" text-anchor="middle" fill="#64748b" font-size="11" font-family="sans-serif">테란 행성 | Terran</text>
+</svg>

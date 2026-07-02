@@ -1,0 +1,28 @@
+{
+  "name": "space-game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "decimal.js",
+  "scripts": {
+    "sync": "npx cap sync",
+    "android": "npx cap open android",
+    "build:android": "npx cap sync && cd android && gradlew assembleDebug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kim890417-cmd/space-game.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kim890417-cmd/space-game/issues"
+  },
+  "homepage": "https://github.com/kim890417-cmd/space-game#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1"
+  }
+}

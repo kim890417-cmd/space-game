@@ -465,7 +465,11 @@ const COLONY_FACTORY_TYPES = [
 
         cheatOpen: false,
         devMode: DEV_MODE,
+        splashActive: true,
         guideOpen: { buildings: false, fleet: false, colony: false, research: false, trade: false },
+        tutorialStep: 0,
+        tutorialActive: true,
+        tutorialCompleted: false,
         expedition: { inProgress: false, targetId: null, remaining: 0, total: 0, eventId: null, midTriggered: false, midEventId: null },
         expeditionOverlay: null,
         speedMult: 1,
@@ -820,6 +824,19 @@ const COLONY_FACTORY_TYPES = [
         const stoneNeed = 5 + this.transcendLevel * 5;
         return { current: this.awakeningStones, needed: stoneNeed, met: this.awakeningStones >= stoneNeed };
       },
+      tutorialText() {
+        const texts = [
+          '💰  반갑습니다! 돈을 벌어보세요',
+          '🏗️  기지 탭에서 건물을 건설하세요',
+          '⬆️  건물을 Lv.3까지 업그레이드하세요',
+          '🚀  함대 탭을 열어보세요',
+          '⚔️  해적을 토벌해보세요 (정찰기 출격!)',
+          '🔬  연구 탭에서 첫 연구를 시작하세요',
+          '🌍  행성을 탐험하고 식민지를 세우세요',
+          '🎉  모든 튜토리얼 완료!'
+        ];
+        return texts[this.tutorialStep] || '';
+      },
     },
 
     methods: {
@@ -912,6 +929,7 @@ const COLONY_FACTORY_TYPES = [
       canBuyBuilding(b) { return b.cooldown <= 0 && b.level === 0 && this.money.gte(b.currentPrice) && !b.building; },
       buyBuilding(b, e) {
         if (!this.canBuyBuilding(b)) return;
+        window.SoundManager.playSfx('build');
         const slot = this.constructionSlots.slice(0, this.effectiveMaxConstructionSlots).find(s => !s.busy);
         if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
         this.money = this.money.sub(b.currentPrice);
@@ -940,6 +958,7 @@ const COLONY_FACTORY_TYPES = [
       canUpgradeBuilding(b) { return b.level > 0 && b.level < b.maxLevel && this.money.gte(this.upgradeCost(b)) && !b.building; },
       upgradeBuilding(b, e) {
         if (!this.canUpgradeBuilding(b)) return;
+        window.SoundManager.playSfx('upgrade');
         const slot = this.constructionSlots.slice(0, this.effectiveMaxConstructionSlots).find(s => !s.busy);
         if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
         const cost = this.upgradeCost(b);
@@ -962,6 +981,7 @@ const COLONY_FACTORY_TYPES = [
       },
       awakenBuilding(b) {
         if (!this.canAwakenBuilding(b)) return;
+        window.SoundManager.playSfx('levelup');
         this.awakeningStones -= 5;
         this.$set(this.buildingAwakened, b.id, true);
         const eff = this.buildingAwakeningEffects[b.id];
@@ -1334,6 +1354,7 @@ const COLONY_FACTORY_TYPES = [
       },
       startResearch(r) {
         if (!this.canResearch(r)) return;
+        window.SoundManager.playSfx('research');
         const cost = this.researchCost(r);
         if (cost.money) this.money = this.money.sub(cost.money);
         for (const k in cost) {
@@ -1373,6 +1394,7 @@ const COLONY_FACTORY_TYPES = [
       },
       buildShips(st) {
         if (!this.canBuildShips(st)) return;
+        window.SoundManager.playSfx('build');
         const count = Math.max(1, parseInt(this.shipBuildQty[st.type]) || 1);
         this.resources.metal = this.resources.metal.sub((st.cost.metal || 0) * count);
         this.resources.crystal = this.resources.crystal.sub((st.cost.crystal || 0) * count);
@@ -1455,6 +1477,7 @@ const COLONY_FACTORY_TYPES = [
       },
       awakenShip(st) {
         if (!this.canAwakenShip(st)) return;
+        window.SoundManager.playSfx('levelup');
         this.awakeningStones -= this.shipAwakenCost(st);
         this.$set(this.shipAwakened, st.type, true);
         this.toast(`✨ ${st.name} 각성! 전투력 +30%, 건조 시간 ×0.9`);
@@ -1487,6 +1510,7 @@ const COLONY_FACTORY_TYPES = [
       },
       upgradeShip(st) {
         if (!this.canUpgradeShip(st)) return;
+        window.SoundManager.playSfx('upgrade');
         const costs = this.shipUpgradeCost(st);
         for (const k in costs) this.resources[k] = this.resources[k].sub(costs[k]);
         const s = this.ships[st.type];
@@ -1579,6 +1603,7 @@ const COLONY_FACTORY_TYPES = [
       },
       startExplore(p) {
         if (!this.canExplore(p)) return;
+        window.SoundManager.playSfx('explore');
         this.exploreTravelOverlay = true;
         this.exploreTravelTimer = 2;
         this.exploreFlavor = '🚀 항성계로 워프 중...';
@@ -1599,6 +1624,7 @@ const COLONY_FACTORY_TYPES = [
         if (!p) return;
         const roll = Math.random();
         if (roll < this.exploreChance) {
+          window.SoundManager.playSfx('coin');
           p.explorationLevel = Math.min(p.maxLevel, p.explorationLevel + 1);
           const bonus = Math.round((p.bonusPerLevel || 0) * 100);
           if (p.explorationLevel === 1) this.initColony(p.id);
@@ -1607,6 +1633,7 @@ const COLONY_FACTORY_TYPES = [
           this.checkAchievements();
           if (!this.challengeModifiers.noColony && Math.random() < 0.25) this.alienEncounter();
         } else {
+          window.SoundManager.playSfx('alert');
           const loss = Math.max(1, Math.floor(this.colonizer.count * 0.2));
           this.colonizer.count = Math.max(0, this.colonizer.count - loss);
           this.toast(`💥 ${p.name} 탐험 실패! 식민함선 ${loss}척 손실`);
@@ -2031,6 +2058,7 @@ const COLONY_FACTORY_TYPES = [
           const lost = this.applyLosses(0.05);
           const fameGain = Math.max(1, Math.floor(this.pirateWave * 3));
           this.awareness += fameGain;
+          window.SoundManager.playSfx('battle_win');
           this.pushLog(`✅ 승리 +${this.fmt(loot)}${lost ? ` (손실 ${lost}척)` : ''} 📡명성 +${fameGain}`, 'log-win');
           if (e) this.spawnFloatText('+' + this.fmt(loot), '#34d399', e.clientX, e.clientY - 8);
           
@@ -2080,6 +2108,7 @@ const COLONY_FACTORY_TYPES = [
           }
           this.checkAchievements(); this.checkFameMilestones();
         } else {
+          window.SoundManager.playSfx('battle_lose');
           const lost = this.applyLosses(0.25);
           const penalty = new Decimal(200 * this.pirateWave);
           this.money = this.money.sub(penalty);
@@ -2449,6 +2478,7 @@ const COLONY_FACTORY_TYPES = [
       },
 
       doClick(e) {
+        window.SoundManager.playSfx('click');
         const gain = this.effectiveClickPower * (this.boostTimer > 0 ? this.boostMultItem : 1);
         this.money = this.money.add(gain);
         this.stats.totalClicks++;
@@ -2675,6 +2705,7 @@ const COLONY_FACTORY_TYPES = [
       },
       upgradeFlagship() {
         if (!this.canUpgradeFlagship()) return;
+        window.SoundManager.playSfx('levelup');
         const cost = this.flagshipUpgradeCost();
         this.resources.metal = this.resources.metal.sub(cost.metal);
         this.resources.crystal = this.resources.crystal.sub(cost.crystal);
@@ -2799,7 +2830,7 @@ const COLONY_FACTORY_TYPES = [
       completeMission(index) {
         const mission = this.missions[index];
         if (!mission || !this.canCompleteMission(mission)) return;
-
+        window.SoundManager.playSfx('coin');
         if (mission.type === 'deliver_metal') {
           this.resources.metal = this.resources.metal.sub(mission.reqAmount);
         }
@@ -3058,10 +3089,40 @@ const COLONY_FACTORY_TYPES = [
         }
         const totalValue = wealth + resourceValue;
         const gain = Math.max(1, Math.floor(Math.pow(totalValue / 100000, 0.45)));
-        this.prestigePoints += gain;
-        this.prestigeBonus = this.prestigePoints * 0.5;
-        this.toast(`✨ 환생! +${gain} 포인트 (총 ${this.prestigePoints}P) 수입 +${Math.round(this.prestigeBonus*100)}% (자원가치 ${this.fmt(resourceValue)} 포함)`);
+        const savedPoints = this.prestigePoints + gain;
+        const savedBonus = savedPoints * 0.5;
+        this.toast(`✨ 환생! +${gain} 포인트 (총 ${savedPoints}P) 수입 +${Math.round(savedBonus*100)}% (자원가치 ${this.fmt(resourceValue)} 포함)`);
         this.cheatReset(true);
+        this.prestigePoints = savedPoints;
+        this.prestigeBonus = savedBonus;
+      },
+      checkTutorial() {
+        if (!this.tutorialActive || this.tutorialCompleted) return;
+        if (this.tutorialStep >= 7) {
+          this.tutorialCompleted = true;
+          this.tutorialActive = false;
+          return;
+        }
+        const conds = [
+          () => this.money.gte(50),
+          () => this.buildings.some(b => b.level > 0),
+          () => this.buildings.some(b => b.level >= 3),
+          () => this.activeTab === 'fleet',
+          () => this.stats.totalBattlesWon > 0,
+          () => this.research.some(r => r.level > 0),
+          () => this.planets.some(p => p.explorationLevel > 0),
+        ];
+        if (conds[this.tutorialStep]()) this.tutorialStep++;
+      },
+      dismissTutorial() {
+        this.tutorialActive = false;
+        this.tutorialCompleted = true;
+        this.toast('🤖 튜토리얼이 종료되었습니다. 정보탭에서 다시 볼 수 있어요!');
+      },
+      tapToStart() {
+        this.splashActive = false;
+        window.SoundManager.init();
+        window.SoundManager.switchBgm(this.activeTab);
       },
 
       tickSystems(dt) {
@@ -3081,6 +3142,7 @@ const COLONY_FACTORY_TYPES = [
         this.tickPatrol(sdt);
         this.tickExpedition(sdt);
         this.tickAd(sdt);
+        this.checkTutorial();
         if (this.combatCooldown > 0) this.combatCooldown = Math.max(0, this.combatCooldown - sdt);
         if (this.autoCombat && this.combatCooldown <= 0 && this.fleetPower > 0) {
           this.huntPirates(null);
@@ -3201,7 +3263,10 @@ const COLONY_FACTORY_TYPES = [
             tradeTasks: this.tradeTasks,
             adCooldown: this.adCooldown,
             adSlotActive: this.adSlotActive,
-            adSlotTimer: this.adSlotTimer
+            adSlotTimer: this.adSlotTimer,
+            tutorialStep: this.tutorialStep,
+            tutorialActive: this.tutorialActive,
+            tutorialCompleted: this.tutorialCompleted
           };
           for (const k of RES) data.resources[k] = this.resources[k].toFixed(3);
           localStorage.setItem('systemsState', JSON.stringify(data));
@@ -3433,6 +3498,9 @@ const COLONY_FACTORY_TYPES = [
           if (o.adCooldown !== undefined) this.adCooldown = o.adCooldown;
           if (o.adSlotActive !== undefined) this.adSlotActive = o.adSlotActive;
           if (o.adSlotTimer !== undefined) this.adSlotTimer = o.adSlotTimer;
+          if (o.tutorialStep !== undefined) this.tutorialStep = o.tutorialStep;
+          if (o.tutorialActive !== undefined) this.tutorialActive = o.tutorialActive;
+          if (o.tutorialCompleted !== undefined) this.tutorialCompleted = o.tutorialCompleted;
           this.recalcMaxes();
         } catch (e) {}
       }
