@@ -543,7 +543,10 @@ const COLONY_FACTORY_TYPES = [
             bonuses: ['함대 전투력 +25%', '함선 건조 시간 -40%', '전투 승리 시 각성석 확률 5%'] },
           { id: 'architech', name: '기술 위원회', icon: '🔮', desc: '과학자 외계 종족', thresholds: [50, 150, 400],
             bonuses: ['연구 시간 -40%', '모든 저장고 +100%', '인지도 획득량 +100%'] }
-        ]
+        ],
+        galaxyGrid: [],
+        galaxyCampaign: { active: false, sectorId: null, remaining: 0, total: 0, fleetPowerSent: 0 },
+        selectedSector: null
       };
     },
     computed: {
@@ -602,9 +605,21 @@ const COLONY_FACTORY_TYPES = [
           const lens = this.artifacts.find(a => a.id === 'warp_lens');
           if (lens) artifactResMult += lens.level * 0.03;
         }
+        
+        // 은하 점령지 자원 보너스 (+5% per metal/crystal/hydrogen/plasma/solar/fission/fusion sector)
+        const sectorResMults = {};
+        for (const k of RES) sectorResMults[k] = 1;
+        if (this.galaxyGrid) {
+          for (const sec of this.galaxyGrid) {
+            if (sec.status === 'owned' && sec.bonusType === 'res' && sec.bonusRes) {
+              sectorResMults[sec.bonusRes] += 0.05 * (sec.level || 1);
+            }
+          }
+        }
+
         const globalResMult = outpostResMult * artifactResMult;
         for (const k of RES) {
-          if (rates[k] > 0) rates[k] *= globalResMult;
+          if (rates[k] > 0) rates[k] *= globalResMult * sectorResMults[k];
         }
         
         return rates;
@@ -629,6 +644,18 @@ const COLONY_FACTORY_TYPES = [
           }
         }
         m *= 1 + achBonus;
+        
+        // 은하 점령지 월세 소득 보너스 (+5% per credit sector)
+        if (this.galaxyGrid) {
+          let sectorIncomeBonus = 0;
+          for (const sec of this.galaxyGrid) {
+            if (sec.status === 'owned' && sec.bonusType === 'income') {
+              sectorIncomeBonus += 0.05 * (sec.level || 1);
+            }
+          }
+          m *= (1 + sectorIncomeBonus);
+        }
+
         return m;
       },
       visibleBuildings() {
@@ -3255,7 +3282,10 @@ const COLONY_FACTORY_TYPES = [
           items: { timewarp: 1, timewarp_10m: 1, surge: 1 }, boostTimer: 0, boostMultItem: 1, freeDispenserCD: 0,
           colonies: [], colonyDetailPlanet: null, exploring: false, explorePlanet: null, exploreChance: 0, exploreTimer: 0, exploreFlavor: '', exploreFlavorTimer: 0,
           eventMessage: '', eventTimer: 0, auctionActive: false, auctionBuilding: null, auctionPrice: 0, auctionDiscount: 0, auctionTimer: 0, auctionChance: 0,
-          raidAlert: '', raidAlertTimer: 0
+          raidAlert: '', raidAlertTimer: 0,
+          galaxyGrid: [],
+          galaxyCampaign: { active: false, sectorId: null, remaining: 0, total: 0, fleetPowerSent: 0 },
+          selectedSector: null
         };
         for (const k in defaults) this[k] = defaults[k];
         this.buildingAwakened = {};
@@ -3380,6 +3410,7 @@ const COLONY_FACTORY_TYPES = [
           const cd = this.challengeDefs.find(c => c.id === this.challengeActive);
           if (cd) this.completeChallenge(cd);
         }
+        this.tickGalaxyCampaign(sdt);
         this.checkAchievements();
         this.checkFameMilestones();
       },
@@ -3387,6 +3418,121 @@ const COLONY_FACTORY_TYPES = [
         this.achievementToast = text;
         clearTimeout(this._toastT);
         this._toastT = setTimeout(() => { this.achievementToast = ''; }, 3000);
+      },
+
+      initGalaxyGrid() {
+        if (this.galaxyGrid && this.galaxyGrid.length > 0) return;
+        const grid = [];
+        const bonusTypes = ['income', 'res'];
+        const resList = ['metal', 'crystal', 'hydrogen', 'plasma', 'solar', 'fission', 'fusion'];
+        
+        for (let y = 0; y < 5; y++) {
+          for (let x = 0; x < 5; x++) {
+            const id = y * 5 + x;
+            let status = 'neutral';
+            let name = `성계 [${x}, ${y}]`;
+            let bonusType = 'res';
+            let bonusRes = 'metal';
+            let enemyPower = 0;
+            let level = 1;
+
+            if (x === 2 && y === 2) {
+              status = 'owned';
+              name = '본진 본성계';
+              bonusType = 'income';
+              enemyPower = 0;
+            } else {
+              // 본진과의 거리 계산
+              const dist = Math.abs(x - 2) + Math.abs(y - 2);
+              enemyPower = Math.floor(50 * Math.pow(2.2, dist) + Math.random() * 20);
+              
+              // 30% 확률로 해적 지배, 70% 중립
+              status = Math.random() < 0.35 ? 'pirate' : 'neutral';
+              
+              // 보너스 타입 및 자원 무작위
+              bonusType = Math.random() < 0.3 ? 'income' : 'res';
+              bonusRes = resList[Math.floor(Math.random() * resList.length)];
+              level = Math.max(1, Math.floor(dist));
+            }
+
+            grid.push({ id, x, y, status, name, bonusType, bonusRes, enemyPower, level });
+          }
+        }
+        this.galaxyGrid = grid;
+      },
+      sendFleetToSector(sector) {
+        if (this.galaxyCampaign.active) {
+          this.toast('⚠️ 이미 다른 캠페인이 진행 중입니다.');
+          return;
+        }
+        const availPower = this.getAvailableFleetPower();
+        if (availPower <= 0) {
+          this.toast('⚠️ 가용 전투 함대가 없습니다.');
+          return;
+        }
+
+        const dist = Math.abs(sector.x - 2) + Math.abs(sector.y - 2);
+        const duration = Math.max(5, dist * 10);
+        
+        this.galaxyCampaign = {
+          active: true,
+          sectorId: sector.id,
+          remaining: duration,
+          total: duration,
+          fleetPowerSent: availPower
+        };
+        this.toast(`🚀 ${sector.name}으로 함대 파견! 이동 시간: ${duration}초`);
+        this.saveSystems();
+      },
+      cancelGalaxyCampaign() {
+        if (!this.galaxyCampaign.active) return;
+        this.toast('✕ 점령 임무 취소됨');
+        this.galaxyCampaign = { active: false, sectorId: null, remaining: 0, total: 0, fleetPowerSent: 0 };
+        this.saveSystems();
+      },
+      tickGalaxyCampaign(dt) {
+        // 데이터 누락 방지 초기화
+        if (!this.galaxyGrid || this.galaxyGrid.length === 0) {
+          this.initGalaxyGrid();
+        }
+        if (!this.galaxyCampaign || !this.galaxyCampaign.active) return;
+
+        this.galaxyCampaign.remaining = Math.max(0, this.galaxyCampaign.remaining - dt);
+        if (this.galaxyCampaign.remaining <= 0) {
+          this.resolveSectorBattle();
+        }
+      },
+      resolveSectorBattle() {
+        const sector = this.galaxyGrid.find(s => s.id === this.galaxyCampaign.sectorId);
+        if (!sector) {
+          this.galaxyCampaign = { active: false, sectorId: null, remaining: 0, total: 0, fleetPowerSent: 0 };
+          return;
+        }
+
+        const fleetPower = this.galaxyCampaign.fleetPowerSent;
+        const enemyPower = sector.enemyPower;
+        
+        // 전투 판정 (랜덤 가중치 0.85 ~ 1.15)
+        const roll = fleetPower * (0.85 + Math.random() * 0.3);
+        
+        if (roll >= enemyPower) {
+          sector.status = 'owned';
+          sector.enemyPower = 0;
+          
+          let bonusDesc = sector.bonusType === 'income' ? '월세 수입 +5%' : `${this.$RES_ICO[sector.bonusRes] || ''} 생산 +5%`;
+          this.toast(`🎉 ${sector.name} 점령 성공! (${bonusDesc} 적용)`);
+          window.SoundManager.playSfx('battle_win');
+          this.stats.totalBattlesWon++;
+          this.awareness += 10 * sector.level;
+        } else {
+          // 실패 시 함선 일부 침몰 (15% 손실)
+          const lost = this.applyLosses(0.15);
+          this.toast(`💥 ${sector.name} 점령 실패! 함선 ${lost}척 손실`);
+          window.SoundManager.playSfx('battle_lose');
+        }
+
+        this.galaxyCampaign = { active: false, sectorId: null, remaining: 0, total: 0, fleetPowerSent: 0 };
+        this.saveSystems();
       },
 
       saveSystems() {
@@ -3464,14 +3610,14 @@ const COLONY_FACTORY_TYPES = [
             raidTargets: this.raidTargets.map(t => ({ id: t.id, active: t.active, timer: t.timer })),
             raidTravel: { active: this.raidTravel.active, targetId: this.raidTravel.target?.id || null, remaining: this.raidTravel.remaining, total: this.raidTravel.total },
             expedition: { inProgress: this.expedition.inProgress, targetId: this.expedition.targetId, remaining: this.expedition.remaining, total: this.expedition.total, eventId: this.expedition.eventId },
-            activeBasePlanetId: this.activeBasePlanetId,
-            tradeTasks: this.tradeTasks,
             adCooldown: this.adCooldown,
             adSlotActive: this.adSlotActive,
             adSlotTimer: this.adSlotTimer,
             tutorialStep: this.tutorialStep,
             tutorialActive: this.tutorialActive,
-            tutorialCompleted: this.tutorialCompleted
+            tutorialCompleted: this.tutorialCompleted,
+            galaxyGrid: (this.galaxyGrid || []).map(g => ({ id: g.id, x: g.x, y: g.y, status: g.status, name: g.name, bonusType: g.bonusType, bonusRes: g.bonusRes, enemyPower: g.enemyPower, level: g.level })),
+            galaxyCampaign: { ...this.galaxyCampaign }
           };
           for (const k of RES) data.resources[k] = this.resources[k].toFixed(3);
           localStorage.setItem('systemsState', JSON.stringify(data));
@@ -3482,9 +3628,18 @@ const COLONY_FACTORY_TYPES = [
           const raw = localStorage.getItem('systemsState');
           if (!raw) {
             this.initMissions();
+            this.initGalaxyGrid();
             return;
           }
           const o = JSON.parse(raw);
+          if (o.galaxyGrid) {
+            this.galaxyGrid = o.galaxyGrid;
+          } else {
+            this.initGalaxyGrid();
+          }
+          if (o.galaxyCampaign) {
+            this.galaxyCampaign = o.galaxyCampaign;
+          }
           if (o.activeBasePlanetId) this.activeBasePlanetId = o.activeBasePlanetId;
           if (o.tradeTasks) this.tradeTasks = o.tradeTasks;
           if (o.money) this.money = new Decimal(o.money);
