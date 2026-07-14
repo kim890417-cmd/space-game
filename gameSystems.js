@@ -21,33 +21,33 @@
 const RES_COLOR = { metal: '#34d399', crystal: '#a78bfa', hydrogen: '#38bdf8', plasma: '#f472b6', solar: '#fbbf24', fission: '#fb7185', fusion: '#e879f9' };
 
 const BUILDING_TEMPLATES = [
-    { id: 'mine', name: '지표 광산', icon: '⛏️', img: 'img/bld-mine.jpg', desc: '소행성 표면에서 금속 광물 채굴',
+    { id: 'mine', name: '지표 광산', icon: '⛏️', img: 'img/bld-mine.webp', desc: '소행성 표면에서 금속 광물 채굴',
       basePrice: 4000, income: 50, awarenessNeeded: 0, awarenessGiven: 20, tier: 1, res: 'metal', output: 5.0, buildTime: 5 },
-    { id: 'crystal_fac', name: '크리스탈 합성소', icon: '💎', img: 'img/bld-crystal.jpg', desc: '고밀도 에너지 결정 합성',
+    { id: 'crystal_fac', name: '크리스탈 합성소', icon: '💎', img: 'img/bld-crystal.webp', desc: '고밀도 에너지 결정 합성',
       basePrice: 50000, income: 40, awarenessNeeded: 30, awarenessGiven: 15, tier: 2, res: 'crystal', output: 2.5,
       unlockRequires: { mine: 1 }, buildTime: 15 },
-    { id: 'drone_hub', name: '드론 허브', icon: '🛸', img: 'img/bld-drone.jpg', desc: '자동 드론으로 자원 수집',
+    { id: 'drone_hub', name: '드론 허브', icon: '🛸', img: 'img/bld-drone.webp', desc: '자동 드론으로 자원 수집',
       basePrice: 300000, income: 60, awarenessNeeded: 200, awarenessGiven: 16, tier: 3, res: 'metal', output: 4.0,
       unlockRequires: { mine: 5, crystal_fac: 2 }, buildTime: 30 },
-    { id: 'refinery', name: '수소 정제소', icon: '⚡', img: 'img/bld-refinery.jpg', desc: '듀테륨 정제로 수소 생산',
+    { id: 'refinery', name: '수소 정제소', icon: '⚡', img: 'img/bld-refinery.webp', desc: '듀테륨 정제로 수소 생산',
       basePrice: 2000000, income: 90, awarenessNeeded: 1500, awarenessGiven: 22, tier: 4, res: 'hydrogen', output: 2.0,
       unlockRequires: { drone_hub: 3, crystal_fac: 5 }, buildTime: 60 },
-    { id: 'recycler', name: '자원 재활용소', icon: '♻️', img: 'img/bld-recycler.jpg', desc: '폐자원 재활용',
+    { id: 'recycler', name: '자원 재활용소', icon: '♻️', img: 'img/bld-recycler.webp', desc: '폐자원 재활용',
       basePrice: 4000000, income: 120, awarenessNeeded: 4000, awarenessGiven: 30, tier: 5, res: 'metal', output: 6.0,
       unlockRequires: { refinery: 3, drone_hub: 5 }, buildTime: 120 },
-    { id: 'solar_plant', name: '태양열 발전소', icon: '☀️', img: 'img/bld-solar.jpg', desc: '항성 에너지 수집',
+    { id: 'solar_plant', name: '태양열 발전소', icon: '☀️', img: 'img/bld-solar.webp', desc: '항성 에너지 수집',
       basePrice: 6000000, income: 160, awarenessNeeded: 10000, awarenessGiven: 40, tier: 6, res: 'solar', output: 3.5,
       unlockRequires: { recycler: 3, refinery: 5 }, buildTime: 200 },
-    { id: 'plasma_coil', name: '플라즈마 코일', icon: '🔵', img: 'img/bld-plasma.jpg', desc: '고에너지 플라즈마 안정화',
+    { id: 'plasma_coil', name: '플라즈마 코일', icon: '🔵', img: 'img/bld-plasma.webp', desc: '고에너지 플라즈마 안정화',
       basePrice: 10000000, income: 220, awarenessNeeded: 25000, awarenessGiven: 50, tier: 7, res: 'plasma', output: 2.0,
       unlockRequires: { solar_plant: 4, recycler: 6 }, buildTime: 300 },
-    { id: 'fission_reactor', name: '핵분열로', icon: '⚛️', img: 'img/bld-fission.jpg', desc: '원자핵 분열 에너지',
+    { id: 'fission_reactor', name: '핵분열로', icon: '⚛️', img: 'img/bld-fission.webp', desc: '원자핵 분열 에너지',
       basePrice: 15000000, income: 350, awarenessNeeded: 50000, awarenessGiven: 65, tier: 8, res: 'fission', output: 1.5,
       unlockRequires: { plasma_coil: 4, solar_plant: 6 }, buildTime: 600 },
-    { id: 'fusion_reactor', name: '핵융합로', icon: '🔥', img: 'img/bld-fusion.jpg', desc: '핵융합 반응 에너지',
+    { id: 'fusion_reactor', name: '핵융합로', icon: '🔥', img: 'img/bld-fusion.webp', desc: '핵융합 반응 에너지',
       basePrice: 25000000, income: 550, awarenessNeeded: 100000, awarenessGiven: 80, tier: 9, res: 'fusion', output: 1.2,
       unlockRequires: { fission_reactor: 4, plasma_coil: 6 }, buildTime: 1200 },
-    { id: 'outpost', name: '전초기지', icon: '🚀', img: 'img/bld-outpost.jpg', desc: '모든 기본 자원 생산 및 글로벌 버프 제공',
+    { id: 'outpost', name: '전초기지', icon: '🚀', img: 'img/bld-outpost.webp', desc: '모든 기본 자원 생산 및 글로벌 버프 제공',
       basePrice: 50000000, income: 900, awarenessNeeded: 200000, awarenessGiven: 100, tier: 10, res: 'all', output: 5.0,
       unlockRequires: { fusion_reactor: 4, fission_reactor: 6 }, buildTime: 2400 }
   ];
@@ -111,17 +111,17 @@ const BUILDING_TEMPLATES = [
   ];
 
   const SHIP_TEMPLATES = [
-    { type: 'scout', name: '정찰기', icon: '🛰️', power: 0.1, cost: { metal: 100, crystal: 0 }, time: 10, strongAgainst: null, awarenessNeeded: 0, img: 'img/정찰기.jpg', maxLevel: 5, upgradeTime: 30, special: '탐사' },
-    { type: 'corvette', name: '초계함', icon: '🚀', power: 1, cost: { metal: 3000, crystal: 500 }, time: 20, strongAgainst: 'pirate_fleet', awarenessNeeded: 0, img: 'img/ship-cruiser.jpg', maxLevel: 10, upgradeTime: 60 },
-    { type: 'fast_boat', name: '고속함', icon: '🎯', power: 5, cost: { metal: 8000, crystal: 1500 }, time: 30, strongAgainst: 'raider', awarenessNeeded: 500, img: 'img/ship-torpedo.jpg', maxLevel: 10, upgradeTime: 60, requiresBuilding: 'crystal_fac' },
-    { type: 'frigate', name: '호위함', icon: '🛡️', power: 25, cost: { metal: 15000, crystal: 4000 }, time: 60, strongAgainst: 'marauder', awarenessNeeded: 2000, img: 'img/ship-corvette.jpg', maxLevel: 8, upgradeTime: 120, requiresBuilding: 'drone_hub' },
-    { type: 'destroyer', name: '구축함', icon: '⚔️', power: 250, cost: { metal: 30000, crystal: 8000, hydrogen: 1500 }, time: 120, strongAgainst: 'juggernaut', awarenessNeeded: 5000, img: 'img/ship-battleship.jpg', maxLevel: 6, upgradeTime: 240, requiresBuilding: 'refinery' },
-    { type: 'cruiser', name: '순양함', icon: '🔱', power: 2500, cost: { metal: 60000, crystal: 20000, hydrogen: 5000 }, time: 240, strongAgainst: 'pirate_fleet', awarenessNeeded: 10000, img: 'img/ship-frigate.jpg', maxLevel: 5, upgradeTime: 480, requiresBuilding: 'recycler' },
-    { type: 'repair', name: '수리함', icon: '🔧', power: 5, cost: { metal: 20000, crystal: 6000, hydrogen: 2000 }, time: 80, strongAgainst: null, awarenessNeeded: 5000, img: 'img/ship-repair.jpg', maxLevel: 5, upgradeTime: 300, special: '피해 -50%', requiresBuilding: 'refinery' },
-    { type: 'battleship', name: '전함', icon: '🚢', power: 25000, cost: { metal: 120000, crystal: 40000, hydrogen: 10000, solar: 2000 }, time: 400, strongAgainst: 'marauder', awarenessNeeded: 20000, img: 'img/ship-destroyer.jpg', maxLevel: 4, upgradeTime: 600, requiresBuilding: 'solar_plant' },
-    { type: 'carrier', name: '항공모함', icon: '✈️', power: 250000, cost: { metal: 300000, crystal: 100000, hydrogen: 25000, plasma: 3000 }, time: 600, strongAgainst: 'juggernaut', awarenessNeeded: 50000, img: 'img/ship-carrier.jpg', maxLevel: 3, upgradeTime: 1200, requiresBuilding: 'plasma_coil' },
-    { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 2500000, cost: { metal: 800000, crystal: 250000, hydrogen: 60000, fission: 3000 }, time: 1200, strongAgainst: 'raider', awarenessNeeded: 100000, img: 'img/ship-dreadnought.jpg', maxLevel: 3, upgradeTime: 2400, requiresBuilding: 'fission_reactor' },
-    { type: 'mothership', name: '모선', icon: '🌌', power: 25000000, cost: { metal: 2000000, crystal: 600000, hydrogen: 150000, fusion: 3000 }, time: 2400, strongAgainst: 'juggernaut', awarenessNeeded: 200000, img: 'img/ship-mothership.jpg', maxLevel: 2, upgradeTime: 3600, requiresBuilding: 'fusion_reactor' },
+    { type: 'scout', name: '정찰기', icon: '🛰️', power: 0.1, cost: { metal: 100, crystal: 0 }, time: 10, strongAgainst: null, awarenessNeeded: 0, img: 'img/정찰기.webp', maxLevel: 5, upgradeTime: 30, special: '탐사' },
+    { type: 'corvette', name: '초계함', icon: '🚀', power: 1, cost: { metal: 3000, crystal: 500 }, time: 20, strongAgainst: 'pirate_fleet', awarenessNeeded: 0, img: 'img/ship-cruiser.webp', maxLevel: 10, upgradeTime: 60 },
+    { type: 'fast_boat', name: '고속함', icon: '🎯', power: 5, cost: { metal: 8000, crystal: 1500 }, time: 30, strongAgainst: 'raider', awarenessNeeded: 500, img: 'img/ship-torpedo.webp', maxLevel: 10, upgradeTime: 60, requiresBuilding: 'crystal_fac' },
+    { type: 'frigate', name: '호위함', icon: '🛡️', power: 25, cost: { metal: 15000, crystal: 4000 }, time: 60, strongAgainst: 'marauder', awarenessNeeded: 2000, img: 'img/ship-corvette.webp', maxLevel: 8, upgradeTime: 120, requiresBuilding: 'drone_hub' },
+    { type: 'destroyer', name: '구축함', icon: '⚔️', power: 250, cost: { metal: 30000, crystal: 8000, hydrogen: 1500 }, time: 120, strongAgainst: 'juggernaut', awarenessNeeded: 5000, img: 'img/ship-battleship.webp', maxLevel: 6, upgradeTime: 240, requiresBuilding: 'refinery' },
+    { type: 'cruiser', name: '순양함', icon: '🔱', power: 2500, cost: { metal: 60000, crystal: 20000, hydrogen: 5000 }, time: 240, strongAgainst: 'pirate_fleet', awarenessNeeded: 10000, img: 'img/ship-frigate.webp', maxLevel: 5, upgradeTime: 480, requiresBuilding: 'recycler' },
+    { type: 'repair', name: '수리함', icon: '🔧', power: 5, cost: { metal: 20000, crystal: 6000, hydrogen: 2000 }, time: 80, strongAgainst: null, awarenessNeeded: 5000, img: 'img/ship-repair.webp', maxLevel: 5, upgradeTime: 300, special: '피해 -50%', requiresBuilding: 'refinery' },
+    { type: 'battleship', name: '전함', icon: '🚢', power: 25000, cost: { metal: 120000, crystal: 40000, hydrogen: 10000, solar: 2000 }, time: 400, strongAgainst: 'marauder', awarenessNeeded: 20000, img: 'img/ship-destroyer.webp', maxLevel: 4, upgradeTime: 600, requiresBuilding: 'solar_plant' },
+    { type: 'carrier', name: '항공모함', icon: '✈️', power: 250000, cost: { metal: 300000, crystal: 100000, hydrogen: 25000, plasma: 3000 }, time: 600, strongAgainst: 'juggernaut', awarenessNeeded: 50000, img: 'img/ship-carrier.webp', maxLevel: 3, upgradeTime: 1200, requiresBuilding: 'plasma_coil' },
+    { type: 'dreadnought', name: '드레드노트', icon: '💀', power: 2500000, cost: { metal: 800000, crystal: 250000, hydrogen: 60000, fission: 3000 }, time: 1200, strongAgainst: 'raider', awarenessNeeded: 100000, img: 'img/ship-dreadnought.webp', maxLevel: 3, upgradeTime: 2400, requiresBuilding: 'fission_reactor' },
+    { type: 'mothership', name: '모선', icon: '🌌', power: 25000000, cost: { metal: 2000000, crystal: 600000, hydrogen: 150000, fusion: 3000 }, time: 2400, strongAgainst: 'juggernaut', awarenessNeeded: 200000, img: 'img/ship-mothership.webp', maxLevel: 2, upgradeTime: 3600, requiresBuilding: 'fusion_reactor' },
     { type: 'alien_miner', name: '외계 채굴수송선', icon: '🛸', power: 10, cost: { metal: 50000, crystal: 15000, solar: 5000 }, time: 180, strongAgainst: null, awarenessNeeded: 0, img: 'img/ship-alien-miner.jpg', maxLevel: 5, upgradeTime: 300, special: '식민지 속도 +5%' },
     { type: 'alien_dread', name: '전투종족 디스트로이어', icon: '👽', power: 5000000, cost: { metal: 1200000, crystal: 400000, fission: 8000, fusion: 2000 }, time: 1500, strongAgainst: 'juggernaut', awarenessNeeded: 0, img: 'img/ship-alien-dread.jpg', maxLevel: 3, upgradeTime: 2000, special: '모든 상성 우위' }
   ];
@@ -278,25 +278,25 @@ const COLONY_FACTORY_TYPES = [
   { icon: '⚛️', name: '핵분열 발전기', res: 'fission', baseOutput: 0.08 }
 ];
   const PLANETS = [
-    { id: 'earth', name: '지구', icon: '🌍', img: 'img/planet-terran.jpg', difficulty: 20, fameNeeded: 0,
+    { id: 'earth', name: '지구', icon: '🌍', img: 'img/planet-terran.webp', difficulty: 20, fameNeeded: 0,
       bonusDesc: '메탈 생산 +2% (최대 +40%)', bonusType: 'res', bonusRes: 'metal', bonusPerLevel: 0.02, maxLevel: 20,
       specialty: '메탈 풍부', penalty: '없음' },
-    { id: 'venus', name: '금성', icon: '🟡', img: 'img/planet-desert.jpg', difficulty: 50, fameNeeded: 45,
+    { id: 'venus', name: '금성', icon: '🟡', img: 'img/planet-desert.webp', difficulty: 50, fameNeeded: 45,
       bonusDesc: '크리스탈 생산 +2% (최대 +40%)', bonusType: 'res', bonusRes: 'crystal', bonusPerLevel: 0.02, maxLevel: 20,
       specialty: '크리스탈 풍부, 메탈 -20%', penalty: 'metal' },
-    { id: 'europa', name: '유로파', icon: '🔵', img: 'img/planet-ice.jpg', difficulty: 100, fameNeeded: 100,
+    { id: 'europa', name: '유로파', icon: '🔵', img: 'img/planet-ice.webp', difficulty: 100, fameNeeded: 100,
       bonusDesc: '수소 생산 +2% (최대 +40%)', bonusType: 'res', bonusRes: 'hydrogen', bonusPerLevel: 0.02, maxLevel: 20,
       specialty: '수소 풍부, 크리스탈 -20%', penalty: 'crystal' },
-    { id: 'io', name: '이오', icon: '🟠', img: 'img/planet-lava.jpg', difficulty: 200, fameNeeded: 190,
+    { id: 'io', name: '이오', icon: '🟠', img: 'img/planet-lava.webp', difficulty: 200, fameNeeded: 190,
       bonusDesc: '플라즈마 생산 +3% (최대 +45%)', bonusType: 'res', bonusRes: 'plasma', bonusPerLevel: 0.03, maxLevel: 15,
       specialty: '플라즈마 풍부, 메탈 -30%', penalty: 'metal' },
-    { id: 'titan', name: '타이탄', icon: '🟤', img: 'img/planet-gas.jpg', difficulty: 350, fameNeeded: 350,
+    { id: 'titan', name: '타이탄', icon: '🟤', img: 'img/planet-gas.webp', difficulty: 350, fameNeeded: 350,
       bonusDesc: '태양열 생산 +3% (최대 +45%)', bonusType: 'res', bonusRes: 'solar', bonusPerLevel: 0.03, maxLevel: 15,
       specialty: '태양열 풍부, 수소 -30%', penalty: 'hydrogen' },
-    { id: 'kepler', name: '케플러-22b', icon: '🟣', img: 'img/planet-alien.jpg', difficulty: 700, fameNeeded: 500,
+    { id: 'kepler', name: '케플러-22b', icon: '🟣', img: 'img/planet-alien.webp', difficulty: 700, fameNeeded: 500,
       bonusDesc: '모든 자원 +4% (최대 +60%)', bonusType: 'allRes', bonusPerLevel: 0.04, maxLevel: 15,
       specialty: '모든 자원 균형, 생산 느림', penalty: null },
-    { id: 'andromeda', name: '안드로메다 개척지', icon: '🌌', img: 'img/expedition.jpg', difficulty: 1500, fameNeeded: 800,
+    { id: 'andromeda', name: '안드로메다 개척지', icon: '🌌', img: 'img/expedition.webp', difficulty: 1500, fameNeeded: 800,
       bonusDesc: '모든 수입 +5% (최대 +75%)', bonusType: 'income', bonusPerLevel: 0.05, maxLevel: 15,
       specialty: '무역 중심지, 방어 어려움', penalty: null }
   ];
@@ -446,6 +446,9 @@ const COLONY_FACTORY_TYPES = [
         adProgress: 0,
         adTotal: 6,
         adCompleted: false,
+        adPromptModal: { show: false, type: '', message: '', icon: '' },
+        guideProgress: {},
+        guideMissionsCompleted: false,
         tradeShip: { count: 0, building: false, buildCount: 0, totalTime: 0, elapsed: 0, cargo: 100, speed: 1.0, level: 1, tradeQty: 1, cargoLevel: 1, speedLevel: 1 },
         tradePosts: TRADE_POSTS.map(p => ({
           ...p, prices: {
@@ -540,7 +543,10 @@ const COLONY_FACTORY_TYPES = [
             bonuses: ['함대 전투력 +25%', '함선 건조 시간 -40%', '전투 승리 시 각성석 확률 5%'] },
           { id: 'architech', name: '기술 위원회', icon: '🔮', desc: '과학자 외계 종족', thresholds: [50, 150, 400],
             bonuses: ['연구 시간 -40%', '모든 저장고 +100%', '인지도 획득량 +100%'] }
-        ]
+        ],
+        galaxyGrid: [],
+        galaxyCampaign: { active: false, sectorId: null, remaining: 0, total: 0, fleetPowerSent: 0 },
+        selectedSector: null
       };
     },
     computed: {
@@ -599,9 +605,21 @@ const COLONY_FACTORY_TYPES = [
           const lens = this.artifacts.find(a => a.id === 'warp_lens');
           if (lens) artifactResMult += lens.level * 0.03;
         }
+        
+        // 은하 점령지 자원 보너스 (+5% per metal/crystal/hydrogen/plasma/solar/fission/fusion sector)
+        const sectorResMults = {};
+        for (const k of RES) sectorResMults[k] = 1;
+        if (this.galaxyGrid) {
+          for (const sec of this.galaxyGrid) {
+            if (sec.status === 'owned' && sec.bonusType === 'res' && sec.bonusRes) {
+              sectorResMults[sec.bonusRes] += 0.05 * (sec.level || 1);
+            }
+          }
+        }
+
         const globalResMult = outpostResMult * artifactResMult;
         for (const k of RES) {
-          if (rates[k] > 0) rates[k] *= globalResMult;
+          if (rates[k] > 0) rates[k] *= globalResMult * sectorResMults[k];
         }
         
         return rates;
@@ -626,6 +644,18 @@ const COLONY_FACTORY_TYPES = [
           }
         }
         m *= 1 + achBonus;
+        
+        // 은하 점령지 월세 소득 보너스 (+5% per credit sector)
+        if (this.galaxyGrid) {
+          let sectorIncomeBonus = 0;
+          for (const sec of this.galaxyGrid) {
+            if (sec.status === 'owned' && sec.bonusType === 'income') {
+              sectorIncomeBonus += 0.05 * (sec.level || 1);
+            }
+          }
+          m *= (1 + sectorIncomeBonus);
+        }
+
         return m;
       },
       visibleBuildings() {
@@ -837,6 +867,126 @@ const COLONY_FACTORY_TYPES = [
         ];
         return texts[this.tutorialStep] || '';
       },
+      guideMissions() {
+        return [
+          {
+            id: 'click10', step: 1, icon: '🖱️',
+            title: '첫 번째 발걸음',
+            desc: '화면을 10번 클릭해서 돈을 버세요. 클릭할수록 더 많은 돈을 벌 수 있습니다!',
+            hint: '💡 기지 탭의 큰 행성 버튼을 10번 탭하세요.',
+            check: () => (this.stats.totalClicks || 0) >= 10,
+            reward: { money: 500 }, rewardDesc: '💰 500 지급'
+          },
+          {
+            id: 'first_building', step: 2, icon: '🏗️',
+            title: '첫 건물 건설',
+            desc: '기지 탭에서 첫 번째 건물을 건설하세요. 건물은 자동으로 수익을 생산합니다.',
+            hint: '💡 기지(🏗️) 탭으로 이동 → 지표 광산 구매 버튼을 누르세요.',
+            check: () => this.buildings.some(b => b.level > 0 || b.building),
+            reward: { money: 1000 }, rewardDesc: '💰 1,000 지급'
+          },
+          {
+            id: 'first_upgrade', step: 3, icon: '⬆️',
+            title: '첫 번째 업그레이드',
+            desc: '보유한 건물을 업그레이드하세요. 업그레이드할수록 수익이 12%씩 증가합니다!',
+            hint: '💡 기지 탭 → 이미 건설된 건물의 [업그레이드] 버튼을 누르세요.',
+            check: () => this.buildings.some(b => b.level >= 2),
+            reward: { money: 2000 }, rewardDesc: '💰 2,000 지급'
+          },
+          {
+            id: 'bargain_buy', step: 4, icon: '💸',
+            title: '초급매 타이밍 공략',
+            desc: '건물 가격은 실시간으로 변동합니다. 초급매(⬇️⬇️ ×0.5) 표시일 때 구매하면 절반 가격에 살 수 있습니다!',
+            hint: '💡 기지 탭의 건물 목록에서 ⬇️⬇️ 초급매 표시를 기다렸다가 구매하세요.',
+            check: () => (this.stats.totalBuildingsBuilt || 0) >= 2,
+            reward: { money: 3000 }, rewardDesc: '💰 3,000 지급'
+          },
+          {
+            id: 'research_start', step: 5, icon: '🔬',
+            title: '첫 번째 연구 시작',
+            desc: '연구탭에서 클릭 강화를 연구하세요. 연구는 시간이 지나면 완료되며, 영구 효과를 부여합니다.',
+            hint: '💡 연구(🔬) 탭으로 이동 → 클릭 강화 또는 원하는 연구를 선택해 [연구 시작]을 누르세요.',
+            check: () => (this.stats.totalResearchDone || 0) >= 1 || (this.researchQueue && this.researchQueue.length > 0),
+            reward: { money: 5000 }, rewardDesc: '💰 5,000 지급'
+          },
+          {
+            id: 'build_ship', step: 6, icon: '🚀',
+            title: '함선 건조',
+            desc: '함대 탭에서 함선을 1척 더 건조하세요. 함선이 많을수록 전투력이 높아집니다.',
+            hint: '💡 함대(🚀) 탭 → 함선 서브탭 → 원하는 함선의 [건조] 버튼을 누르세요.',
+            check: () => (this.stats.totalShipsBuilt || 0) >= 1,
+            reward: { money: 8000 }, rewardDesc: '💰 8,000 지급'
+          },
+          {
+            id: 'first_battle', step: 7, icon: '⚔️',
+            title: '첫 번째 해적 토벌',
+            desc: '함대 탭 → 전투 서브탭에서 해적을 토벌하세요. 전리품으로 자원을 획득할 수 있습니다. 각 해적 유형마다 상성이 있으니 확인하세요!',
+            hint: '💡 함대(🚀) 탭 → 전투(⚔️) 서브탭 → [전투 시작] 버튼을 누르세요.',
+            check: () => (this.stats.totalBattlesWon || 0) >= 1,
+            reward: { money: 10000 }, rewardDesc: '💰 10,000 지급'
+          },
+          {
+            id: 'first_trade', step: 8, icon: '📦',
+            title: '무역 시작',
+            desc: '무역 탭에서 보유한 자원을 거래해보세요. 무역소마다 자원 매입/매도 가격이 달라 가격 차이를 이용해 수익을 낼 수 있습니다.',
+            hint: '💡 무역(📦) 탭으로 이동 → 무역 화물선을 건조하고 교역소와 거래하세요.',
+            check: () => (this.totalTrades || 0) >= 2,
+            reward: { money: 15000 }, rewardDesc: '💰 15,000 지급'
+          },
+          {
+            id: 'scout_planet', step: 9, icon: '🌍',
+            title: '행성 탐험',
+            desc: '함대 탭 → 탐험 서브탭에서 정찰기로 인근 행성을 정찰하세요. 개척 성공 시 식민지를 세워 추가 수익을 얻을 수 있습니다!',
+            hint: '💡 함대(🚀) 탭 → 탐험(🌍) 서브탭에서 정찰 가능한 행성을 선택하고 [정찰] 버튼을 누르세요.',
+            check: () => this.planets.some(p => p.explorationLevel > 0),
+            reward: { money: 20000 }, rewardDesc: '💰 20,000 지급'
+          },
+          {
+            id: 'visit_colony', step: 10, icon: '🏙️',
+            title: '식민지 탭 방문',
+            desc: '식민지 탭을 열어 식민지 시스템을 확인해보세요. 개척한 행성에 공장을 세워 생산량을 높일 수 있습니다.',
+            hint: '💡 하단 내비게이션에서 식민지(🏙️) 탭을 눌러보세요.',
+            check: () => !!(this.guideProgress['visit_colony']),
+            reward: { money: 25000 }, rewardDesc: '💰 25,000 지급'
+          },
+          {
+            id: 'visit_flagship', step: 11, icon: '🔮',
+            title: '사령함 탭 방문',
+            desc: '사령함 탭을 열어보세요. 강력한 사령함을 획득하면 모든 전투력과 건설 속도가 비약적으로 향상됩니다.',
+            hint: '💡 하단 내비게이션에서 사령함(🔮) 탭을 눌러보세요.',
+            check: () => !!(this.guideProgress['visit_flagship']),
+            reward: { money: 30000 }, rewardDesc: '💰 30,000 지급'
+          },
+          {
+            id: 'visit_prestige', step: 12, icon: '✨',
+            title: '성장 시스템 확인',
+            desc: '정보 탭 → 성장 서브탭에서 환생과 초월 시스템을 확인하세요. 일정 자산을 모으면 환생하여 영구 보너스를 얻을 수 있습니다.',
+            hint: '💡 정보(👤) 탭 → 성장(✨) 서브탭을 눌러보세요.',
+            check: () => !!(this.guideProgress['visit_prestige']),
+            reward: { money: 0, awakening: 3 }, rewardDesc: '💎 각성석 +3 + 💰 생산 2배 10분'
+          }
+        ];
+      },
+      currentGuideStep() {
+        const missions = this.guideMissions;
+        for (let i = 0; i < missions.length; i++) {
+          if (!this.guideProgress[missions[i].id]) return i;
+        }
+        return missions.length; // all done
+      },
+      guideTotalCompleted() {
+        return Object.keys(this.guideProgress).filter(k => this.guideProgress[k]).length;
+      },
+    },
+
+    watch: {
+      'activeTab'(val) {
+        if (val === 'colony') this.$set(this.guideProgress, 'visit_colony', true);
+        if (val === 'flagship') this.$set(this.guideProgress, 'visit_flagship', true);
+      },
+      'infoSubTab'(val) {
+        if (val === 'prestige') this.$set(this.guideProgress, 'visit_prestige', true);
+      },
     },
 
     methods: {
@@ -931,7 +1081,14 @@ const COLONY_FACTORY_TYPES = [
         if (!this.canBuyBuilding(b)) return;
         window.SoundManager.playSfx('build');
         const slot = this.constructionSlots.slice(0, this.effectiveMaxConstructionSlots).find(s => !s.busy);
-        if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
+        if (!slot) {
+          if (this.adCooldown <= 0 && !this.adWatching) {
+            this.adPromptModal = { show: true, type: 'slot', message: '건설 슬롯이 꽉 찼습니다!\n📺 광고를 보고 슬롯 +1 (30분)을 받으시겠습니까?', icon: '🏗️' };
+          } else {
+            this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다');
+          }
+          return;
+        }
         this.money = this.money.sub(b.currentPrice);
         b.owned = 1; b.building = true;
         const buildSpeedMult = this.effectiveShipBuildSpeedMult * this.getPlanetMultiplier(this.activeBasePlanetId);
@@ -960,7 +1117,14 @@ const COLONY_FACTORY_TYPES = [
         if (!this.canUpgradeBuilding(b)) return;
         window.SoundManager.playSfx('upgrade');
         const slot = this.constructionSlots.slice(0, this.effectiveMaxConstructionSlots).find(s => !s.busy);
-        if (!slot) { this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다'); return; }
+        if (!slot) {
+          if (this.adCooldown <= 0 && !this.adWatching) {
+            this.adPromptModal = { show: true, type: 'slot', message: '건설 슬롯이 꽉 찼습니다!\n📺 광고를 보고 슬롯 +1 (30분)을 받으시겠습니까?', icon: '🏗️' };
+          } else {
+            this.toast('⚠️ 모든 건설 슬롯이 사용 중입니다');
+          }
+          return;
+        }
         const cost = this.upgradeCost(b);
         const nextLv = b.level + 1;
         const buildSpeedMult = this.effectiveShipBuildSpeedMult * this.getPlanetMultiplier(this.activeBasePlanetId);
@@ -2283,30 +2447,65 @@ const COLONY_FACTORY_TYPES = [
           }
         }
       },
-      startAd() {
+      async startAd() {
         if (this.adCooldown > 0) { this.toast(`⏳ 광고 쿨타임: ${this.fmtTime(this.adCooldown)}`); return false; }
         if (this.adWatching) return false;
+
+        if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.AdMob) {
+          const AdMob = Capacitor.Plugins.AdMob;
+          try {
+            this.toast('📺 광고를 불러오는 중...');
+            await AdMob.prepareRewardVideoAd({
+              adId: 'ca-app-pub-3940256099942544/5224354917'
+            });
+            await AdMob.showRewardVideoAd();
+            return true;
+          } catch (e) {
+            console.error("AdMob Error:", e);
+            this.toast('❌ 광고 로드 실패. 시뮬레이션 광고로 대체합니다.');
+          }
+        }
+
         this.adWatching = true;
         this.adProgress = 0;
         this.adTotal = 6;
         this.adCompleted = false;
         return true;
       },
+      async confirmAdPrompt() {
+        this.adPromptModal.show = false;
+        const type = this.adPromptModal.type;
+        const started = await this.startAd();
+        if (started) {
+          // After native ad, reward is given via onRewardedVideoAdReward listener.
+          // For simulation mode, store pending reward type and give on completeAd
+          this._pendingAdRewardType = type;
+        }
+      },
+      dismissAdPrompt() {
+        this.adPromptModal.show = false;
+      },
+      showAwakeningAdPrompt() {
+        if (this.adCooldown > 0 || this.adWatching) return;
+        this.adPromptModal = { show: true, type: 'awakening', message: '각성석이 부족합니다!\n📺 광고를 보고 각성석 +2를 받으시겠습니까?', icon: '💎' };
+      },
       completeAd(rewardType) {
+        const effectiveType = rewardType || this._pendingAdRewardType || 'slot';
+        this._pendingAdRewardType = null;
         if (!this.adWatching || !this.adCompleted) return;
         this.adWatching = false;
         this.adProgress = 0;
         this.adCompleted = false;
         this.adCooldown = 600;
-        if (rewardType === 'slot') {
+        if (effectiveType === 'slot') {
           this.adSlotActive = true;
           this.adSlotTimer = 1800;
           this.toast('📺 광고 완료! 건설슬롯 +1 (30분)');
-        } else if (rewardType === 'boost') {
+        } else if (effectiveType === 'boost') {
           this.boostTimer = 600;
           this.boostMultItem = 2;
           this.toast('📺 광고 완료! 생산 2배 (10분)');
-        } else if (rewardType === 'instant') {
+        } else if (effectiveType === 'instant') {
           const busySlot = this.constructionSlots.slice(0, this.effectiveMaxConstructionSlots).find(s => s.busy);
           if (busySlot) {
             busySlot.remaining = 0;
@@ -2314,7 +2513,7 @@ const COLONY_FACTORY_TYPES = [
           } else {
             this.toast('📺 광고 완료! (완료할 건설이 없습니다)');
           }
-        } else if (rewardType === 'awakening') {
+        } else if (effectiveType === 'awakening') {
           this.awakeningStones += 2;
           this.toast('📺 광고 완료! 각성석 +2 획득!');
         }
@@ -2325,6 +2524,38 @@ const COLONY_FACTORY_TYPES = [
         this.adProgress = 0;
         this.adCompleted = false;
         this.toast('❌ 광고 스킵됨 (보상 없음)');
+      },
+      checkGuideMission() {
+        const missions = this.guideMissions;
+        const currentIdx = this.currentGuideStep;
+        if (currentIdx >= missions.length) return;
+        const mission = missions[currentIdx];
+        if (mission && !this.guideProgress[mission.id]) {
+          try {
+            if (mission.check()) {
+              // auto-complete mission and give reward immediately
+              this.claimGuideMission(mission.id, mission.reward, mission.rewardDesc, true);
+            }
+          } catch(e) {}
+        }
+      },
+      claimGuideMission(missionId, reward, rewardDesc, auto) {
+        if (this.guideProgress[missionId]) return;
+        this.$set(this.guideProgress, missionId, true);
+        // Give reward
+        if (reward) {
+          if (reward.money) this.money = this.money.add(reward.money);
+          if (reward.awakening) this.awakeningStones += reward.awakening;
+          if (reward.boost) { this.boostTimer = 600; this.boostMultItem = 2; }
+        }
+        if (auto) this.toast('✅ 가이드 미션 완료! ' + (rewardDesc || ''));
+        // Check if ALL done -> give final reward
+        const allDone = this.guideMissions.every(m => this.guideProgress[m.id]);
+        if (allDone && !this.guideMissionsCompleted) {
+          this.guideMissionsCompleted = true;
+          this.boostTimer = 600; this.boostMultItem = 2;
+          this.toast('🎉 모든 가이드 완료! 생산 2배 10분 보상!');
+        }
       },
       resolveExpedition(choiceIdx) {
         if (!overlay) return;
@@ -3051,7 +3282,10 @@ const COLONY_FACTORY_TYPES = [
           items: { timewarp: 1, timewarp_10m: 1, surge: 1 }, boostTimer: 0, boostMultItem: 1, freeDispenserCD: 0,
           colonies: [], colonyDetailPlanet: null, exploring: false, explorePlanet: null, exploreChance: 0, exploreTimer: 0, exploreFlavor: '', exploreFlavorTimer: 0,
           eventMessage: '', eventTimer: 0, auctionActive: false, auctionBuilding: null, auctionPrice: 0, auctionDiscount: 0, auctionTimer: 0, auctionChance: 0,
-          raidAlert: '', raidAlertTimer: 0
+          raidAlert: '', raidAlertTimer: 0,
+          galaxyGrid: [],
+          galaxyCampaign: { active: false, sectorId: null, remaining: 0, total: 0, fleetPowerSent: 0 },
+          selectedSector: null
         };
         for (const k in defaults) this[k] = defaults[k];
         this.buildingAwakened = {};
@@ -3143,6 +3377,7 @@ const COLONY_FACTORY_TYPES = [
         this.tickExpedition(sdt);
         this.tickAd(sdt);
         this.checkTutorial();
+        this.checkGuideMission();
         if (this.combatCooldown > 0) this.combatCooldown = Math.max(0, this.combatCooldown - sdt);
         if (this.autoCombat && this.combatCooldown <= 0 && this.fleetPower > 0) {
           this.huntPirates(null);
@@ -3175,6 +3410,7 @@ const COLONY_FACTORY_TYPES = [
           const cd = this.challengeDefs.find(c => c.id === this.challengeActive);
           if (cd) this.completeChallenge(cd);
         }
+        this.tickGalaxyCampaign(sdt);
         this.checkAchievements();
         this.checkFameMilestones();
       },
@@ -3182,6 +3418,121 @@ const COLONY_FACTORY_TYPES = [
         this.achievementToast = text;
         clearTimeout(this._toastT);
         this._toastT = setTimeout(() => { this.achievementToast = ''; }, 3000);
+      },
+
+      initGalaxyGrid() {
+        if (this.galaxyGrid && this.galaxyGrid.length > 0) return;
+        const grid = [];
+        const bonusTypes = ['income', 'res'];
+        const resList = ['metal', 'crystal', 'hydrogen', 'plasma', 'solar', 'fission', 'fusion'];
+        
+        for (let y = 0; y < 5; y++) {
+          for (let x = 0; x < 5; x++) {
+            const id = y * 5 + x;
+            let status = 'neutral';
+            let name = `성계 [${x}, ${y}]`;
+            let bonusType = 'res';
+            let bonusRes = 'metal';
+            let enemyPower = 0;
+            let level = 1;
+
+            if (x === 2 && y === 2) {
+              status = 'owned';
+              name = '본진 본성계';
+              bonusType = 'income';
+              enemyPower = 0;
+            } else {
+              // 본진과의 거리 계산
+              const dist = Math.abs(x - 2) + Math.abs(y - 2);
+              enemyPower = Math.floor(50 * Math.pow(2.2, dist) + Math.random() * 20);
+              
+              // 30% 확률로 해적 지배, 70% 중립
+              status = Math.random() < 0.35 ? 'pirate' : 'neutral';
+              
+              // 보너스 타입 및 자원 무작위
+              bonusType = Math.random() < 0.3 ? 'income' : 'res';
+              bonusRes = resList[Math.floor(Math.random() * resList.length)];
+              level = Math.max(1, Math.floor(dist));
+            }
+
+            grid.push({ id, x, y, status, name, bonusType, bonusRes, enemyPower, level });
+          }
+        }
+        this.galaxyGrid = grid;
+      },
+      sendFleetToSector(sector) {
+        if (this.galaxyCampaign.active) {
+          this.toast('⚠️ 이미 다른 캠페인이 진행 중입니다.');
+          return;
+        }
+        const availPower = this.getAvailableFleetPower();
+        if (availPower <= 0) {
+          this.toast('⚠️ 가용 전투 함대가 없습니다.');
+          return;
+        }
+
+        const dist = Math.abs(sector.x - 2) + Math.abs(sector.y - 2);
+        const duration = Math.max(5, dist * 10);
+        
+        this.galaxyCampaign = {
+          active: true,
+          sectorId: sector.id,
+          remaining: duration,
+          total: duration,
+          fleetPowerSent: availPower
+        };
+        this.toast(`🚀 ${sector.name}으로 함대 파견! 이동 시간: ${duration}초`);
+        this.saveSystems();
+      },
+      cancelGalaxyCampaign() {
+        if (!this.galaxyCampaign.active) return;
+        this.toast('✕ 점령 임무 취소됨');
+        this.galaxyCampaign = { active: false, sectorId: null, remaining: 0, total: 0, fleetPowerSent: 0 };
+        this.saveSystems();
+      },
+      tickGalaxyCampaign(dt) {
+        // 데이터 누락 방지 초기화
+        if (!this.galaxyGrid || this.galaxyGrid.length === 0) {
+          this.initGalaxyGrid();
+        }
+        if (!this.galaxyCampaign || !this.galaxyCampaign.active) return;
+
+        this.galaxyCampaign.remaining = Math.max(0, this.galaxyCampaign.remaining - dt);
+        if (this.galaxyCampaign.remaining <= 0) {
+          this.resolveSectorBattle();
+        }
+      },
+      resolveSectorBattle() {
+        const sector = this.galaxyGrid.find(s => s.id === this.galaxyCampaign.sectorId);
+        if (!sector) {
+          this.galaxyCampaign = { active: false, sectorId: null, remaining: 0, total: 0, fleetPowerSent: 0 };
+          return;
+        }
+
+        const fleetPower = this.galaxyCampaign.fleetPowerSent;
+        const enemyPower = sector.enemyPower;
+        
+        // 전투 판정 (랜덤 가중치 0.85 ~ 1.15)
+        const roll = fleetPower * (0.85 + Math.random() * 0.3);
+        
+        if (roll >= enemyPower) {
+          sector.status = 'owned';
+          sector.enemyPower = 0;
+          
+          let bonusDesc = sector.bonusType === 'income' ? '월세 수입 +5%' : `${this.$RES_ICO[sector.bonusRes] || ''} 생산 +5%`;
+          this.toast(`🎉 ${sector.name} 점령 성공! (${bonusDesc} 적용)`);
+          window.SoundManager.playSfx('battle_win');
+          this.stats.totalBattlesWon++;
+          this.awareness += 10 * sector.level;
+        } else {
+          // 실패 시 함선 일부 침몰 (15% 손실)
+          const lost = this.applyLosses(0.15);
+          this.toast(`💥 ${sector.name} 점령 실패! 함선 ${lost}척 손실`);
+          window.SoundManager.playSfx('battle_lose');
+        }
+
+        this.galaxyCampaign = { active: false, sectorId: null, remaining: 0, total: 0, fleetPowerSent: 0 };
+        this.saveSystems();
       },
 
       saveSystems() {
@@ -3259,14 +3610,14 @@ const COLONY_FACTORY_TYPES = [
             raidTargets: this.raidTargets.map(t => ({ id: t.id, active: t.active, timer: t.timer })),
             raidTravel: { active: this.raidTravel.active, targetId: this.raidTravel.target?.id || null, remaining: this.raidTravel.remaining, total: this.raidTravel.total },
             expedition: { inProgress: this.expedition.inProgress, targetId: this.expedition.targetId, remaining: this.expedition.remaining, total: this.expedition.total, eventId: this.expedition.eventId },
-            activeBasePlanetId: this.activeBasePlanetId,
-            tradeTasks: this.tradeTasks,
             adCooldown: this.adCooldown,
             adSlotActive: this.adSlotActive,
             adSlotTimer: this.adSlotTimer,
             tutorialStep: this.tutorialStep,
             tutorialActive: this.tutorialActive,
-            tutorialCompleted: this.tutorialCompleted
+            tutorialCompleted: this.tutorialCompleted,
+            galaxyGrid: (this.galaxyGrid || []).map(g => ({ id: g.id, x: g.x, y: g.y, status: g.status, name: g.name, bonusType: g.bonusType, bonusRes: g.bonusRes, enemyPower: g.enemyPower, level: g.level })),
+            galaxyCampaign: { ...this.galaxyCampaign }
           };
           for (const k of RES) data.resources[k] = this.resources[k].toFixed(3);
           localStorage.setItem('systemsState', JSON.stringify(data));
@@ -3277,9 +3628,18 @@ const COLONY_FACTORY_TYPES = [
           const raw = localStorage.getItem('systemsState');
           if (!raw) {
             this.initMissions();
+            this.initGalaxyGrid();
             return;
           }
           const o = JSON.parse(raw);
+          if (o.galaxyGrid) {
+            this.galaxyGrid = o.galaxyGrid;
+          } else {
+            this.initGalaxyGrid();
+          }
+          if (o.galaxyCampaign) {
+            this.galaxyCampaign = o.galaxyCampaign;
+          }
           if (o.activeBasePlanetId) this.activeBasePlanetId = o.activeBasePlanetId;
           if (o.tradeTasks) this.tradeTasks = o.tradeTasks;
           if (o.money) this.money = new Decimal(o.money);
@@ -3502,6 +3862,32 @@ const COLONY_FACTORY_TYPES = [
           if (o.tutorialActive !== undefined) this.tutorialActive = o.tutorialActive;
           if (o.tutorialCompleted !== undefined) this.tutorialCompleted = o.tutorialCompleted;
           this.recalcMaxes();
+
+          // Initialize AdMob and register listeners
+          if (typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.AdMob) {
+            const AdMob = Capacitor.Plugins.AdMob;
+            AdMob.initialize({
+              requestTrackingAuthorization: true
+            }).catch(err => console.error("AdMob init error:", err));
+
+            AdMob.addListener('onRewardedVideoAdReward', (info) => {
+              console.log('Reward received:', info);
+              this.adWatching = true;
+              this.adCompleted = true;
+            });
+
+            AdMob.addListener('onRewardedVideoAdDismissed', () => {
+              console.log('Ad dismissed');
+              if (!this.adCompleted) {
+                this.cancelAd();
+              }
+            });
+
+            AdMob.addListener('onRewardedVideoAdFailedToLoad', (err) => {
+              console.error('Ad failed to load:', err);
+              this.toast('❌ 광고를 불러올 수 없습니다.');
+            });
+          }
         } catch (e) {}
       }
     }
