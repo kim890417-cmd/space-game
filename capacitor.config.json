@@ -1,6 +1,6 @@
 {
-  "appId": "com.spaceimperial.game",
-  "appName": "스페이스 엠파이어",
+  "appId": "com.spaceimperial.idle",
+  "appName": "스페이스 임페리얼",
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {

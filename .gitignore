@@ -6,3 +6,5 @@ android/app/build/
 android/.gradle/
 android/build/
 capacitor-cordova-android-plugins/
+keystore.properties
+*.keystore
