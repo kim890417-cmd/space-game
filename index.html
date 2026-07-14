@@ -1626,9 +1626,10 @@
             </div>
           </div>
         </template>
+      </div>
 
-        <!-- TAB: GALAXY (은하 영토 땅따먹기) -->
-        <div v-if="activeTab==='galaxy'" class="space-y-3">
+      <!-- TAB: GALAXY (은하 영토 땅따먹기) -->
+      <div v-if="activeTab==='galaxy'" class="space-y-3">
           <div class="card py-2 px-3" style="border-color:rgba(56,189,248,0.3)">
             <div class="flex items-center justify-between mb-1">
               <span class="text-xs font-bold text-sky-300">🗺️ 은하 점령 영역 ({{ (galaxyGrid||[]).filter(s=>s.status==='owned').length }}/25)</span>
@@ -1698,7 +1699,6 @@
             </div>
           </div>
         </div>
-      </div>
     </div>
 
     <!-- TUTORIAL -->
