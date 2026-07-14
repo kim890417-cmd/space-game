@@ -3632,8 +3632,9 @@ const COLONY_FACTORY_TYPES = [
             return;
           }
           const o = JSON.parse(raw);
-          if (o.galaxyGrid) {
+          if (o.galaxyGrid && Array.isArray(o.galaxyGrid)) {
             this.galaxyGrid = o.galaxyGrid;
+            if (this.galaxyGrid.length === 0) this.initGalaxyGrid();
           } else {
             this.initGalaxyGrid();
           }
